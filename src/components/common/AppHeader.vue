@@ -1,19 +1,23 @@
 <template>
   <header class="app-header">
     <div class="header-content">
+      <!-- Hamburger Menu Button (Mobile Only) -->
+      <button class="btn btn-outline-secondary d-lg-none me-3" type="button" @click="toggleSidebar">
+        <i class="bi bi-list"></i>
+      </button>
       <!-- Page Title -->
       <div class="header-title">
         <h2>{{ pageTitle }}</h2>
         <p>{{ pageDescription }}</p>
       </div>
-      
+
       <!-- Header Actions -->
       <div class="header-actions">
         <!-- Notifications -->
         <button class="btn btn-outline-primary btn-sm me-2">
           <i class="bi bi-bell"></i>
         </button>
-        
+
         <!-- User Menu -->
         <div class="dropdown">
           <div class="user-menu" data-bs-toggle="dropdown" aria-expanded="false">
@@ -39,7 +43,7 @@
                 Settings
               </a>
             </li>
-            <li><hr class="dropdown-divider"></li>
+            <li><hr class="dropdown-divider" /></li>
             <li>
               <a class="dropdown-item text-danger" href="#" @click="logout">
                 <i class="bi bi-box-arrow-right me-2"></i>
@@ -54,7 +58,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
@@ -62,40 +66,46 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 
+// Inject sidebar toggle function from AppLayout
+const toggleSidebar = inject('toggleSidebar', () => {})
+
 const pageTitle = computed(() => {
   const titles = {
-    'dashboard': 'Dashboard',
-    'transactions': 'Transactions',
-    'categories': 'Categories',
-    'reports': 'Reports',
-    'settings': 'Settings'
+    dashboard: 'Dashboard',
+    transactions: 'Transactions',
+    categories: 'Categories',
+    reports: 'Reports',
+    settings: 'Settings',
   }
   return titles[route.name] || 'CashFlow'
 })
 
 const pageDescription = computed(() => {
   const descriptions = {
-    'dashboard': 'Overview of your financial status',
-    'transactions': 'Manage your income and expenses',
-    'categories': 'Organize your transaction categories',
-    'reports': 'Analyze your financial data',
-    'settings': 'Configure your account settings'
+    dashboard: 'Overview of your financial status',
+    transactions: 'Manage your income and expenses',
+    categories: 'Organize your transaction categories',
+    settings: 'Configure your account settings',
   }
   return descriptions[route.name] || 'Personal Finance Management'
 })
 
 const userInitials = computed(() => {
   const name = authStore.user?.user_metadata?.full_name || authStore.user?.email || 'U'
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .substring(0, 2)
 })
 
 const logout = async () => {
   try {
-    await authStore.logout()
+    await authStore.signOut()
     router.push('/login')
   } catch (error) {
     console.error('Logout error:', error)
   }
 }
 </script>
-

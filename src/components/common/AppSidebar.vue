@@ -59,7 +59,7 @@
             class="nav-link text-white"
             :class="{ 'active bg-light text-primary': $route.name === 'goals' }"
           >
-            <i class="bi bi-target me-2"></i>
+            <i class="bi bi-bullseye me-2"></i>
             Goals
           </router-link>
         </li>
@@ -99,7 +99,8 @@ const userEmail = computed(() => {
   left: 0;
   height: 100vh;
   overflow-y: auto;
-  z-index: 1000;
+  z-index: 1050;
+  transition: transform 0.3s ease;
 }
 
 .nav-link {
@@ -124,8 +125,9 @@ const userEmail = computed(() => {
     transition: transform 0.3s ease;
   }
   
-  .sidebar.show {
+  .sidebar.mobile-show {
     transform: translateX(0);
   }
 }
+
 </style>
