@@ -4,7 +4,7 @@
       <!-- Logo -->
       <div class="navbar-brand d-flex align-items-center mb-4">
         <i class="bi bi-wallet2 me-2 fs-3"></i>
-        <span class="fs-4 fw-bold">CashFlow</span>
+        <span class="fs-4 fw-bold">CashFlow App</span>
       </div>
 
       <!-- Navigation Menu -->
@@ -72,7 +72,6 @@
             <i class="bi bi-person-circle fs-4 me-2"></i>
             <div class="flex-fill">
               <div class="fw-semibold">{{ userEmail }}</div>
-              <small class="text-light opacity-75">Free Plan</small>
             </div>
           </div>
         </div>

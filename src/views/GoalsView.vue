@@ -61,7 +61,7 @@
                     type="text"
                     class="form-control"
                     placeholder="Search goals..."
-                  >
+                  />
                 </div>
               </div>
             </div>
@@ -72,39 +72,39 @@
 
     <!-- Summary Cards -->
     <div class="row mb-4">
-      <div class="col-md-3">
-        <div class="card text-center">
-          <div class="card-body">
-            <i class="bi bi-target text-primary" style="font-size: 2rem;"></i>
-            <h5 class="card-title mt-2">Total Goals</h5>
-            <h3 class="text-primary">{{ goalSummary.totalGoals }}</h3>
+      <div class="col-md-3 col-6 mb-3">
+        <div class="card text-center h-100">
+          <div class="card-body d-flex flex-column justify-content-center">
+            <i class="bi bi-bullseye text-primary mb-2" style="font-size: 2rem"></i>
+            <h5 class="card-title">Total Goals</h5>
+            <h4 class="text-primary mb-0">{{ goalSummary.totalGoals }}</h4>
           </div>
         </div>
       </div>
-      <div class="col-md-3">
-        <div class="card text-center">
-          <div class="card-body">
-            <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
-            <h5 class="card-title mt-2">Completed</h5>
-            <h3 class="text-success">{{ goalSummary.completedGoals }}</h3>
+      <div class="col-md-3 col-6 mb-3">
+        <div class="card text-center h-100">
+          <div class="card-body d-flex flex-column justify-content-center">
+            <i class="bi bi-check-circle text-success mb-2" style="font-size: 2rem"></i>
+            <h5 class="card-title">Completed</h5>
+            <h4 class="text-success mb-0">{{ goalSummary.completedGoals }}</h4>
           </div>
         </div>
       </div>
-      <div class="col-md-3">
-        <div class="card text-center">
-          <div class="card-body">
-            <i class="bi bi-piggy-bank text-info" style="font-size: 2rem;"></i>
-            <h5 class="card-title mt-2">Total Target</h5>
-            <h3 class="text-info">{{ formatCurrency(goalSummary.totalTarget) }}</h3>
+      <div class="col-md-3 col-6 mb-3">
+        <div class="card text-center h-100">
+          <div class="card-body d-flex flex-column justify-content-center">
+            <i class="bi bi-piggy-bank text-info mb-2" style="font-size: 2rem"></i>
+            <h5 class="card-title">Total Target</h5>
+            <h4 class="text-info mb-0">{{ formatCurrency(goalSummary.totalTarget) }}</h4>
           </div>
         </div>
       </div>
-      <div class="col-md-3">
-        <div class="card text-center">
-          <div class="card-body">
-            <i class="bi bi-graph-up text-warning" style="font-size: 2rem;"></i>
-            <h5 class="card-title mt-2">Total Saved</h5>
-            <h3 class="text-warning">{{ formatCurrency(goalSummary.totalSaved) }}</h3>
+      <div class="col-md-3 col-6 mb-3">
+        <div class="card text-center h-100">
+          <div class="card-body d-flex flex-column justify-content-center">
+            <i class="bi bi-graph-up text-warning mb-2" style="font-size: 2rem"></i>
+            <h5 class="card-title">Total Saved</h5>
+            <h4 class="text-warning mb-0">{{ formatCurrency(goalSummary.totalSaved) }}</h4>
           </div>
         </div>
       </div>
@@ -119,17 +119,19 @@
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start mb-3">
                   <div class="d-flex align-items-center">
-                    <i :class="goal.icon" :style="{ color: goal.color }" class="me-2" style="font-size: 1.5rem;"></i>
+                    <i
+                      :class="goal.icon"
+                      :style="{ color: goal.color }"
+                      class="me-2"
+                      style="font-size: 1.5rem"
+                    ></i>
                     <div>
                       <h6 class="card-title mb-0">{{ goal.title }}</h6>
                       <small class="text-muted">{{ goal.type }}</small>
                     </div>
                   </div>
                   <div class="d-flex align-items-center gap-2">
-                    <span 
-                      class="badge" 
-                      :class="getPriorityClass(goal.priority)"
-                    >
+                    <span class="badge" :class="getPriorityClass(goal.priority)">
                       {{ goal.priority }}
                     </span>
                     <div class="dropdown">
@@ -137,10 +139,18 @@
                         <i class="bi bi-three-dots"></i>
                       </button>
                       <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#" @click="addProgress(goal)">Add Progress</a></li>
+                        <li>
+                          <a class="dropdown-item" href="#" @click="addProgress(goal)"
+                            >Add Progress</a
+                          >
+                        </li>
                         <li><a class="dropdown-item" href="#" @click="editGoal(goal)">Edit</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="#" @click="deleteGoal(goal.id)">Delete</a></li>
+                        <li><hr class="dropdown-divider" /></li>
+                        <li>
+                          <a class="dropdown-item text-danger" href="#" @click="deleteGoal(goal.id)"
+                            >Delete</a
+                          >
+                        </li>
                       </ul>
                     </div>
                   </div>
@@ -151,17 +161,22 @@
                 <div class="mb-3">
                   <div class="d-flex justify-content-between mb-1">
                     <span class="text-muted">Progress</span>
-                    <span class="fw-bold">{{ formatCurrency(goal.currentAmount) }} / {{ formatCurrency(goal.targetAmount) }}</span>
+                    <span class="fw-bold"
+                      >{{ formatCurrency(goal.currentAmount) }} /
+                      {{ formatCurrency(goal.targetAmount) }}</span
+                    >
                   </div>
-                  <div class="progress" style="height: 8px;">
-                    <div 
-                      class="progress-bar bg-success" 
+                  <div class="progress" style="height: 8px">
+                    <div
+                      class="progress-bar bg-success"
                       :style="{ width: Math.min(goal.percentage, 100) + '%' }"
                     ></div>
                   </div>
                   <div class="d-flex justify-content-between mt-1">
                     <small class="text-muted">{{ goal.percentage }}% completed</small>
-                    <small class="text-muted">{{ formatCurrency(goal.remainingAmount) }} to go</small>
+                    <small class="text-muted"
+                      >{{ formatCurrency(goal.remainingAmount) }} to go</small
+                    >
                   </div>
                 </div>
 
@@ -172,17 +187,17 @@
                   </div>
                   <div class="text-end">
                     <small class="text-muted d-block">Days Left</small>
-                    <span class="fw-bold" :class="goal.daysLeft < 30 ? 'text-danger' : 'text-success'">
+                    <span
+                      class="fw-bold"
+                      :class="goal.daysLeft < 30 ? 'text-danger' : 'text-success'"
+                    >
                       {{ goal.daysLeft }} days
                     </span>
                   </div>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center">
-                  <span 
-                    class="badge" 
-                    :class="getStatusClass(goal.status)"
-                  >
+                  <span class="badge" :class="getStatusClass(goal.status)">
                     {{ goal.status }}
                   </span>
                   <button class="btn btn-sm btn-outline-primary" @click="addProgress(goal)">
@@ -197,7 +212,7 @@
 
         <!-- Empty State -->
         <div v-if="filteredGoals.length === 0" class="text-center py-5">
-          <i class="bi bi-target text-muted" style="font-size: 3rem;"></i>
+          <i class="bi bi-target text-muted" style="font-size: 3rem"></i>
           <h5 class="text-muted mt-3">No goals found</h5>
           <p class="text-muted">Set your first financial goal to start tracking your progress.</p>
           <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#goalModal">
@@ -228,7 +243,7 @@
                       class="form-control"
                       placeholder="e.g., Emergency Fund"
                       required
-                    >
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
@@ -268,7 +283,7 @@
                         placeholder="0"
                         required
                         min="1"
-                      >
+                      />
                     </div>
                   </div>
                 </div>
@@ -283,7 +298,7 @@
                         class="form-control"
                         placeholder="0"
                         min="0"
-                      >
+                      />
                     </div>
                   </div>
                 </div>
@@ -298,7 +313,7 @@
                       type="date"
                       class="form-control"
                       required
-                    >
+                    />
                   </div>
                 </div>
                 <div class="col-md-6">
@@ -323,9 +338,11 @@
                     class="form-control"
                     placeholder="0"
                     min="0"
-                  >
+                  />
                 </div>
-                <small class="form-text text-muted">Suggested amount to save monthly to reach your goal</small>
+                <small class="form-text text-muted"
+                  >Suggested amount to save monthly to reach your goal</small
+                >
               </div>
 
               <div class="mb-3">
@@ -360,9 +377,12 @@
           <div class="modal-body">
             <div v-if="selectedGoal" class="mb-3">
               <h6>{{ selectedGoal.title }}</h6>
-              <p class="text-muted small">Current: {{ formatCurrency(selectedGoal.currentAmount) }} / {{ formatCurrency(selectedGoal.targetAmount) }}</p>
+              <p class="text-muted small">
+                Current: {{ formatCurrency(selectedGoal.currentAmount) }} /
+                {{ formatCurrency(selectedGoal.targetAmount) }}
+              </p>
             </div>
-            
+
             <form @submit.prevent="saveProgress">
               <div class="mb-3">
                 <label class="form-label">Amount to Add</label>
@@ -375,18 +395,13 @@
                     placeholder="0"
                     required
                     min="1"
-                  >
+                  />
                 </div>
               </div>
 
               <div class="mb-3">
                 <label class="form-label">Date</label>
-                <input
-                  v-model="progressForm.date"
-                  type="date"
-                  class="form-control"
-                  required
-                >
+                <input v-model="progressForm.date" type="date" class="form-control" required />
               </div>
 
               <div class="mb-3">
@@ -421,7 +436,7 @@ const goalFilters = reactive({
   type: '',
   status: '',
   priority: '',
-  search: ''
+  search: '',
 })
 
 // Goal form
@@ -434,14 +449,14 @@ const goalForm = reactive({
   targetDate: '',
   priority: 'medium',
   monthlyContribution: null,
-  notes: ''
+  notes: '',
 })
 
 // Progress form
 const progressForm = reactive({
   amount: null,
   date: new Date().toISOString().split('T')[0],
-  notes: ''
+  notes: '',
 })
 
 const editingGoal = ref(null)
@@ -462,7 +477,7 @@ const goals = ref([
     monthlyContribution: 2500000,
     icon: 'bi bi-shield-check',
     color: '#28a745',
-    createdAt: '2024-01-01'
+    createdAt: '2024-01-01',
   },
   {
     id: 2,
@@ -477,7 +492,7 @@ const goals = ref([
     monthlyContribution: 3000000,
     icon: 'bi bi-laptop',
     color: '#007bff',
-    createdAt: '2024-01-01'
+    createdAt: '2024-01-01',
   },
   {
     id: 3,
@@ -492,7 +507,7 @@ const goals = ref([
     monthlyContribution: 2000000,
     icon: 'bi bi-airplane',
     color: '#17a2b8',
-    createdAt: '2023-10-01'
+    createdAt: '2023-10-01',
   },
   {
     id: 4,
@@ -507,8 +522,8 @@ const goals = ref([
     monthlyContribution: 4000000,
     icon: 'bi bi-graph-up',
     color: '#ffc107',
-    createdAt: '2024-01-01'
-  }
+    createdAt: '2024-01-01',
+  },
 ])
 
 // Computed properties
@@ -516,35 +531,36 @@ const filteredGoals = computed(() => {
   let filtered = [...goals.value]
 
   // Add calculated fields
-  filtered = filtered.map(goal => ({
+  filtered = filtered.map((goal) => ({
     ...goal,
     percentage: Math.round((goal.currentAmount / goal.targetAmount) * 100),
     remainingAmount: goal.targetAmount - goal.currentAmount,
-    daysLeft: getDaysLeft(goal.targetDate)
+    daysLeft: getDaysLeft(goal.targetDate),
   }))
 
   // Filter by type
   if (goalFilters.type) {
-    filtered = filtered.filter(g => g.type === goalFilters.type)
+    filtered = filtered.filter((g) => g.type === goalFilters.type)
   }
 
   // Filter by status
   if (goalFilters.status) {
-    filtered = filtered.filter(g => g.status === goalFilters.status)
+    filtered = filtered.filter((g) => g.status === goalFilters.status)
   }
 
   // Filter by priority
   if (goalFilters.priority) {
-    filtered = filtered.filter(g => g.priority === goalFilters.priority)
+    filtered = filtered.filter((g) => g.priority === goalFilters.priority)
   }
 
   // Filter by search
   if (goalFilters.search) {
     const searchLower = goalFilters.search.toLowerCase()
-    filtered = filtered.filter(g => 
-      g.title.toLowerCase().includes(searchLower) ||
-      g.description.toLowerCase().includes(searchLower) ||
-      g.notes?.toLowerCase().includes(searchLower)
+    filtered = filtered.filter(
+      (g) =>
+        g.title.toLowerCase().includes(searchLower) ||
+        g.description.toLowerCase().includes(searchLower) ||
+        g.notes?.toLowerCase().includes(searchLower),
     )
   }
 
@@ -560,7 +576,7 @@ const filteredGoals = computed(() => {
 
 const goalSummary = computed(() => {
   const totalGoals = goals.value.length
-  const completedGoals = goals.value.filter(g => g.status === 'completed').length
+  const completedGoals = goals.value.filter((g) => g.status === 'completed').length
   const totalTarget = goals.value.reduce((sum, g) => sum + g.targetAmount, 0)
   const totalSaved = goals.value.reduce((sum, g) => sum + g.currentAmount, 0)
 
@@ -568,7 +584,7 @@ const goalSummary = computed(() => {
     totalGoals,
     completedGoals,
     totalTarget,
-    totalSaved
+    totalSaved,
   }
 })
 
@@ -577,7 +593,7 @@ const formatCurrency = (amount) => {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
-    minimumFractionDigits: 0
+    minimumFractionDigits: 0,
   }).format(amount)
 }
 
@@ -585,7 +601,7 @@ const formatDate = (date) => {
   return new Intl.DateTimeFormat('id-ID', {
     day: '2-digit',
     month: 'short',
-    year: 'numeric'
+    year: 'numeric',
   }).format(new Date(date))
 }
 
@@ -601,7 +617,7 @@ const getPriorityClass = (priority) => {
   const classes = {
     high: 'bg-danger',
     medium: 'bg-warning',
-    low: 'bg-secondary'
+    low: 'bg-secondary',
   }
   return classes[priority] || 'bg-secondary'
 }
@@ -610,7 +626,7 @@ const getStatusClass = (status) => {
   const classes = {
     active: 'bg-success',
     completed: 'bg-primary',
-    paused: 'bg-warning'
+    paused: 'bg-warning',
   }
   return classes[status] || 'bg-secondary'
 }
@@ -625,7 +641,7 @@ const resetForm = () => {
     targetDate: '',
     priority: 'medium',
     monthlyContribution: null,
-    notes: ''
+    notes: '',
   })
   editingGoal.value = null
 }
@@ -634,7 +650,7 @@ const resetProgressForm = () => {
   Object.assign(progressForm, {
     amount: null,
     date: new Date().toISOString().split('T')[0],
-    notes: ''
+    notes: '',
   })
   selectedGoal.value = null
 }
@@ -642,13 +658,13 @@ const resetProgressForm = () => {
 const saveGoal = () => {
   if (editingGoal.value) {
     // Update existing goal
-    const index = goals.value.findIndex(g => g.id === editingGoal.value.id)
+    const index = goals.value.findIndex((g) => g.id === editingGoal.value.id)
     if (index !== -1) {
       goals.value[index] = {
         ...editingGoal.value,
         ...goalForm,
         icon: getGoalIcon(goalForm.type),
-        color: getGoalColor(goalForm.type)
+        color: getGoalColor(goalForm.type),
       }
     }
   } else {
@@ -659,7 +675,7 @@ const saveGoal = () => {
       status: 'active',
       icon: getGoalIcon(goalForm.type),
       color: getGoalColor(goalForm.type),
-      createdAt: new Date().toISOString().split('T')[0]
+      createdAt: new Date().toISOString().split('T')[0],
     }
     goals.value.push(newGoal)
   }
@@ -682,16 +698,16 @@ const editGoal = (goal) => {
     targetDate: goal.targetDate,
     priority: goal.priority,
     monthlyContribution: goal.monthlyContribution,
-    notes: goal.notes || ''
+    notes: goal.notes || '',
   })
-  
+
   const modal = new bootstrap.Modal(document.getElementById('goalModal'))
   modal.show()
 }
 
 const deleteGoal = (id) => {
   if (confirm('Are you sure you want to delete this goal?')) {
-    const index = goals.value.findIndex(g => g.id === id)
+    const index = goals.value.findIndex((g) => g.id === id)
     if (index !== -1) {
       goals.value.splice(index, 1)
     }
@@ -701,7 +717,7 @@ const deleteGoal = (id) => {
 const addProgress = (goal) => {
   selectedGoal.value = goal
   resetProgressForm()
-  
+
   const modal = new bootstrap.Modal(document.getElementById('progressModal'))
   modal.show()
 }
@@ -709,10 +725,10 @@ const addProgress = (goal) => {
 const saveProgress = () => {
   if (selectedGoal.value && progressForm.amount > 0) {
     // Update goal's current amount
-    const index = goals.value.findIndex(g => g.id === selectedGoal.value.id)
+    const index = goals.value.findIndex((g) => g.id === selectedGoal.value.id)
     if (index !== -1) {
       goals.value[index].currentAmount += progressForm.amount
-      
+
       // Check if goal is completed
       if (goals.value[index].currentAmount >= goals.value[index].targetAmount) {
         goals.value[index].status = 'completed'
@@ -720,7 +736,7 @@ const saveProgress = () => {
     }
 
     // TODO: Save progress entry to database for history tracking
-    
+
     // Close modal and reset form
     const modal = document.getElementById('progressModal')
     const bsModal = bootstrap.Modal.getInstance(modal)
@@ -734,7 +750,7 @@ const getGoalIcon = (type) => {
     savings: 'bi bi-piggy-bank',
     debt: 'bi bi-credit-card',
     investment: 'bi bi-graph-up',
-    purchase: 'bi bi-bag'
+    purchase: 'bi bi-bag',
   }
   return icons[type] || 'bi bi-target'
 }
@@ -744,7 +760,7 @@ const getGoalColor = (type) => {
     savings: '#28a745',
     debt: '#dc3545',
     investment: '#ffc107',
-    purchase: '#007bff'
+    purchase: '#007bff',
   }
   return colors[type] || '#6c757d'
 }
@@ -776,4 +792,3 @@ onMounted(() => {
   font-size: 0.75rem;
 }
 </style>
-

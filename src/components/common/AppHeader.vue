@@ -7,16 +7,11 @@
       </button>
       <!-- Page Title -->
       <div class="header-title">
-        <h2>{{ pageTitle }}</h2>
-        <p>{{ pageDescription }}</p>
+   
       </div>
 
       <!-- Header Actions -->
       <div class="header-actions">
-        <!-- Notifications -->
-        <button class="btn btn-outline-primary btn-sm me-2">
-          <i class="bi bi-bell"></i>
-        </button>
 
         <!-- User Menu -->
         <div class="dropdown">

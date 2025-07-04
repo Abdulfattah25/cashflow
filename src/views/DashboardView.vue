@@ -39,7 +39,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="col-md-4 mb-3">
         <div class="stats-card card expense">
           <div class="card-body">
@@ -55,7 +55,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="col-md-4 mb-3">
         <div class="stats-card card net">
           <div class="card-body">
@@ -85,28 +85,44 @@
           <div class="card-body">
             <div class="row">
               <div class="col-md-3 col-6 mb-3">
-                <button class="btn btn-success w-100 h-100 d-flex flex-column align-items-center justify-content-center py-3">
+                <button
+                  class="btn btn-success w-100 h-100 d-flex flex-column align-items-center justify-content-center py-3"
+                  @click="openTransactionModal('income')"
+                  data-bs-toggle="modal"
+                  data-bs-target="#transactionModal"
+                >
                   <i class="bi bi-plus-circle fs-2 mb-2"></i>
                   <span>Add Income</span>
                 </button>
               </div>
               <div class="col-md-3 col-6 mb-3">
-                <button class="btn btn-danger w-100 h-100 d-flex flex-column align-items-center justify-content-center py-3">
+                <button
+                  class="btn btn-danger w-100 h-100 d-flex flex-column align-items-center justify-content-center py-3"
+                  @click="openTransactionModal('expense')"
+                  data-bs-toggle="modal"
+                  data-bs-target="#transactionModal"
+                >
                   <i class="bi bi-dash-circle fs-2 mb-2"></i>
                   <span>Add Expense</span>
                 </button>
               </div>
               <div class="col-md-3 col-6 mb-3">
-                <router-link to="/transactions" class="btn btn-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center py-3 text-decoration-none">
+                <router-link
+                  to="/transactions"
+                  class="btn btn-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center py-3 text-decoration-none"
+                >
                   <i class="bi bi-list-ul fs-2 mb-2"></i>
                   <span>View All</span>
                 </router-link>
               </div>
               <div class="col-md-3 col-6 mb-3">
-                <button class="btn btn-info w-100 h-100 d-flex flex-column align-items-center justify-content-center py-3">
+                <router-link
+                  to="/reports"
+                  class="btn btn-info w-100 h-100 d-flex flex-column align-items-center justify-content-center py-3"
+                >
                   <i class="bi bi-graph-up fs-2 mb-2"></i>
                   <span>Reports</span>
-                </button>
+                </router-link>
               </div>
             </div>
           </div>
@@ -140,7 +156,13 @@
                   <tr v-for="transaction in recentTransactions" :key="transaction.id">
                     <td>
                       <div class="d-flex align-items-center">
-                        <div class="transaction-icon me-3" :style="{ background: transaction.color + '20', color: transaction.color }">
+                        <div
+                          class="transaction-icon me-3"
+                          :style="{
+                            background: transaction.color + '20',
+                            color: transaction.color,
+                          }"
+                        >
                           <i :class="transaction.icon"></i>
                         </div>
                         <div>
@@ -154,15 +176,23 @@
                     </td>
                     <td class="text-muted">{{ formatDate(transaction.date) }}</td>
                     <td class="text-end">
-                      <span class="fw-bold" :class="transaction.type === 'income' ? 'transaction-amount income' : 'transaction-amount expense'">
-                        {{ transaction.type === 'expense' ? '-' : '+' }}{{ formatCurrency(transaction.amount) }}
+                      <span
+                        class="fw-bold"
+                        :class="
+                          transaction.type === 'income'
+                            ? 'transaction-amount income'
+                            : 'transaction-amount expense'
+                        "
+                      >
+                        {{ transaction.type === 'expense' ? '-' : '+'
+                        }}{{ formatCurrency(transaction.amount) }}
                       </span>
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
-            
+
             <!-- Empty State -->
             <div v-if="recentTransactions.length === 0" class="empty-state">
               <i class="bi bi-inbox"></i>
@@ -173,7 +203,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Category Breakdown -->
       <div class="col-lg-4 mb-4">
         <div class="card">
@@ -186,14 +216,14 @@
                 <span class="small fw-medium">{{ category.name }}</span>
                 <span class="small text-muted">{{ formatCurrency(category.amount) }}</span>
               </div>
-              <div class="progress" style="height: 8px;">
-                <div 
-                  class="progress-bar" 
+              <div class="progress" style="height: 8px">
+                <div
+                  class="progress-bar"
                   :style="{ width: category.percentage + '%', background: category.color }"
                 ></div>
               </div>
             </div>
-            
+
             <div v-if="topCategories.length === 0" class="text-center text-muted py-4">
               <i class="bi bi-pie-chart fs-1 mb-2 d-block"></i>
               <small>No spending data available</small>
@@ -202,15 +232,171 @@
         </div>
       </div>
     </div>
+    <!-- Transaction Modal -->
+  <div class="modal fade" id="transactionModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add New Transaction</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="saveTransaction">
+            <div class="mb-3">
+              <label class="form-label">Type</label>
+              <div class="btn-group w-100" role="group">
+                <input type="radio" class="btn-check" id="income" v-model="transactionForm.type" value="income">
+                <label class="btn btn-outline-success" for="income">
+                  <i class="bi bi-arrow-up-circle me-1"></i>
+                  Income
+                </label>
+                <input type="radio" class="btn-check" id="expense" v-model="transactionForm.type" value="expense">
+                <label class="btn btn-outline-danger" for="expense">
+                  <i class="bi bi-arrow-down-circle me-1"></i>
+                  Expense
+                </label>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Amount</label>
+              <div class="input-group">
+                <span class="input-group-text">Rp</span>
+                <input
+                  v-model.number="transactionForm.amount"
+                  type="number"
+                  class="form-control"
+                  placeholder="0"
+                  required
+                  min="1"
+                >
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Description</label>
+              <input
+                v-model="transactionForm.description"
+                type="text"
+                class="form-control"
+                placeholder="Enter description"
+                required
+              >
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Category</label>
+              <select v-model="transactionForm.category" class="form-select" required>
+                <option value="">Select Category</option>
+                <optgroup v-if="transactionForm.type === 'income'" label="Income Categories">
+                  <option value="salary">Salary</option>
+                  <option value="freelance">Freelance</option>
+                  <option value="business">Business</option>
+                  <option value="investment">Investment</option>
+                  <option value="other-income">Other Income</option>
+                </optgroup>
+                <optgroup v-if="transactionForm.type === 'expense'" label="Expense Categories">
+                  <option value="food">Food & Dining</option>
+                  <option value="transportation">Transportation</option>
+                  <option value="shopping">Shopping</option>
+                  <option value="entertainment">Entertainment</option>
+                  <option value="bills">Bills & Utilities</option>
+                  <option value="healthcare">Healthcare</option>
+                  <option value="education">Education</option>
+                  <option value="other-expense">Other Expense</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Date</label>
+              <input
+                v-model="transactionForm.date"
+                type="date"
+                class="form-control"
+                required
+              >
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" @click="saveTransaction">
+            Save Transaction
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
   </AppLayout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, reactive } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import AppLayout from '@/components/common/AppLayout.vue'
 
 const authStore = useAuthStore()
+
+// Tambahkan reactive form
+const transactionForm = reactive({
+  type: 'expense',
+  amount: null,
+  description: '',
+  category: '',
+  date: new Date().toISOString().split('T')[0]
+})
+
+// Tambahkan methods
+const openTransactionModal = (type) => {
+  transactionForm.type = type
+  transactionForm.category = ''
+}
+
+const saveTransaction = () => {
+  // Buat transaction baru
+  const newTransaction = {
+    id: Date.now(),
+    ...transactionForm,
+    date: new Date(transactionForm.date),
+    icon: getTransactionIcon(transactionForm.category),
+    color: transactionForm.type === 'income' ? '#10b981' : '#ef4444'
+  }
+  
+  // Tambahkan ke array transactions
+  transactions.value.unshift(newTransaction)
+  
+  // Reset form
+  Object.assign(transactionForm, {
+    type: 'expense',
+    amount: null,
+    description: '',
+    category: '',
+    date: new Date().toISOString().split('T')[0]
+  })
+  
+  // Tutup modal
+  const modal = document.getElementById('transactionModal')
+  const bsModal = bootstrap.Modal.getInstance(modal)
+  bsModal.hide()
+}
+
+const getTransactionIcon = (category) => {
+  const icons = {
+    salary: 'bi bi-cash-coin',
+    freelance: 'bi bi-laptop',
+    business: 'bi bi-briefcase',
+    investment: 'bi bi-graph-up',
+    food: 'bi bi-cart3',
+    transportation: 'bi bi-fuel-pump',
+    shopping: 'bi bi-bag',
+    entertainment: 'bi bi-film',
+    bills: 'bi bi-receipt',
+    healthcare: 'bi bi-heart-pulse',
+    education: 'bi bi-book'
+  }
+  return icons[category] || 'bi bi-circle'
+}
 
 // Sample data (akan diganti dengan data dari Supabase)
 const transactions = ref([
@@ -223,7 +409,7 @@ const transactions = ref([
     date: new Date('2024-01-01'),
     notes: 'Regular monthly salary',
     icon: 'bi bi-cash-coin',
-    color: '#10b981'
+    color: '#10b981',
   },
   {
     id: 2,
@@ -234,7 +420,7 @@ const transactions = ref([
     date: new Date('2024-01-15'),
     notes: 'Weekly groceries',
     icon: 'bi bi-cart3',
-    color: '#ef4444'
+    color: '#ef4444',
   },
   {
     id: 3,
@@ -245,7 +431,7 @@ const transactions = ref([
     date: new Date('2024-01-13'),
     notes: 'Fuel for car',
     icon: 'bi bi-fuel-pump',
-    color: '#ef4444'
+    color: '#ef4444',
   },
   {
     id: 4,
@@ -256,7 +442,7 @@ const transactions = ref([
     date: new Date('2024-01-12'),
     notes: 'Web development project',
     icon: 'bi bi-laptop',
-    color: '#10b981'
+    color: '#10b981',
   },
   {
     id: 5,
@@ -267,8 +453,8 @@ const transactions = ref([
     date: new Date('2024-01-10'),
     notes: 'Weekend movie',
     icon: 'bi bi-film',
-    color: '#ef4444'
-  }
+    color: '#ef4444',
+  },
 ])
 
 // Computed properties
@@ -277,48 +463,46 @@ const userName = computed(() => {
 })
 
 const recentTransactions = computed(() => {
-  return transactions.value
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 5)
+  return transactions.value.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5)
 })
 
 const summary = computed(() => {
   const totalIncome = transactions.value
-    .filter(t => t.type === 'income')
+    .filter((t) => t.type === 'income')
     .reduce((sum, t) => sum + t.amount, 0)
 
   const totalExpenses = transactions.value
-    .filter(t => t.type === 'expense')
+    .filter((t) => t.type === 'expense')
     .reduce((sum, t) => sum + t.amount, 0)
 
   return {
     totalIncome,
     totalExpenses,
-    netAmount: totalIncome - totalExpenses
+    netAmount: totalIncome - totalExpenses,
   }
 })
 
 const topCategories = computed(() => {
   const categoryTotals = {}
-  const expenses = transactions.value.filter(t => t.type === 'expense')
-  
-  expenses.forEach(transaction => {
+  const expenses = transactions.value.filter((t) => t.type === 'expense')
+
+  expenses.forEach((transaction) => {
     if (!categoryTotals[transaction.category]) {
       categoryTotals[transaction.category] = {
         name: transaction.category,
         amount: 0,
-        color: transaction.color
+        color: transaction.color,
       }
     }
     categoryTotals[transaction.category].amount += transaction.amount
   })
 
   const totalExpenses = summary.value.totalExpenses
-  
+
   return Object.values(categoryTotals)
-    .map(category => ({
+    .map((category) => ({
       ...category,
-      percentage: totalExpenses > 0 ? (category.amount / totalExpenses) * 100 : 0
+      percentage: totalExpenses > 0 ? (category.amount / totalExpenses) * 100 : 0,
     }))
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 5)
@@ -329,7 +513,7 @@ const formatCurrency = (amount) => {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
-    minimumFractionDigits: 0
+    minimumFractionDigits: 0,
   }).format(amount)
 }
 
@@ -337,7 +521,7 @@ const formatDate = (date) => {
   return new Intl.DateTimeFormat('id-ID', {
     day: '2-digit',
     month: 'short',
-    year: 'numeric'
+    year: 'numeric',
   }).format(new Date(date))
 }
 
@@ -377,4 +561,3 @@ onMounted(() => {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 </style>
-
