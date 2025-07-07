@@ -7,13 +7,13 @@ const router = createRouter({
     {
       path: '/',
       name: 'dashboard',
-      component: () => import('@/views/DashboardView.vue'),
+      component: () => import('@/views/DashboardView2.vue'),
       meta: { requiresAuth: true },
     },
     {
       path: '/login',
       name: 'login',
-      component: () => import('@/views/auth/LoginView.vue'),
+      component: () => import('@/views/auth/LoginView2.vue'),
       meta: { requiresGuest: true },
     },
     {
@@ -25,25 +25,25 @@ const router = createRouter({
     {
       path: '/transactions',
       name: 'transactions',
-      component: () => import('@/views/TransactionsView.vue'),
+      component: () => import('@/views/TransactionView2.vue'),
       meta: { requiresAuth: true },
     },
     {
       path: '/reports',
       name: 'reports',
-      component: () => import('@/views/ReportsView.vue'),
+      component: () => import('@/views/ReportsView2.vue'),
       meta: { requiresAuth: true },
     },
         {
       path: '/budget',
       name: 'budget',
-      component: () => import('@/views/BudgetView.vue'),
+      component: () => import('@/views/BudgetView2.vue'),
       meta: { requiresAuth: true },
     },
         {
       path: '/goals',
       name: 'goals',
-      component: () => import('@/views/GoalsView.vue'),
+      component: () => import('@/views/GoalsView2.vue'),
       meta: { requiresAuth: true },
     },
   ],
