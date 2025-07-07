@@ -1,245 +1,23 @@
-<template>
-  <AppLayout>
-    <!-- Header -->
-    <div class="row mb-4">
-      <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <h1 class="h3 mb-1">Reports</h1>
-            <p class="text-muted mb-0">Analyze your financial data and trends</p>
-          </div>
-          <div class="d-flex gap-2">
-            <button class="btn btn-outline-primary" @click="exportReport">
-              <i class="bi bi-download me-2"></i>
-              Export Report
-            </button>
-            <button class="btn btn-primary" @click="generateReport">
-              <i class="bi bi-graph-up me-2"></i>
-              Generate Report
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Report Filters -->
-    <div class="row mb-4">
-      <div class="col-12">
-        <div class="card">
-          <div class="card-body">
-            <div class="row g-3">
-              <div class="col-md-3">
-                <label class="form-label">Report Period</label>
-                <select v-model="reportFilters.period" class="form-select" @change="updateChartData">
-                  <option value="this-month">This Month</option>
-                  <option value="last-month">Last Month</option>
-                  <option value="this-quarter">This Quarter</option>
-                  <option value="this-year">This Year</option>
-                  <option value="custom">Custom Range</option>
-                </select>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label">Report Type</label>
-                <select v-model="reportFilters.type" class="form-select" @change="updateChartData">
-                  <option value="overview">Overview</option>
-                  <option value="income">Income Analysis</option>
-                  <option value="expense">Expense Analysis</option>
-                  <option value="category">Category Breakdown</option>
-                </select>
-              </div>
-              <div class="col-md-3" v-if="reportFilters.period === 'custom'">
-                <label class="form-label">Start Date</label>
-                <input v-model="reportFilters.startDate" type="date" class="form-control" @change="updateChartData">
-              </div>
-              <div class="col-md-3" v-if="reportFilters.period === 'custom'">
-                <label class="form-label">End Date</label>
-                <input v-model="reportFilters.endDate" type="date" class="form-control" @change="updateChartData">
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Summary Cards -->
-    <div class="row mb-4">
-      <div class="col-md-3">
-        <div class="card text-center">
-          <div class="card-body">
-            <i class="bi bi-arrow-up-circle text-success" style="font-size: 2rem;"></i>
-            <h5 class="card-title mt-2">Total Income</h5>
-            <h3 class="text-success">{{ formatCurrency(reportSummary.totalIncome) }}</h3>
-            <small class="text-muted">
-              <i class="bi bi-arrow-up text-success"></i>
-              +12% from last period
-            </small>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-center">
-          <div class="card-body">
-            <i class="bi bi-arrow-down-circle text-danger" style="font-size: 2rem;"></i>
-            <h5 class="card-title mt-2">Total Expenses</h5>
-            <h3 class="text-danger">{{ formatCurrency(reportSummary.totalExpenses) }}</h3>
-            <small class="text-muted">
-              <i class="bi bi-arrow-down text-success"></i>
-              -5% from last period
-            </small>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-center">
-          <div class="card-body">
-            <i class="bi bi-wallet2 text-primary" style="font-size: 2rem;"></i>
-            <h5 class="card-title mt-2">Net Savings</h5>
-            <h3 :class="reportSummary.netSavings >= 0 ? 'text-success' : 'text-danger'">
-              {{ formatCurrency(reportSummary.netSavings) }}
-            </h3>
-            <small class="text-muted">
-              <i class="bi bi-arrow-up text-success"></i>
-              +25% from last period
-            </small>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-center">
-          <div class="card-body">
-            <i class="bi bi-graph-up text-info" style="font-size: 2rem;"></i>
-            <h5 class="card-title mt-2">Savings Rate</h5>
-            <h3 class="text-info">{{ reportSummary.savingsRate }}%</h3>
-            <small class="text-muted">
-              <i class="bi bi-arrow-up text-success"></i>
-              +3% from last period
-            </small>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Charts Row -->
-    <div class="row mb-4">
-      <div class="col-md-8">
-        <div class="card">
-          <div class="card-header">
-            <h5 class="card-title mb-0">Income vs Expenses Trend</h5>
-          </div>
-          <div class="card-body">
-            <BarChart 
-              :data="barChartData" 
-              :options="barChartOptions"
-              :height="300"
-            />
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card">
-          <div class="card-header">
-            <h5 class="card-title mb-0">Expense Categories</h5>
-          </div>
-          <div class="card-body">
-            <PieChart 
-              :data="pieChartData" 
-              :options="pieChartOptions"
-              :height="300"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Category Breakdown -->
-    <div class="row mb-4">
-      <div class="col-12">
-        <div class="card">
-          <div class="card-header">
-            <h5 class="card-title mb-0">Category Breakdown</h5>
-          </div>
-          <div class="card-body">
-            <div class="row">
-              <div class="col-md-6">
-                <h6 class="text-success mb-3">Income Categories</h6>
-                <div v-for="category in incomeCategories" :key="category.name" class="d-flex justify-content-between align-items-center mb-2">
-                  <div class="d-flex align-items-center">
-                    <i :class="category.icon" :style="{ color: category.color }" class="me-2"></i>
-                    <span>{{ category.name }}</span>
-                  </div>
-                  <div class="text-end">
-                    <div class="fw-bold text-success">{{ formatCurrency(category.amount) }}</div>
-                    <small class="text-muted">{{ category.percentage }}%</small>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <h6 class="text-danger mb-3">Expense Categories</h6>
-                <div v-for="category in expenseCategories" :key="category.name" class="d-flex justify-content-between align-items-center mb-2">
-                  <div class="d-flex align-items-center">
-                    <i :class="category.icon" :style="{ color: category.color }" class="me-2"></i>
-                    <span>{{ category.name }}</span>
-                  </div>
-                  <div class="text-end">
-                    <div class="fw-bold text-danger">{{ formatCurrency(category.amount) }}</div>
-                    <small class="text-muted">{{ category.percentage }}%</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Monthly Comparison -->
-    <div class="row">
-      <div class="col-12">
-        <div class="card">
-          <div class="card-header">
-            <h5 class="card-title mb-0">Monthly Comparison</h5>
-          </div>
-          <div class="card-body p-0">
-            <div class="table-responsive">
-              <table class="table table-hover mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th>Month</th>
-                    <th class="text-end">Income</th>
-                    <th class="text-end">Expenses</th>
-                    <th class="text-end">Net Amount</th>
-                    <th class="text-end">Savings Rate</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="month in monthlyData" :key="month.month">
-                    <td>{{ month.month }}</td>
-                    <td class="text-end text-success">{{ formatCurrency(month.income) }}</td>
-                    <td class="text-end text-danger">{{ formatCurrency(month.expenses) }}</td>
-                    <td class="text-end" :class="month.net >= 0 ? 'text-success' : 'text-danger'">
-                      {{ formatCurrency(month.net) }}
-                    </td>
-                    <td class="text-end">
-                      <span class="badge" :class="month.savingsRate >= 20 ? 'bg-success' : month.savingsRate >= 10 ? 'bg-warning' : 'bg-danger'">
-                        {{ month.savingsRate }}%
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </AppLayout>
-</template>
-
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useReports } from '@/composables/useReports'
 import AppLayout from '@/components/common/AppLayout.vue'
 import BarChart from '@/components/charts/BarChart.vue'
 import PieChart from '@/components/charts/PieChart.vue'
+
+// Use composables
+const {
+  transactions,
+  loading,
+  error,
+  reportSummary,
+  incomeCategories,
+  expenseCategories,
+  monthlyData,
+  barChartData,
+  pieChartData,
+  fetchReportData
+} = useReports()
 
 // Report filters
 const reportFilters = reactive({
@@ -247,84 +25,6 @@ const reportFilters = reactive({
   type: 'overview',
   startDate: '',
   endDate: ''
-})
-
-// Sample report data
-const reportSummary = ref({
-  totalIncome: 10000000,
-  totalExpenses: 7500000,
-  netSavings: 2500000,
-  savingsRate: 25
-})
-
-const incomeCategories = ref([
-  { name: 'Salary', amount: 8500000, percentage: 85, icon: 'bi bi-cash-coin', color: '#28a745' },
-  { name: 'Freelance', amount: 1500000, percentage: 15, icon: 'bi bi-laptop', color: '#17a2b8' }
-])
-
-const expenseCategories = ref([
-  { name: 'Food & Dining', amount: 2500000, percentage: 33, icon: 'bi bi-cart3', color: '#dc3545' },
-  { name: 'Transportation', amount: 1500000, percentage: 20, icon: 'bi bi-fuel-pump', color: '#fd7e14' },
-  { name: 'Shopping', amount: 1200000, percentage: 16, icon: 'bi bi-bag', color: '#6f42c1' },
-  { name: 'Entertainment', amount: 800000, percentage: 11, icon: 'bi bi-film', color: '#e83e8c' },
-  { name: 'Bills & Utilities', amount: 1500000, percentage: 20, icon: 'bi bi-receipt', color: '#20c997' }
-])
-
-const monthlyData = ref([
-  { month: 'January 2024', income: 10000000, expenses: 7500000, net: 2500000, savingsRate: 25 },
-  { month: 'December 2023', income: 9500000, expenses: 8000000, net: 1500000, savingsRate: 16 },
-  { month: 'November 2023', income: 9000000, expenses: 7200000, net: 1800000, savingsRate: 20 },
-  { month: 'October 2023', income: 9500000, expenses: 7800000, net: 1700000, savingsRate: 18 },
-  { month: 'September 2023', income: 8800000, expenses: 6900000, net: 1900000, savingsRate: 22 },
-  { month: 'August 2023', income: 9200000, expenses: 7100000, net: 2100000, savingsRate: 23 }
-])
-
-// Chart data computed properties
-const barChartData = computed(() => {
-  const labels = monthlyData.value.slice(0, 6).reverse().map(item => {
-    const [month, year] = item.month.split(' ')
-    return `${month.substring(0, 3)} ${year}`
-  })
-
-  return {
-    labels,
-    datasets: [
-      {
-        label: 'Income',
-        data: monthlyData.value.slice(0, 6).reverse().map(item => item.income),
-        backgroundColor: 'rgba(40, 167, 69, 0.8)',
-        borderColor: 'rgba(40, 167, 69, 1)',
-        borderWidth: 2,
-        borderRadius: 4,
-        borderSkipped: false,
-      },
-      {
-        label: 'Expenses',
-        data: monthlyData.value.slice(0, 6).reverse().map(item => item.expenses),
-        backgroundColor: 'rgba(220, 53, 69, 0.8)',
-        borderColor: 'rgba(220, 53, 69, 1)',
-        borderWidth: 2,
-        borderRadius: 4,
-        borderSkipped: false,
-      }
-    ]
-  }
-})
-
-const pieChartData = computed(() => {
-  return {
-    labels: expenseCategories.value.map(cat => cat.name),
-    datasets: [
-      {
-        data: expenseCategories.value.map(cat => cat.amount),
-        backgroundColor: expenseCategories.value.map(cat => cat.color),
-        borderColor: '#ffffff',
-        borderWidth: 2,
-        hoverBorderWidth: 3,
-        hoverBorderColor: '#ffffff'
-      }
-    ]
-  }
 })
 
 // Chart options
@@ -460,66 +160,328 @@ const formatCurrency = (amount) => {
   }).format(amount)
 }
 
-const updateChartData = () => {
-  // This method will be called when filters change
-  // Here you can implement logic to fetch new data based on filters
-  console.log('Updating chart data for period:', reportFilters.period)
-  console.log('Report type:', reportFilters.type)
-  
-  // TODO: Implement data fetching based on filters
-  // For now, we're using static data
+const updateChartData = async () => {
+  await fetchReportData(
+    reportFilters.period,
+    reportFilters.startDate,
+    reportFilters.endDate
+  )
 }
 
-const generateReport = () => {
-  // Generate report functionality
+const generateReport = async () => {
   console.log('Generating report...')
-  updateChartData()
+  await updateChartData()
 }
 
 const exportReport = () => {
-  // Export report functionality
   console.log('Exporting report...')
   // TODO: Implement export functionality (PDF, Excel, etc.)
+  alert('Export functionality will be implemented soon!')
 }
 
-onMounted(() => {
-  // TODO: Fetch report data from Supabase
-  console.log('Reports view mounted')
-  updateChartData()
+// Watch for filter changes
+watch(
+  () => reportFilters.period,
+  () => {
+    updateChartData()
+  }
+)
+
+watch(
+  () => [reportFilters.startDate, reportFilters.endDate],
+  () => {
+    if (reportFilters.period === 'custom' && reportFilters.startDate && reportFilters.endDate) {
+      updateChartData()
+    }
+  }
+)
+
+onMounted(async () => {
+  await updateChartData()
 })
 </script>
 
-<style scoped>
-.chart-placeholder {
-  min-height: 300px;
-  background-color: #f8f9fa;
-  border: 2px dashed #dee2e6;
-  border-radius: 0.375rem;
-}
+<template>
+  <AppLayout>
+    <!-- Loading State -->
+    <div v-if="loading" class="text-center py-5">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
 
-.card {
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-  border: 1px solid rgba(0, 0, 0, 0.125);
-}
+    <!-- Error State -->
+    <div v-if="error" class="alert alert-danger" role="alert">
+      {{ error }}
+    </div>
 
-.card-header {
-  background-color: #f8f9fa;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
-}
+    <!-- Content -->
+    <div v-else>
+      <!-- Header -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h1 class="h3 mb-1">Reports</h1>
+              <p class="text-muted mb-0">Analyze your financial data and trends</p>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-primary" @click="exportReport">
+                <i class="bi bi-download me-2"></i>
+                Export Report
+              </button>
+              <button class="btn btn-primary" @click="generateReport" :disabled="loading">
+                <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                <i v-else class="bi bi-graph-up me-2"></i>
+                Generate Report
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-.table th {
-  font-weight: 600;
-  color: #495057;
-}
+      <!-- Report Filters -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-3">
+                  <label class="form-label">Report Period</label>
+                  <select v-model="reportFilters.period" class="form-select">
+                    <option value="this-month">This Month</option>
+                    <option value="last-month">Last Month</option>
+                    <option value="this-quarter">This Quarter</option>
+                    <option value="this-year">This Year</option>
+                    <option value="custom">Custom Range</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Report Type</label>
+                  <select v-model="reportFilters.type" class="form-select">
+                    <option value="overview">Overview</option>
+                    <option value="income">Income Analysis</option>
+                    <option value="expense">Expense Analysis</option>
+                    <option value="category">Category Breakdown</option>
+                  </select>
+                </div>
+                <div class="col-md-3" v-if="reportFilters.period === 'custom'">
+                  <label class="form-label">Start Date</label>
+                  <input v-model="reportFilters.startDate" type="date" class="form-control">
+                </div>
+                <div class="col-md-3" v-if="reportFilters.period === 'custom'">
+                  <label class="form-label">End Date</label>
+                  <input v-model="reportFilters.endDate" type="date" class="form-control">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-.badge {
-  font-size: 0.75rem;
-}
+      <!-- Summary Cards -->
+      <div class="row mb-4">
+        <div class="col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="bi bi-arrow-up-circle text-success" style="font-size: 2rem;"></i>
+              <h5 class="card-title mt-2">Total Income</h5>
+              <h3 class="text-success">{{ formatCurrency(reportSummary.totalIncome) }}</h3>
+              <small class="text-muted">
+                <i class="bi bi-arrow-up text-success"></i>
+                Current period
+              </small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="bi bi-arrow-down-circle text-danger" style="font-size: 2rem;"></i>
+              <h5 class="card-title mt-2">Total Expenses</h5>
+              <h3 class="text-danger">{{ formatCurrency(reportSummary.totalExpenses) }}</h3>
+              <small class="text-muted">
+                <i class="bi bi-arrow-down text-success"></i>
+                Current period
+              </small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="bi bi-wallet2 text-primary" style="font-size: 2rem;"></i>
+              <h5 class="card-title mt-2">Net Savings</h5>
+              <h3 :class="reportSummary.netSavings >= 0 ? 'text-success' : 'text-danger'">
+                {{ formatCurrency(reportSummary.netSavings) }}
+              </h3>
+              <small class="text-muted">
+                <i :class="reportSummary.netSavings >= 0 ? 'bi bi-arrow-up text-success' : 'bi bi-arrow-down text-danger'"></i>
+                Current period
+              </small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="bi bi-graph-up text-info" style="font-size: 2rem;"></i>
+              <h5 class="card-title mt-2">Savings Rate</h5>
+              <h3 class="text-info">{{ reportSummary.savingsRate }}%</h3>
+              <small class="text-muted">
+                <i class="bi bi-info-circle"></i>
+                Of total income
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
 
-@media (max-width: 768px) {
-  .row.mb-4 .col-md-8,
-  .row.mb-4 .col-md-4 {
-    margin-bottom: 1rem;
-  }
-}
-</style>
+      <!-- Charts Row -->
+      <div class="row mb-4">
+        <div class="col-md-8">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Income vs Expenses Trend</h5>
+            </div>
+            <div class="card-body">
+              <div v-if="barChartData.labels && barChartData.labels.length > 0" style="height: 300px;">
+                <BarChart 
+                  :data="barChartData" 
+                  :options="barChartOptions"
+                />
+              </div>
+              <div v-else class="d-flex align-items-center justify-content-center" style="height: 300px;">
+                <div class="text-center text-muted">
+                  <i class="bi bi-bar-chart fs-1 mb-2 d-block"></i>
+                  <p>No data available for the selected period</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Expense Categories</h5>
+            </div>
+            <div class="card-body">
+              <div v-if="pieChartData.labels && pieChartData.labels.length > 0" style="height: 300px;">
+                <PieChart 
+                  :data="pieChartData" 
+                  :options="pieChartOptions"
+                />
+              </div>
+              <div v-else class="d-flex align-items-center justify-content-center" style="height: 300px;">
+                <div class="text-center text-muted">
+                  <i class="bi bi-pie-chart fs-1 mb-2 d-block"></i>
+                  <p>No expense data available</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Breakdown -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Category Breakdown</h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <h6 class="text-success mb-3">Income Categories</h6>
+                  <div v-if="incomeCategories.length > 0">
+                    <div v-for="category in incomeCategories" :key="category.name" class="d-flex justify-content-between align-items-center mb-2">
+                      <div class="d-flex align-items-center">
+                        <i :class="category.icon" :style="{ color: category.color }" class="me-2"></i>
+                        <span>{{ category.name }}</span>
+                      </div>
+                      <div class="text-end">
+                        <div class="fw-bold text-success">{{ formatCurrency(category.amount) }}</div>
+                        <small class="text-muted">{{ category.percentage }}%</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-else class="text-center text-muted py-3">
+                    <i class="bi bi-inbox fs-3 mb-2 d-block"></i>
+                    <p class="mb-0">No income data available</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <h6 class="text-danger mb-3">Expense Categories</h6>
+                  <div v-if="expenseCategories.length > 0">
+                    <div v-for="category in expenseCategories" :key="category.name" class="d-flex justify-content-between align-items-center mb-2">
+                      <div class="d-flex align-items-center">
+                        <i :class="category.icon" :style="{ color: category.color }" class="me-2"></i>
+                        <span>{{ category.name }}</span>
+                      </div>
+                      <div class="text-end">
+                        <div class="fw-bold text-danger">{{ formatCurrency(category.amount) }}</div>
+                        <small class="text-muted">{{ category.percentage }}%</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-else class="text-center text-muted py-3">
+                    <i class="bi bi-inbox fs-3 mb-2 d-block"></i>
+                    <p class="mb-0">No expense data available</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly Comparison -->
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Monthly Comparison</h5>
+            </div>
+            <div class="card-body p-0">
+              <div v-if="monthlyData.length > 0" class="table-responsive">
+                <table class="table table-hover mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Month</th>
+                      <th class="text-end">Income</th>
+                      <th class="text-end">Expenses</th>
+                      <th class="text-end">Net Amount</th>
+                      <th class="text-end">Savings Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="month in monthlyData" :key="month.month">
+                      <td>{{ month.month }}</td>
+                      <td class="text-end text-success">{{ formatCurrency(month.income) }}</td>
+                      <td class="text-end text-danger">{{ formatCurrency(month.expenses) }}</td>
+                      <td class="text-end" :class="month.net >= 0 ? 'text-success' : 'text-danger'">
+                        {{ formatCurrency(month.net) }}
+                      </td>
+                      <td class="text-end">
+                        <span class="badge" :class="month.savingsRate >= 20 ? 'bg-success' : month.savingsRate >= 10 ? 'bg-warning' : 'bg-danger'">
+                          {{ month.savingsRate }}%
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div v-else class="text-center text-muted py-5">
+                <i class="bi bi-calendar-x fs-1 mb-2 d-block"></i>
+                <h5>No monthly data available</h5>
+                <p>Start adding transactions to see monthly comparisons</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </AppLayout>
+</template>
+
