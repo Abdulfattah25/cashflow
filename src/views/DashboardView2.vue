@@ -13,7 +13,7 @@
     </div>
 
     <!-- Content -->
-    <div v-else class="px-2 px-sm-3">
+    <div v-else>
       <!-- Welcome Card -->
       <div class="row">
         <div class="col-12">
@@ -44,12 +44,11 @@
               <div class="stats-icon net mb-2">
                 <i class="bi bi-wallet2"></i>
               </div>
-              <h3
-                class="stats-value net mb-1"
-                :class="summary.netAmount >= 0 ? 'positive' : 'negative'"
+              <h6
+                class="stats-value net mb-1 text-primary fs-5"          
               >
                 {{ formatCurrency(summary.netAmount) }}
-              </h3>
+              </h6>
               <p class="stats-label small mb-0">Net Balance</p>
             </div>
           </div>
@@ -62,7 +61,7 @@
               <div class="stats-icon income mb-2">
                 <i class="bi bi-arrow-up-circle text-light"></i>
               </div>
-              <h5 class="stats-value income mb-1">
+              <h5 class="stats-value income mb-1 fs-5">
                 {{ formatCurrency(summary.totalIncome) }}
               </h5>
               <p class="stats-label small mb-0">Income</p>
@@ -77,7 +76,7 @@
               <div class="stats-icon expense mb-2">
                 <i class="bi bi-arrow-down-circle text-light"></i>
               </div>
-              <h5 class="stats-value expense mb-1">
+              <h5 class="stats-value expense mb-1 fs-5">
                 {{ formatCurrency(summary.totalExpenses) }}
               </h5>
               <p class="stats-label small mb-0">Expenses</p>
@@ -575,19 +574,19 @@ onMounted(async () => {
 }
 
 .income {
-  color: #383838;
+  color: #45c74c;
 }
 
 .expense {
-  color: #383838;
+  color: #e23a3a;
 }
 
 .stats-value.positive {
-  color: #383838;
+  color: #2c8630;
 }
 
 .stats-value.negative {
-  color: #383838;
+  color: #e23a3a;
 }
 
 .empty-state {

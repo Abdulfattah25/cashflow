@@ -13,7 +13,7 @@
     </div>
 
     <!-- Content -->
-    <div v-else class="px-2 px-sm-3">
+    <div v-else>
       <!-- Header -->
       <div class="row mb-3">
         <div class="col-12">
@@ -38,12 +38,12 @@
 
       <!-- Summary Cards -->
       <div class="row mb-3 g-2">
-        <div class="col-12 col-md-4">
+        <div class="col-4 col-md-4">
           <div class="card net-card border-0">
             <div class="card-body p-3 text-center">
-              <h6 class="card-title mb-1 text-muted">Net Amount</h6>
+              <h5 class="card-title mb-1 small text-muted">Net Amount</h5>
               <h5
-                class="mb-0 text-muted"
+                class="small mb-0"
                 :class="summary.netAmount >= 0 ? 'positive' : 'negative'"
               >
                 {{ formatCurrency(summary.netAmount) }}
@@ -51,19 +51,19 @@
             </div>
           </div>
         </div>
-        <div class="col-6 col-md-4">
+        <div class="col-4 col-md-4">
           <div class="card income-card border-0">
             <div class="card-body p-3 text-center">
-              <h6 class="card-title text-white mb-1 small text-muted">Income</h6>
-              <h5 class="text-white mb-0 text-muted">{{ formatCurrency(summary.totalIncome) }}</h5>
+              <h5 class="card-title text-white mb-1 small text-muted">Income</h5>
+              <h5 class="small mb-0">{{ formatCurrency(summary.totalIncome) }}</h5>
             </div>
           </div>
         </div>
-        <div class="col-6 col-md-4">
+        <div class="col-4 col-md-4">
           <div class="card expense-card border-0">
             <div class="card-body p-3 text-center">
-              <h6 class="card-title text-white mb-1 small text-muted">Expenses</h6>
-              <h5 class="text-white mb-0 text-muted">
+              <h5 class="card-title text-white mb-1 small text-muted">Expenses</h5>
+              <h5 class="small mb-0">
                 {{ formatCurrency(summary.totalExpenses) }}
               </h5>
             </div>
@@ -151,7 +151,7 @@
             >
               <h6 class="card-title mb-0 fw-medium">Transaction History</h6>
               <div class="d-flex gap-2">
-                <button class="btn btn-sm btn-outline-secondary d-none d-md-inline-flex">
+                <button class="btn btn-sm btn-outline-secondary d-md-inline-flex">
                   <i class="bi bi-download me-1"></i>
                   Export
                 </button>
@@ -198,7 +198,7 @@
                 >
                   <div class="d-flex align-items-start">
                     <div
-                      class="transaction-icon me-3 flex-shrink-0"
+                      class="transaction-icon me-2 flex-shrink-0"
                       :style="{
                         background: transaction.color + '20',
                         color: transaction.color,
@@ -211,11 +211,11 @@
                         <div class="me-2 flex-grow-1">
                           <div class="fw-medium text-truncate">{{ transaction.description }}</div>
                           <div class="d-flex align-items-center flex-wrap gap-1 mt-1">
-                            <span class="badge bg-light text-dark small">{{
+                            <span class="badge bg-light text-dark">{{
                               transaction.category
                             }}</span>
                             <span
-                              class="badge small"
+                              class="badge"
                               :class="transaction.type === 'income' ? 'bg-success' : 'bg-danger'"
                             >
                               {{ transaction.type }}
@@ -224,7 +224,7 @@
                         </div>
                         <div class="text-end flex-shrink-0">
                           <span
-                            class="fw-bold d-block"
+                            class="fw-bold d-block small"
                             :class="transaction.type === 'income' ? 'text-success' : 'text-danger'"
                           >
                             {{ transaction.type === 'expense' ? '-' : '+'
@@ -709,6 +709,9 @@ onMounted(async () => {
   .badge {
     font-size: 0.65rem;
     padding: 0.25em 0.5em;
+  }
+  .small {
+    font-size: 0.95rem;
   }
 }
 

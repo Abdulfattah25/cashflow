@@ -184,7 +184,7 @@ onMounted(async () => {
     </div>
 
     <!-- Content -->
-    <div v-else class="px-2 px-sm-3">
+    <div v-else>
       <!-- Header -->
       <div class="row mb-3">
         <div class="col-12">
