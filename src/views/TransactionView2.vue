@@ -22,10 +22,10 @@
               <h4 class="mb-1">Transactions</h4>
               <p class="text-muted mb-0 small">Manage your income and expenses</p>
             </div>
-            <button 
-              class="btn btn-primary btn-sm" 
+            <button
+              class="btn btn-primary btn-sm"
               @click="openAddModal"
-              data-bs-toggle="modal" 
+              data-bs-toggle="modal"
               data-bs-target="#transactionModal"
             >
               <i class="bi bi-plus-circle me-1"></i>
@@ -38,29 +38,34 @@
 
       <!-- Summary Cards -->
       <div class="row mb-3 g-2">
-        <div class="col-12 mb-2">
+        <div class="col-12 col-md-4">
           <div class="card net-card border-0">
             <div class="card-body p-3 text-center">
-              <h6 class="card-title text-white mb-1">Net Amount</h6>
-              <h4 class="text-white mb-0" :class="summary.netAmount >= 0 ? 'positive' : 'negative'">
+              <h6 class="card-title mb-1 text-muted">Net Amount</h6>
+              <h5
+                class="mb-0 text-muted"
+                :class="summary.netAmount >= 0 ? 'positive' : 'negative'"
+              >
                 {{ formatCurrency(summary.netAmount) }}
-              </h4>
+              </h5>
             </div>
           </div>
         </div>
-        <div class="col-6">
+        <div class="col-6 col-md-4">
           <div class="card income-card border-0">
             <div class="card-body p-3 text-center">
-              <h6 class="card-title text-white mb-1 small">Income</h6>
-              <h5 class="text-white mb-0">{{ formatCurrency(summary.totalIncome) }}</h5>
+              <h6 class="card-title text-white mb-1 small text-muted">Income</h6>
+              <h5 class="text-white mb-0 text-muted">{{ formatCurrency(summary.totalIncome) }}</h5>
             </div>
           </div>
         </div>
-        <div class="col-6">
+        <div class="col-6 col-md-4">
           <div class="card expense-card border-0">
             <div class="card-body p-3 text-center">
-              <h6 class="card-title text-white mb-1 small">Expenses</h6>
-              <h5 class="text-white mb-0">{{ formatCurrency(summary.totalExpenses) }}</h5>
+              <h6 class="card-title text-white mb-1 small text-muted">Expenses</h6>
+              <h5 class="text-white mb-0 text-muted">
+                {{ formatCurrency(summary.totalExpenses) }}
+              </h5>
             </div>
           </div>
         </div>
@@ -73,10 +78,10 @@
             <div class="card-header bg-transparent border-0 pb-2">
               <div class="d-flex justify-content-between align-items-center">
                 <h6 class="card-title mb-0 fw-medium">Filters</h6>
-                <button 
-                  class="btn btn-sm btn-outline-secondary d-md-none" 
-                  type="button" 
-                  data-bs-toggle="collapse" 
+                <button
+                  class="btn btn-sm btn-outline-secondary d-md-none"
+                  type="button"
+                  data-bs-toggle="collapse"
                   data-bs-target="#filtersCollapse"
                 >
                   <i class="bi bi-funnel"></i>
@@ -107,14 +112,18 @@
                     <label class="form-label small fw-medium">Category</label>
                     <select v-model="filters.category" class="form-select form-select-sm">
                       <option value="">All Categories</option>
-                      <option v-for="category in categories" :key="category.id" :value="category.name">
+                      <option
+                        v-for="category in categories"
+                        :key="category.id"
+                        :value="category.name"
+                      >
                         {{ category.name }}
                       </option>
                     </select>
                   </div>
                   <div class="col-6 col-md-3">
                     <label class="form-label small fw-medium">Search</label>
-                    <div class="input-group input-group-sm">
+                    <div class="input-group input-group-md">
                       <span class="input-group-text">
                         <i class="bi bi-search"></i>
                       </span>
@@ -123,7 +132,7 @@
                         type="text"
                         class="form-control"
                         placeholder="Search..."
-                      >
+                      />
                     </div>
                   </div>
                 </div>
@@ -137,7 +146,9 @@
       <div class="row">
         <div class="col-12">
           <div class="card border-0">
-            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center pb-2">
+            <div
+              class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center pb-2"
+            >
               <h6 class="card-title mb-0 fw-medium">Transaction History</h6>
               <div class="d-flex gap-2">
                 <button class="btn btn-sm btn-outline-secondary d-none d-md-inline-flex">
@@ -145,15 +156,34 @@
                   Export
                 </button>
                 <div class="dropdown">
-                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                  <button
+                    class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                    data-bs-toggle="dropdown"
+                  >
                     <i class="bi bi-sort-down d-md-none"></i>
                     <span class="d-none d-md-inline">Sort</span>
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="#" @click="sortBy('date', 'desc')">Newest First</a></li>
-                    <li><a class="dropdown-item" href="#" @click="sortBy('date', 'asc')">Oldest First</a></li>
-                    <li><a class="dropdown-item" href="#" @click="sortBy('amount', 'desc')">Highest Amount</a></li>
-                    <li><a class="dropdown-item" href="#" @click="sortBy('amount', 'asc')">Lowest Amount</a></li>
+                    <li>
+                      <a class="dropdown-item" href="#" @click="sortBy('date', 'desc')"
+                        >Newest First</a
+                      >
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="#" @click="sortBy('date', 'asc')"
+                        >Oldest First</a
+                      >
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="#" @click="sortBy('amount', 'desc')"
+                        >Highest Amount</a
+                      >
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="#" @click="sortBy('amount', 'asc')"
+                        >Lowest Amount</a
+                      >
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -161,8 +191,8 @@
             <div class="card-body p-0">
               <!-- Mobile Transaction List -->
               <div class="d-block">
-                <div 
-                  v-for="transaction in filteredTransactions" 
+                <div
+                  v-for="transaction in filteredTransactions"
                   :key="transaction.id"
                   class="transaction-item p-3 border-bottom position-relative"
                 >
@@ -181,9 +211,11 @@
                         <div class="me-2 flex-grow-1">
                           <div class="fw-medium text-truncate">{{ transaction.description }}</div>
                           <div class="d-flex align-items-center flex-wrap gap-1 mt-1">
-                            <span class="badge bg-light text-dark small">{{ transaction.category }}</span>
-                            <span 
-                              class="badge small" 
+                            <span class="badge bg-light text-dark small">{{
+                              transaction.category
+                            }}</span>
+                            <span
+                              class="badge small"
                               :class="transaction.type === 'income' ? 'bg-success' : 'bg-danger'"
                             >
                               {{ transaction.type }}
@@ -193,35 +225,29 @@
                         <div class="text-end flex-shrink-0">
                           <span
                             class="fw-bold d-block"
-                            :class="
-                              transaction.type === 'income'
-                                ? 'text-success'
-                                : 'text-danger'
-                            "
+                            :class="transaction.type === 'income' ? 'text-success' : 'text-danger'"
                           >
                             {{ transaction.type === 'expense' ? '-' : '+'
                             }}{{ formatCurrency(transaction.amount) }}
                           </span>
                           <small class="text-muted">{{ formatDate(transaction.date) }}</small>
                         </div>
-                      </div>
-                      
-                      <!-- Action Buttons -->
-                      <div class="d-flex justify-content-end gap-1 mt-2">
-                        <button 
-                          class="btn btn-outline-primary btn-sm" 
-                          @click="editTransaction(transaction)"
-                          data-bs-toggle="modal" 
-                          data-bs-target="#transactionModal"
-                        >
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <button 
-                          class="btn btn-outline-danger btn-sm" 
-                          @click="confirmDelete(transaction.id)"
-                        >
-                          <i class="bi bi-trash"></i>
-                        </button>
+                        <div class="tombol mx-2 d-flex gap-1">
+                          <button
+                            class="btn btn-primary btn-sm"
+                            @click="editTransaction(transaction)"
+                            data-bs-toggle="modal"
+                            data-bs-target="#transactionModal"
+                          >
+                            <i class="bi bi-pencil"></i>
+                          </button>
+                          <button
+                            class="btn btn-danger btn-sm"
+                            @click="confirmDelete(transaction.id)"
+                          >
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -233,10 +259,10 @@
                 <i class="bi bi-inbox text-muted"></i>
                 <h6 class="text-muted mt-3">No transactions found</h6>
                 <p class="text-muted small">Try adjusting your filters or add a new transaction.</p>
-                <button 
+                <button
                   class="btn btn-primary btn-sm"
                   @click="openAddModal"
-                  data-bs-toggle="modal" 
+                  data-bs-toggle="modal"
                   data-bs-target="#transactionModal"
                 >
                   Add Transaction
@@ -252,20 +278,39 @@
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
-              <h6 class="modal-title">{{ editingTransaction ? 'Edit Transaction' : 'Add New Transaction' }}</h6>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" @click="resetForm"></button>
+              <h6 class="modal-title">
+                {{ editingTransaction ? 'Edit Transaction' : 'Add New Transaction' }}
+              </h6>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                @click="resetForm"
+              ></button>
             </div>
             <div class="modal-body">
               <form @submit.prevent="saveTransaction">
                 <div class="mb-3">
                   <label class="form-label small fw-medium">Type</label>
                   <div class="btn-group w-100" role="group">
-                    <input type="radio" class="btn-check" id="income-edit" v-model="transactionForm.type" value="income">
+                    <input
+                      type="radio"
+                      class="btn-check"
+                      id="income-edit"
+                      v-model="transactionForm.type"
+                      value="income"
+                    />
                     <label class="btn btn-outline-success" for="income-edit">
                       <i class="bi bi-arrow-up-circle me-1"></i>
                       Income
                     </label>
-                    <input type="radio" class="btn-check" id="expense-edit" v-model="transactionForm.type" value="expense">
+                    <input
+                      type="radio"
+                      class="btn-check"
+                      id="expense-edit"
+                      v-model="transactionForm.type"
+                      value="expense"
+                    />
                     <label class="btn btn-outline-danger" for="expense-edit">
                       <i class="bi bi-arrow-down-circle me-1"></i>
                       Expense
@@ -284,7 +329,7 @@
                       placeholder="0"
                       required
                       min="1"
-                    >
+                    />
                   </div>
                 </div>
 
@@ -296,16 +341,16 @@
                     class="form-control"
                     placeholder="Enter description"
                     required
-                  >
+                  />
                 </div>
 
                 <div class="mb-3">
                   <label class="form-label small fw-medium">Category</label>
                   <select v-model="transactionForm.category" class="form-select" required>
                     <option value="">Select Category</option>
-                    <option 
-                      v-for="category in getCategoriesByType(transactionForm.type)" 
-                      :key="category.id" 
+                    <option
+                      v-for="category in getCategoriesByType(transactionForm.type)"
+                      :key="category.id"
                       :value="category.name"
                     >
                       {{ category.name }}
@@ -315,12 +360,7 @@
 
                 <div class="mb-3">
                   <label class="form-label small fw-medium">Date</label>
-                  <input
-                    v-model="transactionForm.date"
-                    type="date"
-                    class="form-control"
-                    required
-                  >
+                  <input v-model="transactionForm.date" type="date" class="form-control" required />
                 </div>
 
                 <div class="mb-3">
@@ -335,14 +375,24 @@
               </form>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="resetForm">Cancel</button>
-              <button 
-                type="button" 
-                class="btn btn-primary" 
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+                @click="resetForm"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
                 @click="saveTransaction"
                 :disabled="transactionsLoading"
               >
-                <span v-if="transactionsLoading" class="spinner-border spinner-border-sm me-2"></span>
+                <span
+                  v-if="transactionsLoading"
+                  class="spinner-border spinner-border-sm me-2"
+                ></span>
                 {{ editingTransaction ? 'Update' : 'Save' }} Transaction
               </button>
             </div>
@@ -368,7 +418,7 @@ const {
   fetchTransactions,
   addTransaction,
   updateTransaction,
-  deleteTransaction
+  deleteTransaction,
 } = useTransactions()
 
 const {
@@ -376,7 +426,7 @@ const {
   loading: categoriesLoading,
   error: categoriesError,
   fetchCategories,
-  getCategoriesByType
+  getCategoriesByType,
 } = useCategories()
 
 // Filters
@@ -384,7 +434,7 @@ const filters = reactive({
   dateRange: 'this-month',
   category: '',
   type: '',
-  search: ''
+  search: '',
 })
 
 // Transaction form
@@ -394,7 +444,7 @@ const transactionForm = reactive({
   description: '',
   category: '',
   date: new Date().toISOString().split('T')[0],
-  notes: ''
+  notes: '',
 })
 
 const editingTransaction = ref(null)
@@ -408,21 +458,22 @@ const filteredTransactions = computed(() => {
 
   // Filter by type
   if (filters.type) {
-    filtered = filtered.filter(t => t.type === filters.type)
+    filtered = filtered.filter((t) => t.type === filters.type)
   }
 
   // Filter by category
   if (filters.category) {
-    filtered = filtered.filter(t => t.category === filters.category)
+    filtered = filtered.filter((t) => t.category === filters.category)
   }
 
   // Filter by search
   if (filters.search) {
     const searchLower = filters.search.toLowerCase()
-    filtered = filtered.filter(t => 
-      t.description.toLowerCase().includes(searchLower) ||
-      t.category.toLowerCase().includes(searchLower) ||
-      t.notes?.toLowerCase().includes(searchLower)
+    filtered = filtered.filter(
+      (t) =>
+        t.description.toLowerCase().includes(searchLower) ||
+        t.category.toLowerCase().includes(searchLower) ||
+        t.notes?.toLowerCase().includes(searchLower),
     )
   }
 
@@ -430,7 +481,7 @@ const filteredTransactions = computed(() => {
   if (filters.dateRange !== 'custom') {
     const now = new Date()
     const startDate = new Date()
-    
+
     switch (filters.dateRange) {
       case 'this-month':
         startDate.setDate(1)
@@ -444,8 +495,8 @@ const filteredTransactions = computed(() => {
         startDate.setDate(1)
         break
     }
-    
-    filtered = filtered.filter(t => new Date(t.date) >= startDate)
+
+    filtered = filtered.filter((t) => new Date(t.date) >= startDate)
   }
 
   return filtered.sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -456,7 +507,7 @@ const formatCurrency = (amount) => {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
-    minimumFractionDigits: 0
+    minimumFractionDigits: 0,
   }).format(amount)
 }
 
@@ -464,7 +515,7 @@ const formatDate = (date) => {
   return new Intl.DateTimeFormat('id-ID', {
     day: '2-digit',
     month: 'short',
-    year: 'numeric'
+    year: 'numeric',
   }).format(new Date(date))
 }
 
@@ -475,7 +526,7 @@ const resetForm = () => {
     description: '',
     category: '',
     date: new Date().toISOString().split('T')[0],
-    notes: ''
+    notes: '',
   })
   editingTransaction.value = null
 }
@@ -497,7 +548,6 @@ const saveTransaction = async () => {
     const bsModal = bootstrap.Modal.getInstance(modal)
     bsModal.hide()
     resetForm()
-
   } catch (err) {
     console.error('Failed to save transaction:', err)
     // Show error message to user
@@ -513,7 +563,7 @@ const editTransaction = (transaction) => {
     description: transaction.description,
     category: transaction.category,
     date: new Date(transaction.date).toISOString().split('T')[0],
-    notes: transaction.notes || ''
+    notes: transaction.notes || '',
   })
 }
 
@@ -534,32 +584,32 @@ const sortBy = (field, order) => {
 }
 
 // Watch for type changes to reset category
-watch(() => transactionForm.type, () => {
-  transactionForm.category = ''
-})
+watch(
+  () => transactionForm.type,
+  () => {
+    transactionForm.category = ''
+  },
+)
 
 onMounted(async () => {
   // Fetch data when component mounts
-  await Promise.all([
-    fetchTransactions(),
-    fetchCategories()
-  ])
+  await Promise.all([fetchTransactions(), fetchCategories()])
 })
 </script>
 
 <style scoped>
 .net-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #839ef5 100%);
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
 .income-card {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #63e76a 100%);
   box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
 }
 
 .expense-card {
-  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #e06565 100%);
   box-shadow: 0 4px 15px rgba(250, 112, 154, 0.3);
 }
 
@@ -614,43 +664,48 @@ onMounted(async () => {
   margin: 1rem;
 }
 
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 1rem;
+}
+
 /* Mobile specific styles */
 @media (max-width: 576px) {
   .transaction-item {
     padding: 1rem !important;
   }
-  
+
   .transaction-icon {
     width: 30px;
     height: 30px;
     font-size: 0.8rem;
   }
-  
+
   .fw-medium {
     font-size: 0.9rem;
   }
-  
+
   .modal-dialog {
     margin: 0.5rem;
   }
-  
+
   .btn-sm {
     padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
   }
-  
+
   .form-select-sm {
     font-size: 0.8rem;
   }
-  
+
   .input-group-sm .form-control {
     font-size: 0.8rem;
   }
-  
+
   .card-body {
     padding: 0.75rem;
   }
-  
+
   .badge {
     font-size: 0.65rem;
     padding: 0.25em 0.5em;

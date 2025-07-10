@@ -204,41 +204,41 @@ onMounted(async () => {
 
       <!-- Summary Cards -->
       <div class="row mb-3 g-2">
-        <div class="col-6">
+        <div class="col-6 col-md-4 col-lg-3">
           <div class="card summary-card total-budget border-0">
             <div class="card-body p-3 text-center">
               <i class="bi bi-wallet2 summary-icon mb-2"></i>
-              <h6 class="card-title text-white mb-1 small">Total Budget</h6>
-              <h5 class="text-white mb-0">{{ formatCurrency(budgetSummary.totalBudget) }}</h5>
+              <h6 class="card-title text-muted mb-1 small">Total Budget</h6>
+              <h5 class="mb-0">{{ formatCurrency(budgetSummary.totalBudget) }}</h5>
             </div>
           </div>
         </div>
-        <div class="col-6">
+        <div class="col-6 col-md-4 col-lg-3">
           <div class="card summary-card total-spent border-0">
             <div class="card-body p-3 text-center">
               <i class="bi bi-credit-card summary-icon mb-2"></i>
-              <h6 class="card-title text-white mb-1 small">Total Spent</h6>
-              <h5 class="text-white mb-0">{{ formatCurrency(budgetSummary.totalSpent) }}</h5>
+              <h6 class="card-title text-muted mb-1 small">Total Spent</h6>
+              <h5 class="mb-0">{{ formatCurrency(budgetSummary.totalSpent) }}</h5>
             </div>
           </div>
         </div>
-        <div class="col-6">
+        <div class="col-6 col-md-4 col-lg-3">
           <div class="card summary-card remaining border-0">
             <div class="card-body p-3 text-center">
               <i class="bi bi-piggy-bank summary-icon mb-2"></i>
-              <h6 class="card-title text-white mb-1 small">Remaining</h6>
-              <h5 class="text-white mb-0" :class="budgetSummary.remaining >= 0 ? 'text-white' : 'text-danger'">
+              <h6 class="card-title text-muted mb-1 small">Remaining</h6>
+              <h5 class="mb-0" :class="budgetSummary.remaining >= 0 ? 'text-dark' : 'text-danger'">
                 {{ formatCurrency(budgetSummary.remaining) }}
               </h5>
             </div>
           </div>
         </div>
-        <div class="col-6">
+        <div class="col-6 col-md-4 col-lg-3">
           <div class="card summary-card usage-rate border-0">
             <div class="card-body p-3 text-center">
               <i class="bi bi-speedometer2 summary-icon mb-2"></i>
-              <h6 class="card-title text-white mb-1 small">Usage Rate</h6>
-              <h5 class="text-white mb-0">{{ budgetSummary.usageRate }}%</h5>
+              <h6 class="card-title text-muted mb-1 small">Usage Rate</h6>
+              <h5 class="mb-0">{{ budgetSummary.usageRate }}%</h5>
             </div>
           </div>
         </div>
@@ -505,19 +505,19 @@ onMounted(async () => {
 }
 
 .summary-card.total-budget {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #63e76a 100%);
 }
 
 .summary-card.total-spent {
-  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #e06565 100%);
 }
 
 .summary-card.remaining {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #839ef5 100%);
 }
 
 .summary-card.usage-rate {
-  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  background: linear-gradient(135deg, #ffffff 0%, hsl(61, 82%, 67%) 100%);
 }
 
 .summary-icon {

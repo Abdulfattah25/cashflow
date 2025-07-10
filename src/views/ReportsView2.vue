@@ -198,6 +198,9 @@ watch(
 
 onMounted(async () => {
   await updateChartData()
+    if (window.innerWidth >= 768) {
+    showFilter.value = true
+  }
 })
 </script>
 
@@ -226,16 +229,52 @@ onMounted(async () => {
               <p class="text-muted mb-0 small">Analyze your financial data and trends</p>
             </div>
             <div class="d-flex gap-1">
-              <button class="btn btn-outline-primary btn-sm d-none d-sm-inline-flex" @click="exportReport">
+              <button class="btn btn-outline-primary btn-sm d-sm-inline-flex p-2" @click="exportReport">
                 <i class="bi bi-download me-1"></i>
                 Export
               </button>
-              <button class="btn btn-primary btn-sm" @click="generateReport" :disabled="loading">
-                <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
-                <i v-else class="bi bi-graph-up me-1"></i>
-                <span class="d-none d-sm-inline">Generate</span>
-                <span class="d-sm-none">Gen</span>
-              </button>
+            </div>
+          </div>
+        </div>
+      </div>      
+
+      <!-- Summary Cards -->
+      <div class="row mb-3 g-2">
+        <div class="col-6 col-md-3">
+          <div class="card summary-card income-card border-0 text-center">
+            <div class="card-body p-3">
+              <i class="bi bi-arrow-up-circle summary-icon mb-2"></i>
+              <h5 class="card-title mb-1 small">Total Income</h5>
+              <h5 class="mb-0">{{ formatCurrency(reportSummary.totalIncome) }}</h5>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card summary-card expense-card border-0 text-center">
+            <div class="card-body p-3">
+              <i class="bi bi-arrow-down-circle summary-icon mb-2"></i>
+              <h5 class="card-title mb-1 small ">Total Expenses</h5>
+              <h5 class="mb-0 ">{{ formatCurrency(reportSummary.totalExpenses) }}</h5>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card summary-card savings-card border-0 text-center">
+            <div class="card-body p-3">
+              <i class="bi bi-wallet2 summary-icon mb-2"></i>
+              <h5 class="card-title mb-1 small">Net Savings</h5>
+              <h5 class="mb-0">
+                {{ formatCurrency(reportSummary.netSavings) }}
+              </h5>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card summary-card rate-card border-0 text-center">
+            <div class="card-body p-3">
+              <i class="bi bi-graph-up summary-icon mb-2"></i>
+              <h5 class="card-title mb-1 small">Savings Rate</h5>
+              <h5 class="mb-0">{{ reportSummary.savingsRate }}%</h5>
             </div>
           </div>
         </div>
@@ -245,7 +284,7 @@ onMounted(async () => {
       <div class="row mb-3">
         <div class="col-12">
           <div class="card border-0">
-            <div class="card-header bg-transparent border-0 pb-2">
+            <div class="card-header bg-transparent border-0 p-2">
               <div class="d-flex justify-content-between align-items-center">
                 <h6 class="card-title mb-0 fw-medium">Report Filters</h6>
                 <button 
@@ -295,64 +334,6 @@ onMounted(async () => {
         </div>
       </div>
 
-      <!-- Summary Cards -->
-      <div class="row mb-3 g-2">
-        <div class="col-6 col-md-3">
-          <div class="card summary-card income-card border-0 text-center">
-            <div class="card-body p-3">
-              <i class="bi bi-arrow-up-circle summary-icon mb-2"></i>
-              <h6 class="card-title text-white mb-1 small">Total Income</h6>
-              <h5 class="text-white mb-0">{{ formatCurrency(reportSummary.totalIncome) }}</h5>
-              <small class="text-white-50 d-block mt-1">
-                <i class="bi bi-arrow-up"></i>
-                Current period
-              </small>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="card summary-card expense-card border-0 text-center">
-            <div class="card-body p-3">
-              <i class="bi bi-arrow-down-circle summary-icon mb-2"></i>
-              <h6 class="card-title text-white mb-1 small">Total Expenses</h6>
-              <h5 class="text-white mb-0">{{ formatCurrency(reportSummary.totalExpenses) }}</h5>
-              <small class="text-white-50 d-block mt-1">
-                <i class="bi bi-arrow-down"></i>
-                Current period
-              </small>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="card summary-card savings-card border-0 text-center">
-            <div class="card-body p-3">
-              <i class="bi bi-wallet2 summary-icon mb-2"></i>
-              <h6 class="card-title text-white mb-1 small">Net Savings</h6>
-              <h5 class="text-white mb-0" :class="reportSummary.netSavings >= 0 ? 'text-white' : 'text-danger'">
-                {{ formatCurrency(reportSummary.netSavings) }}
-              </h5>
-              <small class="text-white-50 d-block mt-1">
-                <i :class="reportSummary.netSavings >= 0 ? 'bi bi-arrow-up' : 'bi bi-arrow-down'"></i>
-                Current period
-              </small>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="card summary-card rate-card border-0 text-center">
-            <div class="card-body p-3">
-              <i class="bi bi-graph-up summary-icon mb-2"></i>
-              <h6 class="card-title text-white mb-1 small">Savings Rate</h6>
-              <h5 class="text-white mb-0">{{ reportSummary.savingsRate }}%</h5>
-              <small class="text-white-50 d-block mt-1">
-                <i class="bi bi-info-circle"></i>
-                Of total income
-              </small>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Charts Row -->
       <div class="row mb-3 g-2">
         <!-- Bar Chart - Full width on mobile -->
@@ -397,18 +378,19 @@ onMounted(async () => {
           </div>
         </div>
       </div>
+      
 
       <!-- Category Breakdown -->
       <div class="row mb-3">
-        <div class="col-12">
-          <div class="card border-0">
-            <div class="card-header bg-transparent border-0">
-              <h6 class="card-title mb-0 fw-medium">Category Breakdown</h6>
-            </div>
-            <div class="card-body">
-              <div class="row g-3">
-                <!-- Income Categories -->
-                <div class="col-12 col-md-6">
+  <div class="col-12">
+    <div class="card border-0">
+      <div class="card-header bg-transparent border-0">
+        <h6 class="card-title mb-0 fw-medium">Category Breakdown</h6>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <!-- Income Categories -->
+          <div class="col-12 col-md-6">
                   <div class="category-section">
                     <h6 class="text-success mb-3 d-flex align-items-center">
                       <i class="bi bi-arrow-up-circle me-2"></i>
@@ -583,19 +565,19 @@ onMounted(async () => {
 }
 
 .summary-card.income-card {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #63e76a 100%);
 }
 
 .summary-card.expense-card {
-  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #e06565 100%);
 }
 
 .summary-card.savings-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #839ef5 100%);
 }
 
 .summary-card.rate-card {
-  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  background: linear-gradient(135deg, #ffffff 0%, hsl(61, 82%, 67%) 100%);
 }
 
 .summary-icon {
@@ -630,7 +612,7 @@ onMounted(async () => {
 
 .category-list {
   max-height: 300px;
-  overflow-y: auto;
+  overflow-x: auto;
 }
 
 .category-item {
