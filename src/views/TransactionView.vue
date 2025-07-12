@@ -38,7 +38,7 @@
 
       <!-- Summary Cards -->
       <div class="row mb-3 g-2">
-        <div class="col-4 col-md-4">
+        <div class="col-12 col-md-4">
           <div class="card net-card border-0">
             <div class="card-body p-3 text-center">
               <h5 class="card-title mb-1 smallFont text-muted">Net Amount</h5>
@@ -51,7 +51,7 @@
             </div>
           </div>
         </div>
-        <div class="col-4 col-md-4">
+        <div class="col-6 col-md-4">
           <div class="card income-card border-0">
             <div class="card-body p-3 text-center">
               <h5 class="card-title text-white mb-1 smallFont text-muted">Income</h5>
@@ -59,7 +59,7 @@
             </div>
           </div>
         </div>
-        <div class="col-4 col-md-4">
+        <div class="col-6 col-md-4">
           <div class="card expense-card border-0">
             <div class="card-body p-3 text-center">
               <h5 class="card-title text-white mb-1 smallFont text-muted">Expenses</h5>
