@@ -7,7 +7,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'dashboard',
-      component: () => import('@/views/DashboardView2.vue'),
+      component: () => import('@/views/DashboardView.vue'),
       meta: { requiresAuth: true },
     },
     {
@@ -25,25 +25,25 @@ const router = createRouter({
     {
       path: '/transactions',
       name: 'transactions',
-      component: () => import('@/views/TransactionView2.vue'),
+      component: () => import('@/views/TransactionView.vue'),
       meta: { requiresAuth: true },
     },
     {
       path: '/reports',
       name: 'reports',
-      component: () => import('@/views/ReportsView2.vue'),
+      component: () => import('@/views/ReportsView.vue'),
       meta: { requiresAuth: true },
     },
         {
       path: '/budget',
       name: 'budget',
-      component: () => import('@/views/BudgetView2.vue'),
+      component: () => import('@/views/BudgetView.vue'),
       meta: { requiresAuth: true },
     },
         {
       path: '/goals',
       name: 'goals',
-      component: () => import('@/views/GoalsView2.vue'),
+      component: () => import('@/views/GoalsView.vue'),
       meta: { requiresAuth: true },
     },
   ],
@@ -53,8 +53,7 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
-  // Initialize auth if not done yet
-  if (authStore.user === null && !authStore.loading) {
+  if (!authStore.isAuthenticated && authStore.user === null) {
     await authStore.initAuth()
   }
 
@@ -66,5 +65,6 @@ router.beforeEach(async (to, from, next) => {
     next()
   }
 })
+
 
 export default router

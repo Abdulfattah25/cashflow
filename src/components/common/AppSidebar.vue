@@ -64,18 +64,6 @@
           </router-link>
         </li>
       </ul>
-
-      <!-- Bottom Section -->
-      <div class="mt-auto pt-4">
-        <div class="border-top border-light pt-3">
-          <div class="d-flex align-items-center">
-            <i class="bi bi-person-circle fs-4 me-2"></i>
-            <div class="flex-fill">
-              <div class="fw-semibold">{{ userEmail }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </nav>
 </template>
@@ -86,9 +74,6 @@ import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
 
-const userEmail = computed(() => {
-  return authStore.user?.email?.split('@')[0] || 'User'
-})
 </script>
 
 <style scoped>

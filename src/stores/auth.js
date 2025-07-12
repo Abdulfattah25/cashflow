@@ -79,6 +79,29 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // Update Profile - METHOD BARU
+  const updateProfile = async (updates) => {
+    loading.value = true
+    error.value = null
+    try {
+      const { data, error: updateError } = await supabase.auth.updateUser({
+        data: updates
+      })
+
+      if (updateError) throw updateError
+
+      // Update local user state
+      user.value = data.user
+      
+      return data
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     user,
     loading,
@@ -87,6 +110,7 @@ export const useAuthStore = defineStore('auth', () => {
     initAuth,
     signUp,
     signIn,
-    signOut
+    signOut,
+    updateProfile // TAMBAHKAN INI
   }
 })

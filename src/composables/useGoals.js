@@ -29,17 +29,15 @@ export function useGoals() {
         remainingAmount: goal.target_amount - goal.current_amount,
         daysLeft: getDaysLeft(goal.target_date),
         status: goal.is_completed ? 'completed' : 'active',
-        // Map database fields to component expected fields
         targetAmount: goal.target_amount,
         currentAmount: goal.current_amount,
         targetDate: goal.target_date,
         title: goal.name,
         description: goal.description || '',
-        // Add default values for UI
-        type: getGoalType(goal.name),
-        priority: 'medium',
-        icon: getGoalIcon(getGoalType(goal.name)),
-        color: getGoalColor(getGoalType(goal.name))
+        type: goal.type || getGoalType(goal.name), // Gunakan type dari DB jika ada
+        priority: goal.priority || 'medium', // Gunakan priority dari DB jika ada
+        icon: getGoalIcon(goal.type || getGoalType(goal.name)),
+        color: getGoalColor(goal.type || getGoalType(goal.name))
       }))
 
     } catch (err) {
@@ -55,7 +53,7 @@ export function useGoals() {
     try {
       loading.value = true
       error.value = null
-
+  
       const { data, error: insertError } = await supabase
         .from('goals')
         .insert([
@@ -66,16 +64,16 @@ export function useGoals() {
             target_amount: goalData.targetAmount,
             current_amount: goalData.currentAmount || 0,
             target_date: goalData.targetDate,
-            is_completed: false
+            is_completed: false,
+            type: goalData.type || getGoalType(goalData.title), // Tambahkan type
+            priority: goalData.priority || 'medium' // Tambahkan priority
           }
         ])
         .select()
-
+  
       if (insertError) throw insertError
-
-      // Refresh goals
+  
       await fetchGoals()
-      
       return data[0]
     } catch (err) {
       error.value = err.message
@@ -91,7 +89,7 @@ export function useGoals() {
     try {
       loading.value = true
       error.value = null
-
+  
       const { data, error: updateError } = await supabase
         .from('goals')
         .update({
@@ -100,17 +98,16 @@ export function useGoals() {
           target_amount: goalData.targetAmount,
           current_amount: goalData.currentAmount,
           target_date: goalData.targetDate,
-          is_completed: goalData.currentAmount >= goalData.targetAmount
+          is_completed: goalData.currentAmount >= goalData.targetAmount,
+          priority: goalData.priority // Tambahkan ini
         })
         .eq('id', id)
         .eq('user_id', authStore.user.id)
         .select()
-
+  
       if (updateError) throw updateError
-
-      // Refresh goals
+  
       await fetchGoals()
-      
       return data[0]
     } catch (err) {
       error.value = err.message
@@ -148,18 +145,29 @@ export function useGoals() {
   }
 
   // Add progress to goal
-  const addProgress = async (goalId, amount) => {
+  const addProgress = async (goalId, progressData) => {
     try {
       loading.value = true
       error.value = null
-
-      // Get current goal
+  
+      // Pastikan progressData adalah object dan memiliki amount
+      if (!progressData || typeof progressData !== 'object') {
+        throw new Error('Invalid progress data format')
+      }
+  
+      // Konversi amount ke number dan validasi
+      const amount = Number(progressData.amount)
+      if (isNaN(amount) || amount <= 0) {
+        throw new Error('Please enter a valid progress amount (must be greater than 0)')
+      }
+  
       const goal = goals.value.find(g => g.id === goalId)
       if (!goal) throw new Error('Goal not found')
-
+  
       const newAmount = goal.currentAmount + amount
       const isCompleted = newAmount >= goal.targetAmount
-
+  
+      // Update di database
       const { data, error: updateError } = await supabase
         .from('goals')
         .update({
@@ -169,12 +177,20 @@ export function useGoals() {
         .eq('id', goalId)
         .eq('user_id', authStore.user.id)
         .select()
-
+  
       if (updateError) throw updateError
-
-      // Refresh goals
+  
+      // (Opsional) Tambahkan record ke tabel progress history
+      await supabase
+        .from('goal_progress')
+        .insert({
+          goal_id: goalId,
+          amount: amount,
+          date: progressData.date || new Date().toISOString(),
+          notes: progressData.notes || ''
+        })
+  
       await fetchGoals()
-      
       return data[0]
     } catch (err) {
       error.value = err.message

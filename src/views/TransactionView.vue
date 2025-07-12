@@ -41,9 +41,9 @@
         <div class="col-4 col-md-4">
           <div class="card net-card border-0">
             <div class="card-body p-3 text-center">
-              <h5 class="card-title mb-1 small text-muted">Net Amount</h5>
+              <h5 class="card-title mb-1 smallFont text-muted">Net Amount</h5>
               <h5
-                class="small mb-0"
+                class="smallFont mb-0"
                 :class="summary.netAmount >= 0 ? 'positive' : 'negative'"
               >
                 {{ formatCurrency(summary.netAmount) }}
@@ -54,16 +54,16 @@
         <div class="col-4 col-md-4">
           <div class="card income-card border-0">
             <div class="card-body p-3 text-center">
-              <h5 class="card-title text-white mb-1 small text-muted">Income</h5>
-              <h5 class="small mb-0">{{ formatCurrency(summary.totalIncome) }}</h5>
+              <h5 class="card-title text-white mb-1 smallFont text-muted">Income</h5>
+              <h5 class="smallFont mb-0">{{ formatCurrency(summary.totalIncome) }}</h5>
             </div>
           </div>
         </div>
         <div class="col-4 col-md-4">
           <div class="card expense-card border-0">
             <div class="card-body p-3 text-center">
-              <h5 class="card-title text-white mb-1 small text-muted">Expenses</h5>
-              <h5 class="small mb-0">
+              <h5 class="card-title text-white mb-1 smallFont text-muted">Expenses</h5>
+              <h5 class="smallFont mb-0">
                 {{ formatCurrency(summary.totalExpenses) }}
               </h5>
             </div>
@@ -710,7 +710,7 @@ onMounted(async () => {
     font-size: 0.65rem;
     padding: 0.25em 0.5em;
   }
-  .small {
+  .smallFont {
     font-size: 0.95rem;
   }
 }
