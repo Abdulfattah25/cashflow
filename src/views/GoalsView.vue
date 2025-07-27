@@ -702,33 +702,6 @@ onMounted(async () => {
                     </div>
                   </div>
                 </div>
-
-                <div class="mb-3">
-                  <label class="form-label small fw-medium">Monthly Contribution (Optional)</label>
-                  <div class="input-group">
-                    <span class="input-group-text">Rp</span>
-                    <input
-                      v-model.number="goalForm.monthlyContribution"
-                      type="number"
-                      class="form-control"
-                      placeholder="0"
-                      min="0"
-                    />
-                  </div>
-                  <small class="form-text text-muted">
-                    Suggested amount to save monthly to reach your goal
-                  </small>
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label small fw-medium">Notes (Optional)</label>
-                  <textarea
-                    v-model="goalForm.notes"
-                    class="form-control"
-                    rows="3"
-                    placeholder="Additional notes about this goal..."
-                  ></textarea>
-                </div>
               </form>
             </div>
             <div class="modal-footer">
@@ -812,16 +785,6 @@ onMounted(async () => {
                   <div class="mb-3">
                     <label class="form-label small fw-medium">Date</label>
                     <input v-model="progressForm.date" type="date" class="form-control" required />
-                  </div>
-
-                  <div class="mb-3">
-                    <label class="form-label small fw-medium">Notes (Optional)</label>
-                    <textarea
-                      v-model="progressForm.notes"
-                      class="form-control"
-                      rows="2"
-                      placeholder="Notes about this progress..."
-                    ></textarea>
                   </div>
                 </form>
               </template>

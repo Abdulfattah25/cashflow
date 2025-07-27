@@ -612,16 +612,7 @@ body {
 }
 
 /* ===== TRANSACTION SPECIFIC ===== */
-.transaction-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-  margin-right: 1rem;
-}
+
 
 .transaction-amount.income {
   color: var(--success);

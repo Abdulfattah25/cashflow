@@ -65,12 +65,36 @@ CREATE TABLE IF NOT EXISTS public.goals (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Create expense_types table (NEW)
+CREATE TABLE IF NOT EXISTS public.expense_types (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+    name TEXT NOT NULL,
+    icon TEXT DEFAULT 'bi-circle',
+    color TEXT DEFAULT '#6c757d',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id, name)
+);
+
+-- Create expense_items table (NEW)
+CREATE TABLE IF NOT EXISTS public.expense_items (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    expense_type_id UUID REFERENCES public.expense_types(id) ON DELETE CASCADE NOT NULL,
+    name TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(expense_type_id, name)
+);
+
 -- Enable Row Level Security
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.budgets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.goals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.expense_types ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.expense_items ENABLE ROW LEVEL SECURITY;
 
 -- Create RLS Policies
 -- Profiles policies
@@ -135,6 +159,56 @@ CREATE POLICY "Users can update own goals" ON public.goals
 CREATE POLICY "Users can delete own goals" ON public.goals
     FOR DELETE USING (auth.uid() = user_id);
 
+-- Expense Types policies (NEW)
+CREATE POLICY "Users can view own expense types" ON public.expense_types
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own expense types" ON public.expense_types
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own expense types" ON public.expense_types
+    FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own expense types" ON public.expense_types
+    FOR DELETE USING (auth.uid() = user_id);
+
+-- Expense Items policies (NEW)
+CREATE POLICY "Users can view own expense items" ON public.expense_items
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM public.expense_types 
+            WHERE expense_types.id = expense_items.expense_type_id 
+            AND expense_types.user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Users can insert own expense items" ON public.expense_items
+    FOR INSERT WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM public.expense_types 
+            WHERE expense_types.id = expense_items.expense_type_id 
+            AND expense_types.user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Users can update own expense items" ON public.expense_items
+    FOR UPDATE USING (
+        EXISTS (
+            SELECT 1 FROM public.expense_types 
+            WHERE expense_types.id = expense_items.expense_type_id 
+            AND expense_types.user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Users can delete own expense items" ON public.expense_items
+    FOR DELETE USING (
+        EXISTS (
+            SELECT 1 FROM public.expense_types 
+            WHERE expense_types.id = expense_items.expense_type_id 
+            AND expense_types.user_id = auth.uid()
+        )
+    );
+
 -- Create functions and triggers for updated_at
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
 RETURNS TRIGGER AS $$
@@ -158,4 +232,10 @@ CREATE TRIGGER handle_updated_at BEFORE UPDATE ON public.budgets
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 CREATE TRIGGER handle_updated_at BEFORE UPDATE ON public.goals
+    FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+CREATE TRIGGER handle_updated_at BEFORE UPDATE ON public.expense_types
+    FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+CREATE TRIGGER handle_updated_at BEFORE UPDATE ON public.expense_items
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();

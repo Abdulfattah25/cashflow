@@ -42,10 +42,7 @@
           <div class="card net-card border-0">
             <div class="card-body p-3 text-center">
               <h5 class="card-title mb-1 smallFont text-muted">Net Amount</h5>
-              <h5
-                class="smallFont mb-0"
-                :class="summary.netAmount >= 0 ? 'positive' : 'negative'"
-              >
+              <h5 class="smallFont mb-0" :class="summary.netAmount >= 0 ? 'positive' : 'negative'">
                 {{ formatCurrency(summary.netAmount) }}
               </h5>
             </div>
@@ -207,13 +204,14 @@
                       <i :class="transaction.icon"></i>
                     </div>
                     <div class="flex-grow-1 min-w-0">
+                      <!-- Main content row -->
                       <div class="d-flex justify-content-between align-items-start mb-1">
-                        <div class="me-2 flex-grow-1">
-                          <div class="fw-medium text-truncate">{{ transaction.description }}</div>
+                        <div class="flex-grow-1 min-w-0 me-2 transaction-description">
+                          <div class="fw-medium text-truncate" :title="transaction.description">
+                            {{ transaction.description }}
+                          </div>
                           <div class="d-flex align-items-center flex-wrap gap-1 mt-1">
-                            <span class="badge bg-light text-dark">{{
-                              transaction.category
-                            }}</span>
+                            <span class="badge bg-light text-dark">{{ transaction.category }}</span>
                             <span
                               class="badge"
                               :class="transaction.type === 'income' ? 'bg-success' : 'bg-danger'"
@@ -222,7 +220,7 @@
                             </span>
                           </div>
                         </div>
-                        <div class="text-end flex-shrink-0">
+                        <div class="transaction-amount-date text-end flex-shrink-0 me-2">
                           <span
                             class="fw-bold d-block small"
                             :class="transaction.type === 'income' ? 'text-success' : 'text-danger'"
@@ -232,18 +230,21 @@
                           </span>
                           <small class="text-muted">{{ formatDate(transaction.date) }}</small>
                         </div>
-                        <div class="tombol mx-2 d-flex gap-1">
+                        <!-- Action buttons -->
+                        <div class="action-buttons flex-shrink-0 d-flex gap-1">
                           <button
                             class="btn btn-primary btn-sm"
                             @click="editTransaction(transaction)"
                             data-bs-toggle="modal"
                             data-bs-target="#transactionModal"
+                            title="Edit"
                           >
                             <i class="bi bi-pencil"></i>
                           </button>
                           <button
                             class="btn btn-danger btn-sm"
                             @click="confirmDelete(transaction.id)"
+                            title="Delete"
                           >
                             <i class="bi bi-trash"></i>
                           </button>
@@ -361,16 +362,6 @@
                 <div class="mb-3">
                   <label class="form-label small fw-medium">Date</label>
                   <input v-model="transactionForm.date" type="date" class="form-control" required />
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label small fw-medium">Notes (Optional)</label>
-                  <textarea
-                    v-model="transactionForm.notes"
-                    class="form-control"
-                    rows="3"
-                    placeholder="Additional notes..."
-                  ></textarea>
                 </div>
               </form>
             </div>
@@ -613,6 +604,7 @@ onMounted(async () => {
   box-shadow: 0 4px 15px rgba(250, 112, 154, 0.3);
 }
 
+/* Ensure transaction icons are always circular and properly sized */
 .transaction-icon {
   width: 35px;
   height: 35px;
@@ -621,6 +613,44 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   font-size: 0.9rem;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  aspect-ratio: 1;
+  padding: 0;
+  margin: 0;
+}
+
+/* Ensure the icon container doesn't interfere */
+.transaction-item .d-flex > .transaction-icon {
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+
+/* Mobile specific transaction icon - more specific selector */
+@media (max-width: 576px) {
+  .transaction-item .transaction-icon,
+  .transaction-item .d-flex .transaction-icon {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 0.8rem !important;
+    margin-right: 0.5rem !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 30px !important;
+    min-height: 30px !important;
+    max-width: 30px !important;
+    max-height: 30px !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
+    margin-left: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    aspect-ratio: 1 !important;
+    transform: none !important;
+    scale: 1 !important;
+  }
 }
 
 .transaction-item {
@@ -661,7 +691,15 @@ onMounted(async () => {
 }
 
 .modal-dialog-centered {
-  margin: 1rem;
+  display: flex;
+  align-items: center;
+  min-height: calc(100vh - 1rem);
+}
+
+.modal-dialog {
+  margin: 1rem auto;
+  max-width: 500px;
+  width: 100%;
 }
 
 .btn-sm {
@@ -675,18 +713,87 @@ onMounted(async () => {
     padding: 1rem !important;
   }
 
-  .transaction-icon {
-    width: 30px;
-    height: 30px;
-    font-size: 0.8rem;
-  }
-
   .fw-medium {
     font-size: 0.9rem;
   }
 
+  .action-buttons {
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  .transaction-item .d-flex {
+    gap: 0.25rem;
+  }
+
+  /* Ensure description text doesn't push buttons */
+  .transaction-item .flex-grow-1 {
+    max-width: calc(100% - 40px);
+  }
+
+  .transaction-item .text-truncate {
+    max-width: 100%;
+  }
+
+  /* Better layout for mobile transaction items */
+  .transaction-item .d-flex.justify-content-between {
+    gap: 0.5rem;
+  }
+
+  /* Ensure amount and date take minimal space */
+  .transaction-item .text-end {
+    min-width: 60px;
+    max-width: 80px;
+  }
+
+  /* Action buttons fixed width */
+  .action-buttons {
+    min-width: 60px;
+    max-width: 60px;
+  }
+
+  /* Give more space to description */
+  .transaction-description {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+  }
+
+  /* Compact amount and date section */
+  .transaction-amount-date {
+    flex-shrink: 0;
+    min-width: 60px;
+    max-width: 80px;
+  }
+
+  /* Responsive adjustments for very small screens */
+  @media (max-width: 375px) {
+    .transaction-description {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .transaction-amount-date {
+      min-width: 50px;
+      max-width: 60px;
+    }
+
+    .action-buttons {
+      min-width: 50px;
+      max-width: 50px;
+    }
+  }
+
+  .modal-dialog-centered {
+    display: flex;
+    align-items: center;
+    min-height: calc(100vh - 1rem);
+  }
+
   .modal-dialog {
-    margin: 0.5rem;
+    margin: 1rem auto;
+    max-width: 500px;
+    width: 100%;
   }
 
   .btn-sm {
@@ -740,5 +847,72 @@ onMounted(async () => {
 
 .transaction-item .btn-sm:hover {
   transform: scale(1.05);
+}
+
+/* Tooltip and text truncation styles */
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Ensure buttons don't shrink on mobile */
+.action-buttons {
+  flex-shrink: 0;
+}
+
+/* Better spacing for mobile transaction items */
+@media (max-width: 576px) {
+  .transaction-item .d-flex > div:first-child {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .transaction-item .d-flex > div:last-child {
+    flex-shrink: 0;
+  }
+
+  /* Ensure proper spacing between elements */
+  .transaction-item .me-2 {
+    margin-right: 0.5rem !important;
+  }
+
+  /* Make buttons more compact on mobile */
+  .action-buttons .btn-sm {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+  }
+
+  /* Force layout to prevent button displacement */
+  .transaction-item .d-flex.justify-content-between {
+    align-items: flex-start;
+    flex-wrap: nowrap;
+  }
+
+  /* Ensure description container doesn't expand too much */
+  .transaction-item .flex-grow-1.min-w-0 {
+    overflow: hidden;
+  }
+
+  /* Give more space to description on very small screens */
+  @media (max-width: 375px) {
+    .transaction-item .flex-grow-1 {
+      max-width: calc(100% - 100px);
+    }
+  }
+}
+
+/* Global transaction layout improvements */
+.transaction-item .d-flex {
+  align-items: flex-start;
+}
+
+.transaction-description {
+  overflow: hidden;
+}
+
+.transaction-amount-date {
+  text-align: right;
+  white-space: nowrap;
 }
 </style>

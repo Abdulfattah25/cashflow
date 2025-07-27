@@ -640,7 +640,15 @@ onMounted(async () => {
 }
 
 .modal-dialog-centered {
-  margin: 1rem;
+  display: flex;
+  align-items: center;
+  min-height: calc(100vh - 1rem);
+}
+
+.modal-dialog {
+  margin: 1rem auto;
+  max-width: 500px;
+  width: 100%;
 }
 
 @media (max-width: 576px) {
