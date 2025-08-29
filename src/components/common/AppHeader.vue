@@ -1,12 +1,10 @@
 <template>
   <header class="app-header">
     <div class="header-content">
-      <!-- Hamburger Menu Button (Mobile Only) -->
-      <button class="btn btn-outline-secondary d-lg-none me-3" type="button" @click="toggleSidebar">
-        <i class="bi bi-list"></i>
-      </button>
-      <!-- Page Title -->
-      <div class="header-title"></div>
+  <!-- Brand text instead of hamburger on mobile -->
+  <div class="brand d-lg-none me-2 fw-bold text-gradient fs-2">CashFlow App</div>
+  <!-- Page Title (desktop) -->
+  <div class="header-title d-none d-lg-block"></div>
 
       <!-- Header Actions -->
       <div class="header-actions">
@@ -41,7 +39,7 @@
       </div>
     </div>
 
-    <!-- Profile Modal - Sekarang akan di-teleport ke body -->
+  <!-- Profile Modal - Sekarang akan di-teleport ke body -->
     <UserProfileModal />
   </header>
 </template>
@@ -67,8 +65,8 @@ const showProfileModal = () => {
   }, 50)
 }
 
-// Inject sidebar toggle function from AppLayout
-const toggleSidebar = inject('toggleSidebar', () => {})
+// Sidebar toggle no longer used on mobile (hamburger removed)
+const toggleSidebar = () => {}
 
 const pageTitle = computed(() => {
   const titles = {
@@ -118,22 +116,70 @@ const logout = async () => {
 </script>
 
 <style scoped>
+.app-header {
+  position: fixed; /* align with global layout */
+  top: 0;
+  z-index: 1080;
+  background: #fff;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  height: var(--header-height);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+}
+
+.brand {
+  font-size: 1rem;
+}
+
+/* Mobile-only tuning */
+@media (max-width: 991.98px) {
+  .header-content {
+    padding: 0.5rem 0.75rem;
+  }
+  .brand {
+    font-size: 1.05rem;
+    letter-spacing: 0.2px;
+  }
+}
+
+/* Desktop refinements */
+@media (min-width: 992px) {
+  .app-header {
+    left: var(--sidebar-width, 250px);
+    right: 0;
+  }
+  .header-content {
+    padding: 0.5rem 1.5rem; /* beri ruang kanan agar dropdown tidak menempel tepi */
+  }
+  .header-actions {
+    padding-right: 0.25rem;
+  }
+}
+
 .user-menu {
   display: flex;
   align-items: center;
-  padding: 0.5rem 1rem;
-  border-radius: 50px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  padding: 0.5rem 0.875rem;
+  border-radius: 999px;
+  background: transparent;
   cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  /* Hapus z-index yang tidak perlu */
+  transition: all 0.2s ease;
 }
 
 .user-menu:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
+  background: #f8f9fa;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+
+.user-menu:focus,
+.user-menu:focus-visible {
+  outline: 2px solid rgba(99,102,241,0.25);
+  outline-offset: 2px;
 }
 
 .user-avatar {
@@ -200,11 +246,34 @@ const logout = async () => {
   }
   
   .user-menu {
-    padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
   }
+ 
   
   .user-avatar {
     margin-right: 0.5rem;
+    width: 36px;
+    height: 36px;
+    font-size: 0.95rem;
+  }
+
+  /* Hide chevron on mobile to save space */
+  .user-menu > i.bi-chevron-down {
+    display: none;
+  }
+
+  /* Mobile-friendly dropdown sizing */
+  .dropdown-menu {
+    width: calc(100vw - 1.25rem);
+    max-width: 50px;
+    border-radius: 12px;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.12);
   }
 }
 </style>

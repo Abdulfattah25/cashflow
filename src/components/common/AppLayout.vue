@@ -2,26 +2,25 @@
   <div class="app-layout">
     <!-- Loading Overlay -->
     <LoadingSpinner v-if="authStore.loading" />
-    
-    <!-- Mobile Overlay -->
-    <div 
-      v-if="sidebarOpen" 
-      class="sidebar-overlay d-lg-none" 
-      @click="closeSidebar"
-    ></div>
-    
+
+    <!-- Mobile Overlay (kept for completeness though hamburger is hidden) -->
+    <div v-if="sidebarOpen" class="sidebar-overlay d-lg-none" @click="closeSidebar"></div>
+
     <!-- Sidebar -->
     <AppSidebar :class="{ 'mobile-show': sidebarOpen }" />
-    
+
     <!-- Header -->
     <AppHeader />
-    
+
     <!-- Main Content -->
     <main class="main-content">
       <div class="container-fluid">
         <slot />
       </div>
     </main>
+
+    <!-- Bottom Navigation (Mobile Only) -->
+    <BottomNav class="d-lg-none" />
   </div>
 </template>
 
@@ -31,6 +30,7 @@ import { useAuthStore } from '@/stores/auth'
 import AppSidebar from './AppSidebar.vue'
 import AppHeader from './AppHeader.vue'
 import LoadingSpinner from './LoadingSpinner.vue'
+import BottomNav from './BottomNav.vue'
 
 const authStore = useAuthStore()
 const sidebarOpen = ref(false)
@@ -74,5 +74,12 @@ onUnmounted(() => {
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 1040;
+}
+
+/* Pastikan konten tidak tertutup bottom nav di mobile */
+@media (max-width: 991.98px) {
+  .main-content {
+    padding-bottom: 84px; /* 64px nav + sedikit ruang */
+  }
 }
 </style>

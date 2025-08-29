@@ -1,12 +1,8 @@
 <template>
   <div id="app">
     <!-- Loading Overlay -->
-    <LoadingSpinner 
-      v-if="authStore.loading && !authStore.user" 
-      overlay 
-      text="Loading..." 
-    />
-    
+    <LoadingSpinner v-if="authStore.loading && !authStore.user" overlay text="Loading..." />
+
     <!-- Router View -->
     <router-view v-else />
   </div>
@@ -27,6 +23,17 @@ onMounted(async () => {
 <style>
 #app {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Reduce global header height for tighter spacing */
+:root {
+  --header-height: 56px;
+}
+
+@media (max-width: 575.98px) {
+  :root {
+    --header-height: 52px;
+  }
 }
 
 /* Custom scrollbar */
