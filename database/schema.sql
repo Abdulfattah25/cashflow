@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     email TEXT UNIQUE NOT NULL,
     full_name TEXT,
     avatar_url TEXT,
+    role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user','admin')),
+    is_active BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -239,3 +241,150 @@ CREATE TRIGGER handle_updated_at BEFORE UPDATE ON public.expense_types
 
 CREATE TRIGGER handle_updated_at BEFORE UPDATE ON public.expense_items
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+-- License system
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'license_status') THEN
+    CREATE TYPE public.license_status AS ENUM ('valid','used','revoked','expired');
+  END IF;
+END $$;
+
+CREATE TABLE IF NOT EXISTS public.licenses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code TEXT NOT NULL UNIQUE,
+  status public.license_status NOT NULL DEFAULT 'valid',
+  assigned_email TEXT,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  used_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE INDEX IF NOT EXISTS idx_licenses_status ON public.licenses(status);
+CREATE INDEX IF NOT EXISTS idx_licenses_created ON public.licenses(created_at DESC);
+
+ALTER TABLE public.licenses ENABLE ROW LEVEL SECURITY;
+
+CREATE OR REPLACE FUNCTION public.is_current_user_admin()
+RETURNS BOOLEAN
+LANGUAGE SQL
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS(
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid()
+      AND role = 'admin'
+      AND is_active = true
+  );
+$$;
+
+GRANT EXECUTE ON FUNCTION public.is_current_user_admin() TO public;
+
+DROP POLICY IF EXISTS "licenses admin read" ON public.licenses;
+CREATE POLICY "licenses admin read" ON public.licenses
+  FOR SELECT
+  USING (public.is_current_user_admin());
+
+DROP POLICY IF EXISTS "licenses admin write" ON public.licenses;
+CREATE POLICY "licenses admin write" ON public.licenses
+  FOR ALL
+  USING (public.is_current_user_admin())
+  WITH CHECK (public.is_current_user_admin());
+
+CREATE OR REPLACE FUNCTION public.validate_license(p_code TEXT)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  c INT;
+BEGIN
+  SELECT COUNT(*) INTO c
+  FROM public.licenses
+  WHERE code = UPPER(p_code) AND status = 'valid';
+  RETURN c > 0;
+END
+$$;
+
+GRANT EXECUTE ON FUNCTION public.validate_license(TEXT) TO public;
+
+CREATE OR REPLACE FUNCTION public.use_license(p_code TEXT, p_email TEXT)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  updated_count INT;
+BEGIN
+  UPDATE public.licenses
+     SET status = 'used',
+         assigned_email = p_email,
+         used_at = NOW()
+   WHERE code = UPPER(p_code)
+     AND status = 'valid';
+  GET DIAGNOSTICS updated_count = ROW_COUNT;
+  RETURN updated_count = 1;
+END
+$$;
+
+GRANT EXECUTE ON FUNCTION public.use_license(TEXT, TEXT) TO public;
+
+CREATE OR REPLACE FUNCTION public.admin_generate_license()
+RETURNS public.licenses
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  new_code TEXT;
+  rec public.licenses;
+  random_uuid TEXT;
+BEGIN
+  IF NOT public.is_current_user_admin() THEN
+    RAISE EXCEPTION 'Only admins can generate licenses';
+  END IF; 
+
+  LOOP
+    random_uuid := REPLACE(gen_random_uuid()::TEXT, '-', '');
+    new_code := UPPER(SUBSTR(random_uuid, 1, 6));
+
+    BEGIN
+      INSERT INTO public.licenses(code, status)
+      VALUES (new_code, 'valid')
+      RETURNING * INTO rec;
+      RETURN rec;
+    EXCEPTION
+      WHEN unique_violation THEN
+        CONTINUE;
+    END;
+  END LOOP;
+
+  RETURN rec;
+END
+$$;
+
+GRANT EXECUTE ON FUNCTION public.admin_generate_license() TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.admin_delete_user(target_user_id UUID)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF NOT public.is_current_user_admin() THEN
+    RAISE EXCEPTION 'Only admins can delete users';
+  END IF;
+  DELETE FROM auth.users WHERE id = target_user_id;
+  RETURN true;
+EXCEPTION
+  WHEN OTHERS THEN
+    RAISE EXCEPTION 'Failed to delete user: %', SQLERRM;
+END
+$$;
+
+GRANT EXECUTE ON FUNCTION public.admin_delete_user(UUID) TO authenticated;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.licenses TO authenticated;

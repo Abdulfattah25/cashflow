@@ -1,5 +1,5 @@
 <template>
-  <nav class="sidebar bg-primary text-white" style="width: 250px;">
+  <nav class="sidebar bg-primary text-white" style="width: 250px">
     <div class="p-3">
       <!-- Logo -->
       <div class="navbar-brand d-flex align-items-center mb-4">
@@ -10,8 +10,8 @@
       <!-- Navigation Menu -->
       <ul class="nav nav-pills flex-column">
         <li class="nav-item mb-2">
-          <router-link 
-            to="/" 
+          <router-link
+            to="/"
             class="nav-link text-white"
             :class="{ 'active bg-light text-primary': $route.name === 'dashboard' }"
           >
@@ -19,10 +19,10 @@
             Dashboard
           </router-link>
         </li>
-        
+
         <li class="nav-item mb-2">
-          <router-link 
-            to="/transactions" 
+          <router-link
+            to="/transactions"
             class="nav-link text-white"
             :class="{ 'active bg-light text-primary': $route.name === 'transactions' }"
           >
@@ -30,10 +30,10 @@
             Transactions
           </router-link>
         </li>
-        
+
         <li class="nav-item mb-2">
-          <router-link 
-            to="/reports" 
+          <router-link
+            to="/reports"
             class="nav-link text-white"
             :class="{ 'active bg-light text-primary': $route.name === 'reports' }"
           >
@@ -41,10 +41,10 @@
             Reports
           </router-link>
         </li>
-        
+
         <li class="nav-item mb-2">
-          <router-link 
-            to="/budget" 
+          <router-link
+            to="/budget"
             class="nav-link text-white"
             :class="{ 'active bg-light text-primary': $route.name === 'budget' }"
           >
@@ -52,15 +52,37 @@
             Budget
           </router-link>
         </li>
-        
+
         <li class="nav-item mb-2">
-          <router-link 
-            to="/goals" 
+          <router-link
+            to="/goals"
             class="nav-link text-white"
             :class="{ 'active bg-light text-primary': $route.name === 'goals' }"
           >
             <i class="bi bi-bullseye me-2"></i>
             Goals
+          </router-link>
+        </li>
+
+        <li class="nav-item mb-2">
+          <router-link
+            to="/profile"
+            class="nav-link text-white"
+            :class="{ 'active bg-light text-primary': $route.name === 'profile' }"
+          >
+            <i class="bi bi-person-circle me-2"></i>
+            Profile
+          </router-link>
+        </li>
+
+        <li v-if="authStore.user?.role === 'admin'" class="nav-item mb-2">
+          <router-link
+            to="/admin"
+            class="nav-link text-white"
+            :class="{ 'active bg-light text-primary': $route.name === 'admin' }"
+          >
+            <i class="bi bi-shield-check me-2"></i>
+            Admin Panel
           </router-link>
         </li>
       </ul>
@@ -73,7 +95,6 @@ import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
-
 </script>
 
 <style scoped>
@@ -108,10 +129,9 @@ const authStore = useAuthStore()
     transform: translateX(-100%);
     transition: transform 0.3s ease;
   }
-  
+
   .sidebar.mobile-show {
     transform: translateX(0);
   }
 }
-
 </style>

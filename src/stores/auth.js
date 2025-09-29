@@ -9,21 +9,53 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!user.value)
 
+  // Track if auth has been initialized to prevent duplicate calls
+  const initialized = ref(false)
+
   // Initialize auth state
   const initAuth = async () => {
+    // Prevent duplicate initialization
+    if (initialized.value) return
+
     loading.value = true
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      user.value = session?.user || null
-      
-      // Listen for auth changes
-      supabase.auth.onAuthStateChange((event, session) => {
-        user.value = session?.user || null
-      })
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (session?.user) {
+        await fetchUserProfile(session.user)
+      } else {
+        user.value = null
+      }
+
+      initialized.value = true
     } catch (err) {
       error.value = err.message
+      console.error('Auth initialization error:', err)
     } finally {
       loading.value = false
+    }
+  }
+
+  // Fetch user profile data
+  const fetchUserProfile = async (authUser) => {
+    try {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authUser.id)
+        .single()
+
+      if (profileError) throw profileError
+
+      user.value = {
+        ...authUser,
+        ...profile,
+      }
+    } catch (err) {
+      console.error('Error fetching user profile:', err)
+      user.value = authUser
     }
   }
 
@@ -34,7 +66,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
-        password
+        password,
       })
       if (signUpError) throw signUpError
       return data
@@ -53,7 +85,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
       })
       if (signInError) throw signInError
       return data
@@ -85,14 +117,14 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
     try {
       const { data, error: updateError } = await supabase.auth.updateUser({
-        data: updates
+        data: updates,
       })
 
       if (updateError) throw updateError
 
       // Update local user state
       user.value = data.user
-      
+
       return data
     } catch (err) {
       error.value = err.message
@@ -107,10 +139,12 @@ export const useAuthStore = defineStore('auth', () => {
     loading,
     error,
     isAuthenticated,
+    initialized,
     initAuth,
+    fetchUserProfile,
     signUp,
     signIn,
     signOut,
-    updateProfile // TAMBAHKAN INI
+    updateProfile,
   }
 })
