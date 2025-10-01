@@ -82,36 +82,59 @@ onUnmounted(() => {
 .main-content {
   flex: 1;
   margin-left: 0;
-  padding: 1rem;
   transition: margin-left 0.3s ease;
-  min-height: calc(100vh - var(--header-height, 56px));
+  padding-top: var(--header-height, 70px); 
+  min-height: 100vh; 
 }
 
-/* Desktop layout with sidebar */
 @media (min-width: 992px) {
   .app-layout {
     flex-direction: row;
   }
 
   .main-content {
-    margin-left: 250px; /* Sidebar width */
-    padding: 1.5rem;
-    width: calc(100% - 250px);
+    margin-left: var(--sidebar-width, 250px); 
+    margin-top: 0; 
+    padding-top: var(--header-height, 70px);
+    padding-left: 1rem; 
+    padding-right: 1.5rem; 
+    padding-bottom: 1rem;
+    min-height: 100vh;
   }
 }
 
-/* Tablet adjustments */
-@media (min-width: 768px) and (max-width: 991.98px) {
+@media (min-width: 992px) {
+  .app-layout {
+    flex-direction: row;
+  }
+
   .main-content {
-    padding: 1.25rem;
+    margin-left: 150px; 
+    margin-top: 0;
+    padding-top: 35px;
+    padding-left: 0;
+    padding-right: 1.5rem;
+    padding-bottom: 1rem;
+    min-height: 100vh;
   }
 }
 
-/* Mobile adjustments */
+@media (min-width: 1400px) {
+  .main-content {
+    padding-left: 0;
+    padding-right: 2rem;
+  }
+}
+
 @media (max-width: 767.98px) {
   .main-content {
-    padding: 0.75rem;
-    padding-bottom: 90px; /* Space for bottom nav */
+    min-height: calc(
+      100vh - var(--header-height, 70px) - var(--bottom-nav-height, 64px)
+    );
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-bottom: 1.4rem;
+    padding-top: 2.2rem;
     margin-left: 0;
   }
 
@@ -131,13 +154,12 @@ onUnmounted(() => {
   backdrop-filter: blur(2px);
 }
 
-/* Container fluid adjustments */
 .main-content .container-fluid {
   max-width: none;
-  padding: 0;
+  padding-left: 0;
+  padding-right: 0;
 }
 
-/* Loading spinner positioning */
 :deep(.loading-spinner) {
   position: fixed;
   top: 0;
@@ -147,27 +169,17 @@ onUnmounted(() => {
   z-index: 9999;
 }
 
-/* Responsive content width */
-@media (min-width: 1400px) {
-  .main-content {
-    padding: 2rem;
-  }
-}
-
-/* Ensure proper scroll behavior */
 .main-content {
   overflow-y: auto;
   overflow-x: hidden;
 }
 
-/* Content wrapper for better organization */
 .content-wrapper {
   min-height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-/* Ensure cards and components have proper spacing */
 :deep(.card) {
   margin-bottom: 1.5rem;
 }
@@ -176,7 +188,6 @@ onUnmounted(() => {
   margin-bottom: 1rem;
 }
 
-/* Mobile sidebar positioning */
 @media (max-width: 991.98px) {
   .position-fixed {
     top: 0;
@@ -186,12 +197,10 @@ onUnmounted(() => {
   }
 }
 
-/* Dark theme support */
 [data-bs-theme='dark'] .app-layout {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
 
-/* Performance optimizations */
 .main-content {
   will-change: margin-left;
 }

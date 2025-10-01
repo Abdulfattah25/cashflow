@@ -114,7 +114,7 @@
       <div class="row">
         <div class="col-12 col-md-4 mb-4">
           <div class="card dashboard-card card-accent card-accent--success">
-            <div class="card-header">
+            <div class="card-header p-3">
               <h5 class="mb-0">🎫 Generator Lisensi</h5>
             </div>
             <div class="card-body">
@@ -142,9 +142,9 @@
         </div>
         <div class="col-12 col-md-8">
           <div class="card dashboard-card card-accent card-accent--warning">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header d-flex justify-content-between align-items-center p-3">
               <h5 class="mb-0">📜 Daftar Lisensi</h5>
-              <button class="btn btn-sm btn-outline-warning" @click="loadRecentLicenses">
+              <button class="btn btn-sm btn-outline-warning p-0" @click="loadRecentLicenses">
                 🔄 Refresh
               </button>
             </div>

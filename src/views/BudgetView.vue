@@ -74,6 +74,19 @@ const selectedExpenseType = ref(null)
 // Computed properties
 const expenseCategories = computed(() => getCategoriesByType('expense'))
 
+const statusSlug = (label) => {
+  const key = label?.toLowerCase()?.replace(' ', '-')
+  const map = {
+    melebihi: 'exceeded',
+    peringatan: 'warning',
+    aman: 'on-track',
+    exceeded: 'exceeded',
+    warning: 'warning',
+    'on-track': 'on-track',
+  }
+  return map[key] || key
+}
+
 const filteredBudgets = computed(() => {
   let filtered = [...budgets.value]
 
@@ -87,8 +100,8 @@ const filteredBudgets = computed(() => {
   // Filter by status
   if (budgetFilters.status) {
     filtered = filtered.filter((b) => {
-      const status = getBudgetStatus(b.percentage).toLowerCase().replace(' ', '-')
-      return status === budgetFilters.status
+      const status = statusSlug(getBudgetStatus(b.percentage))
+      return status === statusSlug(budgetFilters.status)
     })
   }
 
@@ -115,9 +128,9 @@ const formatCurrency = (amount) => {
 }
 
 const getBudgetStatus = (percentage) => {
-  if (percentage >= 100) return 'Exceeded'
-  if (percentage >= 80) return 'Warning'
-  return 'On Track'
+  if (percentage >= 100) return 'Melebihi'
+  if (percentage >= 80) return 'Peringatan'
+  return 'Aman'
 }
 
 const getBudgetStatusClass = (percentage) => {
@@ -176,8 +189,8 @@ const saveBudget = async () => {
     bsModal.hide()
     resetBudgetForm()
   } catch (err) {
-    console.error('Failed to save budget:', err)
-    alert('Failed to save budget. Please try again.')
+    console.error('Gagal menyimpan anggaran:', err)
+    alert('Gagal menyimpan anggaran. Silakan coba lagi.')
   }
 }
 
@@ -195,8 +208,8 @@ const saveExpenseType = async () => {
     bsModal.hide()
     resetExpenseTypeForm()
   } catch (err) {
-    console.error('Failed to save expense type:', err)
-    alert('Failed to save expense type. Please try again.')
+    console.error('Gagal menyimpan jenis pengeluaran:', err)
+    alert('Gagal menyimpan jenis pengeluaran. Silakan coba lagi.')
   }
 }
 
@@ -214,8 +227,8 @@ const saveExpenseItem = async () => {
     bsModal.hide()
     resetExpenseItemForm()
   } catch (err) {
-    console.error('Failed to save expense item:', err)
-    alert('Failed to save expense item. Please try again.')
+    console.error('Gagal menyimpan item pengeluaran:', err)
+    alert('Gagal menyimpan item pengeluaran. Silakan coba lagi.')
   }
 }
 
@@ -266,12 +279,12 @@ const openAddItemModal = (expenseType) => {
 }
 
 const confirmDeleteBudget = async (id) => {
-  if (confirm('Are you sure you want to delete this budget?')) {
+  if (confirm('Apakah Anda yakin ingin menghapus anggaran ini?')) {
     try {
       await deleteBudget(id)
     } catch (err) {
-      console.error('Failed to delete budget:', err)
-      alert('Failed to delete budget. Please try again.')
+      console.error('Gagal menghapus anggaran:', err)
+      alert('Gagal menghapus anggaran. Silakan coba lagi.')
     }
   }
 }
@@ -279,25 +292,25 @@ const confirmDeleteBudget = async (id) => {
 const confirmDeleteExpenseType = async (id) => {
   if (
     confirm(
-      'Are you sure you want to delete this expense type? All related items will also be deleted.',
+      'Apakah Anda yakin ingin menghapus jenis pengeluaran ini? Semua item terkait juga akan dihapus.',
     )
   ) {
     try {
       await deleteExpenseType(id)
     } catch (err) {
-      console.error('Failed to delete expense type:', err)
-      alert('Failed to delete expense type. Please try again.')
+      console.error('Gagal menghapus jenis pengeluaran:', err)
+      alert('Gagal menghapus jenis pengeluaran. Silakan coba lagi.')
     }
   }
 }
 
 const confirmDeleteExpenseItem = async (id) => {
-  if (confirm('Are you sure you want to delete this expense item?')) {
+  if (confirm('Apakah Anda yakin ingin menghapus item pengeluaran ini?')) {
     try {
       await deleteExpenseItem(id)
     } catch (err) {
-      console.error('Failed to delete expense item:', err)
-      alert('Failed to delete expense item. Please try again.')
+      console.error('Gagal menghapus item pengeluaran:', err)
+      alert('Gagal menghapus item pengeluaran. Silakan coba lagi.')
     }
   }
 }
@@ -352,7 +365,7 @@ onMounted(async () => {
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-5">
       <div class="spinner-border" role="status">
-        <span class="visually-hidden">Loading...</span>
+        <span class="visually-hidden">Memuat...</span>
       </div>
     </div>
 
@@ -368,8 +381,8 @@ onMounted(async () => {
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center">
             <div>
-              <h4 class="mb-1">Budget Management</h4>
-              <p class="text-muted mb-0 small">Set and track your spending limits</p>
+              <h4 class="mb-1">Manajemen Anggaran</h4>
+              <p class="text-muted mb-0 small">Atur dan pantau batas pengeluaran Anda</p>
             </div>
             <button
               class="btn btn-primary btn-sm"
@@ -377,8 +390,8 @@ onMounted(async () => {
               data-bs-target="#budgetModal"
             >
               <i class="bi bi-plus-circle me-1"></i>
-              <span class="d-none d-sm-inline">Create Budget</span>
-              <span class="d-sm-none">Create</span>
+              <span class="d-none d-sm-inline">Buat Anggaran</span>
+              <span class="d-sm-none">Buat</span>
             </button>
           </div>
         </div>
@@ -390,7 +403,7 @@ onMounted(async () => {
           <div class="card summary-card total-budget border-0">
             <div class="card-body p-3 text-center">
               <i class="bi bi-wallet2 summary-icon mb-2"></i>
-              <h6 class="card-title text-muted mb-1 small">Total Budget</h6>
+              <h6 class="card-title text-muted mb-1 small">Total Anggaran</h6>
               <h5 class="mb-0">{{ formatCurrency(budgetSummary.totalBudget) }}</h5>
             </div>
           </div>
@@ -399,7 +412,7 @@ onMounted(async () => {
           <div class="card summary-card total-spent border-0">
             <div class="card-body p-3 text-center">
               <i class="bi bi-credit-card summary-icon mb-2"></i>
-              <h6 class="card-title text-muted mb-1 small">Total Spent</h6>
+              <h6 class="card-title text-muted mb-1 small">Total Terpakai</h6>
               <h5 class="mb-0">{{ formatCurrency(budgetSummary.totalSpent) }}</h5>
             </div>
           </div>
@@ -408,7 +421,7 @@ onMounted(async () => {
           <div class="card summary-card remaining border-0">
             <div class="card-body p-3 text-center">
               <i class="bi bi-piggy-bank summary-icon mb-2"></i>
-              <h6 class="card-title text-muted mb-1 small">Remaining</h6>
+              <h6 class="card-title text-muted mb-1 small">Sisa</h6>
               <h5 class="mb-0" :class="budgetSummary.remaining >= 0 ? 'text-dark' : 'text-danger'">
                 {{ formatCurrency(budgetSummary.remaining) }}
               </h5>
@@ -419,7 +432,7 @@ onMounted(async () => {
           <div class="card summary-card usage-rate border-0">
             <div class="card-body p-3 text-center">
               <i class="bi bi-speedometer2 summary-icon mb-2"></i>
-              <h6 class="card-title text-muted mb-1 small">Usage Rate</h6>
+              <h6 class="card-title text-muted mb-1 small">Tingkat Pemakaian</h6>
               <h5 class="mb-0">{{ budgetSummary.usageRate }}%</h5>
             </div>
           </div>
@@ -427,10 +440,10 @@ onMounted(async () => {
       </div>
 
       <!-- Filters - Mobile Optimized -->
-      <div class="row mb-3">
+      <div class="row mb-0">
         <div class="col-12">
           <div class="card border-0">
-            <div class="card-header bg-transparent border-0 pb-2">
+            <div class="card-header bg-transparent border-0 p-3">
               <div class="d-flex justify-content-between align-items-center">
                 <h6 class="card-title mb-0 fw-medium">Filters</h6>
                 <button
@@ -561,7 +574,7 @@ onMounted(async () => {
                     <div class="d-flex justify-content-between">
                       <small class="text-muted">{{ budget.percentage }}% used</small>
                       <small :class="budget.remaining >= 0 ? 'text-success' : 'text-danger'">
-                        {{ budget.remaining >= 0 ? 'Remaining: ' : 'Over by: '
+                        {{ budget.remaining >= 0 ? 'Sisa: ' : 'Melebihi: '
                         }}{{ formatCurrency(Math.abs(budget.remaining)) }}
                       </small>
                     </div>
@@ -580,19 +593,19 @@ onMounted(async () => {
 
           <!-- Empty State for Budgets -->
           <div v-if="filteredBudgets.length === 0" class="col-12">
-            <div class="empty-state py-4">
+            <div class="empty-state py-0">
               <i class="bi bi-wallet text-muted"></i>
-              <h6 class="text-muted mt-3">No budgets found</h6>
+              <h6 class="text-muted mt-3">Belum ada anggaran</h6>
               <p class="text-muted small">
-                Create your first budget to start tracking your expenses.
+                Buat anggaran pertama Anda untuk mulai melacak pengeluaran.
               </p>
               <button
                 class="btn btn-primary btn-sm"
                 data-bs-toggle="modal"
                 data-bs-target="#budgetModal"
               >
-                <i class="bi bi-plus-circle me-2"></i>
-                Create Budget
+                <i class="bi bi-plus-circle me-2 fs-6 text-light"></i>
+                Buat Anggaran
               </button>
             </div>
           </div>
@@ -605,24 +618,15 @@ onMounted(async () => {
           <!-- Section Header -->
           <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
-              <h5 class="mb-1">Expense Types</h5>
-              <p class="text-muted mb-0 small">Manage your expense categories and items</p>
+              <h5 class="mb-1">Jenis Pengeluaran</h5>
+              <p class="text-muted mb-0 small">Kelola kategori pengeluaran dan itemnya</p>
             </div>
-            <button
-              class="btn btn-outline-primary btn-sm"
-              data-bs-toggle="modal"
-              data-bs-target="#expenseTypeModal"
-            >
-              <i class="bi bi-plus-circle me-1"></i>
-              <span class="d-none d-sm-inline">Add Category</span>
-              <span class="d-sm-none">Add</span>
-            </button>
           </div>
 
           <!-- Loading State for Expense Types -->
           <div v-if="expenseTypesLoading" class="text-center py-3">
             <div class="spinner-border spinner-border-sm" role="status">
-              <span class="visually-hidden">Loading...</span>
+              <span class="visually-hidden">Memuat...</span>
             </div>
           </div>
 
@@ -661,7 +665,7 @@ onMounted(async () => {
                         </li>
                         <li>
                           <a class="dropdown-item" href="#" @click="openAddItemModal(expenseType)">
-                            <i class="bi bi-plus me-2"></i>Add Item
+                            <i class="bi bi-plus me-2"></i>Tambah Item
                           </a>
                         </li>
                         <li><hr class="dropdown-divider" /></li>
@@ -724,17 +728,17 @@ onMounted(async () => {
                       class="btn btn-sm btn-outline-primary"
                       @click="openAddItemModal(expenseType)"
                     >
-                      <i class="bi bi-plus me-1"></i>Add First Item
+                      <i class="bi bi-plus me-1"></i>Tambah Item Pertama
                     </button>
                   </div>
 
-                  <!-- Add Item Button -->
+                  <!-- Tombol Tambah Item -->
                   <div v-if="expenseType.items.length > 0" class="mt-2 pt-2 border-top">
                     <button
                       class="btn btn-sm btn-outline-primary w-100"
                       @click="openAddItemModal(expenseType)"
                     >
-                      <i class="bi bi-plus me-1"></i>Add Item
+                      <i class="bi bi-plus me-1"></i>Tambah Item
                     </button>
                   </div>
                 </div>
@@ -744,19 +748,19 @@ onMounted(async () => {
 
           <!-- Empty State for Expense Types -->
           <div v-if="expenseTypesWithItems.length === 0 && !expenseTypesLoading" class="col-12">
-            <div class="empty-state py-4">
+            <div class="empty-state py-0">
               <i class="bi bi-tags text-muted"></i>
-              <h6 class="text-muted mt-3">No expense categories yet</h6>
+              <h6 class="text-muted mt-3">Belum ada kategori pengeluaran</h6>
               <p class="text-muted small">
-                Create your first expense category to organize your spending items.
+                Buat kategori pengeluaran pertama untuk mengelola item pengeluaran.
               </p>
               <button
                 class="btn btn-primary btn-sm"
                 data-bs-toggle="modal"
                 data-bs-target="#expenseTypeModal"
               >
-                <i class="bi bi-plus-circle me-2"></i>
-                Create Category
+                <i class="bi bi-plus-circle me-2 fs-6 text-light"></i>
+                Buat Kategori
               </button>
             </div>
           </div>
@@ -768,7 +772,9 @@ onMounted(async () => {
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
-              <h6 class="modal-title">{{ editingBudget ? 'Edit Budget' : 'Create New Budget' }}</h6>
+              <h6 class="modal-title">
+                {{ editingBudget ? 'Ubah Anggaran' : 'Buat Anggaran Baru' }}
+              </h6>
               <button
                 type="button"
                 class="btn-close"
@@ -848,7 +854,7 @@ onMounted(async () => {
               </button>
               <button type="button" class="btn btn-primary" @click="saveBudget" :disabled="loading">
                 <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                {{ editingBudget ? 'Update' : 'Create' }} Budget
+                {{ editingBudget ? 'Perbarui' : 'Buat' }} Anggaran
               </button>
             </div>
           </div>
@@ -861,7 +867,11 @@ onMounted(async () => {
           <div class="modal-content">
             <div class="modal-header">
               <h6 class="modal-title">
-                {{ editingExpenseType ? 'Edit Expense Category' : 'Create New Expense Category' }}
+                {{
+                  editingExpenseType
+                    ? 'Ubah Kategori Pengeluaran'
+                    : 'Buat Kategori Pengeluaran Baru'
+                }}
               </h6>
               <button
                 type="button"
@@ -972,7 +982,7 @@ onMounted(async () => {
                   v-if="expenseTypesLoading"
                   class="spinner-border spinner-border-sm me-2"
                 ></span>
-                {{ editingExpenseType ? 'Update' : 'Create' }} Category
+                {{ editingExpenseType ? 'Perbarui' : 'Buat' }} Kategori
               </button>
             </div>
           </div>
@@ -985,7 +995,7 @@ onMounted(async () => {
           <div class="modal-content">
             <div class="modal-header">
               <h6 class="modal-title">
-                {{ editingExpenseItem ? 'Edit Expense Item' : 'Add New Expense Item' }}
+                {{ editingExpenseItem ? 'Ubah Item Pengeluaran' : 'Tambah Item Pengeluaran Baru' }}
                 <span v-if="selectedExpenseType" class="text-muted small">
                   to {{ selectedExpenseType.name }}
                 </span>
@@ -1047,7 +1057,7 @@ onMounted(async () => {
                   v-if="expenseTypesLoading"
                   class="spinner-border spinner-border-sm me-2"
                 ></span>
-                {{ editingExpenseItem ? 'Update' : 'Add' }} Item
+                {{ editingExpenseItem ? 'Perbarui' : 'Tambah' }} Item
               </button>
             </div>
           </div>
@@ -1156,11 +1166,11 @@ onMounted(async () => {
 /* Empty State */
 .empty-state {
   text-align: center;
-  padding: 3rem 1rem;
+  padding: 1rem 1rem;
 }
 
 .empty-state i {
-  font-size: 3rem;
+  font-size: 2rem;
   margin-bottom: 1rem;
 }
 

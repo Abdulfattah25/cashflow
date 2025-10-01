@@ -295,7 +295,7 @@ onMounted(async () => {
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-5">
       <div class="spinner-border" role="status">
-        <span class="visually-hidden">Loading...</span>
+        <span class="visually-hidden">Memuat...</span>
       </div>
     </div>
 
@@ -311,8 +311,8 @@ onMounted(async () => {
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center">
             <div>
-              <h4 class="mb-1">Financial Goals</h4>
-              <p class="text-muted mb-0 small">Set and track your financial objectives</p>
+              <h4 class="mb-1">Target Keuangan</h4>
+              <p class="text-muted mb-0 small">Tetapkan dan pantau target keuangan Anda</p>
             </div>
             <button
               class="btn btn-primary btn-sm"
@@ -320,8 +320,8 @@ onMounted(async () => {
               data-bs-target="#goalModal"
             >
               <i class="bi bi-plus-circle me-1"></i>
-              <span class="d-none d-sm-inline">Add Goal</span>
-              <span class="d-sm-none">Add</span>
+              <span class="d-none d-sm-inline">Tambah Target</span>
+              <span class="d-sm-none">Tambah</span>
             </button>
           </div>
         </div>
@@ -333,7 +333,7 @@ onMounted(async () => {
           <div class="card summary-card total-goals border-0 text-center">
             <div class="card-body p-3">
               <i class="bi bi-bullseye summary-icon mb-2"></i>
-              <h6 class="card-title text-muted mb-1 small">Total Goals</h6>
+              <h6 class="card-title text-muted mb-1 small">Total Target</h6>
               <h5 class="mb-0">{{ goalSummary.totalGoals }}</h5>
             </div>
           </div>
@@ -342,7 +342,7 @@ onMounted(async () => {
           <div class="card summary-card completed-goals border-0 text-center">
             <div class="card-body p-3">
               <i class="bi bi-check-circle summary-icon mb-2"></i>
-              <h6 class="card-title text-muted mb-1 small">Completed</h6>
+              <h6 class="card-title text-muted mb-1 small">Selesai</h6>
               <h5 class="mb-0">{{ goalSummary.completedGoals }}</h5>
             </div>
           </div>
@@ -360,7 +360,7 @@ onMounted(async () => {
           <div class="card summary-card total-saved border-0 text-center">
             <div class="card-body p-3">
               <i class="bi bi-graph-up summary-icon mb-2"></i>
-              <h6 class="card-title text-muted mb-1 small">Total Saved</h6>
+              <h6 class="card-title text-muted mb-1 small">Total Tersimpan</h6>
               <h5 class="mb-0">{{ formatCurrency(goalSummary.totalSaved) }}</h5>
             </div>
           </div>
@@ -374,7 +374,7 @@ onMounted(async () => {
           <div class="card border-0">
             <div class="card-header bg-transparent border-0 pb-2">
               <div class="d-flex justify-content-between align-items-center">
-                <h6 class="card-title mb-0 fw-medium">Filters</h6>
+                <h6 class="card-title mb-0 fw-medium">Filter</h6>
                 <button
                   class="btn btn-sm btn-outline-secondary d-md-none"
                   type="button"
@@ -392,35 +392,35 @@ onMounted(async () => {
               <div class="card-body pt-0">
                 <div class="row g-2">
                   <div class="col-6 col-md-3">
-                    <label class="form-label small fw-medium">Goal Type</label>
+                    <label class="form-label small fw-medium">Jenis Target</label>
                     <select v-model="goalFilters.type" class="form-select form-select-sm">
-                      <option value="">All Types</option>
-                      <option value="savings">Savings</option>
-                      <option value="debt">Debt Payoff</option>
-                      <option value="investment">Investment</option>
-                      <option value="purchase">Purchase</option>
+                      <option value="">Semua Jenis</option>
+                      <option value="savings">Tabungan</option>
+                      <option value="debt">Pelunasan Utang</option>
+                      <option value="investment">Investasi</option>
+                      <option value="purchase">Pembelian</option>
                     </select>
                   </div>
                   <div class="col-6 col-md-3">
                     <label class="form-label small fw-medium">Status</label>
                     <select v-model="goalFilters.status" class="form-select form-select-sm">
-                      <option value="">All Status</option>
-                      <option value="active">Active</option>
-                      <option value="completed">Completed</option>
-                      <option value="paused">Paused</option>
+                      <option value="">Semua Status</option>
+                      <option value="active">Aktif</option>
+                      <option value="completed">Selesai</option>
+                      <option value="paused">Ditahan</option>
                     </select>
                   </div>
                   <div class="col-6 col-md-3">
-                    <label class="form-label small fw-medium">Priority</label>
+                    <label class="form-label small fw-medium">Prioritas</label>
                     <select v-model="goalFilters.priority" class="form-select form-select-sm">
-                      <option value="">All Priorities</option>
-                      <option value="high">High</option>
-                      <option value="medium">Medium</option>
-                      <option value="low">Low</option>
+                      <option value="">Semua Prioritas</option>
+                      <option value="high">Tinggi</option>
+                      <option value="medium">Sedang</option>
+                      <option value="low">Rendah</option>
                     </select>
                   </div>
                   <div class="col-6 col-md-3">
-                    <label class="form-label small fw-medium">Search</label>
+                    <label class="form-label small fw-medium">Cari</label>
                     <div class="input-group input-group-sm">
                       <span class="input-group-text">
                         <i class="bi bi-search"></i>
@@ -577,17 +577,17 @@ onMounted(async () => {
           <!-- Empty State -->
           <div v-if="filteredGoals.length === 0" class="empty-state py-4">
             <i class="bi bi-target text-muted"></i>
-            <h6 class="text-muted mt-3">No goals found</h6>
+            <h6 class="text-muted mt-3">Belum ada target</h6>
             <p class="text-muted small">
-              Set your first financial goal to start tracking your progress.
+              Tetapkan target keuangan pertama Anda untuk mulai melacak progres.
             </p>
             <button
               class="btn btn-primary btn-sm"
               data-bs-toggle="modal"
               data-bs-target="#goalModal"
             >
-              <i class="bi bi-plus-circle me-2"></i>
-              Add Goal
+              <i class="bi bi-plus-circle me-1 fs-6 text-light"></i>
+              Tambah Target
             </button>
           </div>
         </div>
@@ -598,7 +598,7 @@ onMounted(async () => {
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
-              <h6 class="modal-title">{{ editingGoal ? 'Edit Goal' : 'Add New Goal' }}</h6>
+              <h6 class="modal-title">{{ editingGoal ? 'Ubah Target' : 'Tambah Target Baru' }}</h6>
               <button
                 type="button"
                 class="btn-close"
@@ -636,12 +636,12 @@ onMounted(async () => {
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label small fw-medium">Description</label>
+                  <label class="form-label small fw-medium">Deskripsi</label>
                   <textarea
                     v-model="goalForm.description"
                     class="form-control"
                     rows="2"
-                    placeholder="Describe your goal..."
+                    placeholder="Deskripsikan target Anda..."
                   ></textarea>
                 </div>
 
@@ -728,7 +728,7 @@ onMounted(async () => {
           <div class="modal-content">
             <div class="modal-header">
               <h6 class="modal-title">
-                {{ selectedGoal ? `Add Progress to ${selectedGoal.title}` : 'Add Progress' }}
+                {{ selectedGoal ? `Tambah Progres ke ${selectedGoal.title}` : 'Tambah Progres' }}
               </h6>
               <button
                 type="button"
@@ -766,7 +766,7 @@ onMounted(async () => {
 
                 <form v-if="selectedGoal" @submit.prevent="saveProgress">
                   <div class="mb-3">
-                    <label class="form-label small fw-medium">Amount to Add</label>
+                    <label class="form-label small fw-medium">Jumlah yang Ditambahkan</label>
                     <div class="input-group">
                       <span class="input-group-text">Rp</span>
                       <input
@@ -783,13 +783,13 @@ onMounted(async () => {
                   </div>
 
                   <div class="mb-3">
-                    <label class="form-label small fw-medium">Date</label>
+                    <label class="form-label small fw-medium">Tanggal</label>
                     <input v-model="progressForm.date" type="date" class="form-control" required />
                   </div>
                 </form>
               </template>
               <div v-else class="alert alert-warning">
-                No goal selected. Please close this modal and try again.
+                Tidak ada tujuan yang dipilih. Tutup modal ini dan coba lagi.
               </div>
             </div>
             <div class="modal-footer">
@@ -799,7 +799,7 @@ onMounted(async () => {
                 data-bs-dismiss="modal"
                 @click="resetProgressForm"
               >
-                Cancel
+                Batal
               </button>
               <button
                 type="button"
@@ -808,7 +808,7 @@ onMounted(async () => {
                 :disabled="!selectedGoal || loading"
               >
                 <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                Add Progress
+                Tambah Progres
               </button>
             </div>
           </div>

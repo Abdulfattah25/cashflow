@@ -24,10 +24,10 @@ const {
 // Report filters
 const reportFilters = reactive({
   period: 'this-month',
-  type: 'overview',
   startDate: '',
   endDate: '',
 })
+const showFilter = ref(false)
 
 // Chart options
 const barChartOptions = computed(() => ({
@@ -56,7 +56,10 @@ const barChartOptions = computed(() => ({
       callbacks: {
         label: function (context) {
           const value = context.parsed.y
-          return `${context.dataset.label}: ${formatCurrency(value)}`
+          const lbl = context.dataset.label
+          const map = { Income: 'Pemasukan', Expenses: 'Pengeluaran' }
+          const translated = map[lbl] || lbl
+          return `${translated}: ${formatCurrency(value)}`
         },
       },
     },
@@ -198,17 +201,17 @@ const exportReport = async () => {
         const header = clonedDoc.createElement('div')
         header.innerHTML = `
           <div style="text-align:center;margin-bottom:20px">
-            <h2 style="color:#2c3e50">Financial Report</h2>
+            <h2 style="color:#2c3e50">Laporan Keuangan</h2>
             <p style="color:#7f8c8d">
-              Period: ${getFormattedPeriod()}
+              Periode: ${getFormattedPeriod()}
             </p>
             <small style="color:#7f8c8d">
-              Generated on: ${new Date().toLocaleDateString()}
+              Dibuat pada: ${new Date().toLocaleDateString('id-ID')}
             </small>
           </div>
         `
         cloneElement.insertBefore(header, cloneElement.firstChild)
-      }
+      },
     })
 
     const pdf = new jsPDF('p', 'mm', 'a4')
@@ -229,22 +232,24 @@ const exportReport = async () => {
       heightLeft -= pageHeight
     }
 
-    pdf.save(`financial-report-${new Date().toISOString().split('T')[0]}.pdf`)
+    pdf.save(`laporan-keuangan-${new Date().toISOString().split('T')[0]}.pdf`)
   } catch (error) {
     console.error('Export failed:', error)
-    alert('Failed to generate report')
+    alert('Gagal membuat laporan')
   }
 }
 
 // Helper function
 const getFormattedPeriod = () => {
   if (reportFilters.period === 'custom') {
-    return `${reportFilters.startDate} to ${reportFilters.endDate}`
+    return `${reportFilters.startDate} sampai ${reportFilters.endDate}`
   }
-  return reportFilters.period
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
+  const map = {
+    'this-month': 'Bulan Ini',
+    'last-month': 'Bulan Lalu',
+    'this-year': 'Tahun Ini',
+  }
+  return map[reportFilters.period] || reportFilters.period
 }
 
 // Watch for filter changes
@@ -266,18 +271,7 @@ watch(
 
 onMounted(async () => {
   await updateChartData()
-  if (window.innerWidth >= 768) {
-    showFilter.value = true
-  }
-})
-
-const showFilter = ref(false)
-
-onMounted(() => {
-  // Set showFilter ke true jika di desktop
   showFilter.value = window.innerWidth >= 768
-
-  // Handler untuk resize window
   window.addEventListener('resize', () => {
     showFilter.value = window.innerWidth >= 768
   })
@@ -305,29 +299,29 @@ onMounted(() => {
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center">
             <div>
-              <h4 class="mb-1">Reports</h4>
-              <p class="text-muted mb-0 small">Analyze your financial data and trends</p>
+              <h4 class="mb-1">Laporan</h4>
+              <p class="text-muted mb-0 small">Analisis data dan tren keuangan Anda</p>
             </div>
             <div class="d-flex gap-1">
               <button class="btn btn-primary btn-sm d-sm-inline-flex p-2" @click="exportReport">
                 <i class="bi bi-download me-1"></i>
-                Export
+                Ekspor
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Summary Cards -->
+      <!-- Overview -->
       <div id="report-content">
         <div class="report-section">
-          <h5 class="section-title">Summary</h5>
+          <h5 class="section-title">Ringkasan</h5>
           <div class="row mb-3 g-2">
             <div class="col-6 col-md-3">
               <div class="card summary-card income-card border-0 text-center">
                 <div class="card-body p-3">
                   <i class="bi bi-arrow-up-circle summary-icon mb-2"></i>
-                  <h5 class="card-title mb-1 small">Total Income</h5>
+                  <h5 class="card-title mb-1 small">Total Pemasukan</h5>
                   <h5 class="mb-0">{{ formatCurrency(reportSummary.totalIncome) }}</h5>
                 </div>
               </div>
@@ -336,7 +330,7 @@ onMounted(() => {
               <div class="card summary-card expense-card border-0 text-center">
                 <div class="card-body p-3">
                   <i class="bi bi-arrow-down-circle summary-icon mb-2"></i>
-                  <h5 class="card-title mb-1 small">Total Expenses</h5>
+                  <h5 class="card-title mb-1 small">Total Pengeluaran</h5>
                   <h5 class="mb-0">{{ formatCurrency(reportSummary.totalExpenses) }}</h5>
                 </div>
               </div>
@@ -345,7 +339,7 @@ onMounted(() => {
               <div class="card summary-card savings-card border-0 text-center">
                 <div class="card-body p-3">
                   <i class="bi bi-wallet2 summary-icon mb-2"></i>
-                  <h5 class="card-title mb-1 small">Net Savings</h5>
+                  <h5 class="card-title mb-1 small">Sisa Saldo</h5>
                   <h5 class="mb-0">
                     {{ formatCurrency(reportSummary.netSavings) }}
                   </h5>
@@ -356,7 +350,7 @@ onMounted(() => {
               <div class="card summary-card rate-card border-0 text-center">
                 <div class="card-body p-3">
                   <i class="bi bi-graph-up summary-icon mb-2"></i>
-                  <h5 class="card-title mb-1 small">Savings Rate</h5>
+                  <h5 class="card-title mb-1 small">Rate Sisa Saldo</h5>
                   <h5 class="mb-0">{{ reportSummary.savingsRate }}%</h5>
                 </div>
               </div>
@@ -370,7 +364,7 @@ onMounted(() => {
             <div class="card border-0">
               <div class="card-header bg-transparent border-0 p-2">
                 <div class="d-flex justify-content-between align-items-center">
-                  <h6 class="card-title mb-0 fw-medium">Report Filters</h6>
+                  <h6 class="card-title mb-0 fw-medium">Filter Laporan</h6>
                   <button
                     class="btn btn-sm btn-outline-secondary d-md-none"
                     type="button"
@@ -385,26 +379,17 @@ onMounted(() => {
                 <div class="card-body pt-0">
                   <div class="row g-2">
                     <div class="col-6 col-md-3">
-                      <label class="form-label small fw-medium">Report Period</label>
+                      <label class="form-label small fw-medium">Periode Laporan</label>
                       <select v-model="reportFilters.period" class="form-select form-select-sm">
-                        <option value="this-month">This Month</option>
-                        <option value="last-month">Last Month</option>
-                        <option value="this-quarter">This Quarter</option>
-                        <option value="this-year">This Year</option>
-                        <option value="custom">Custom Range</option>
+                        <option value="this-month">Bulan Ini</option>
+                        <option value="last-month">Bulan Lalu</option>
+                        <option value="this-year">Tahun Ini</option>
+                        <option value="custom">Rentang Kustom</option>
                       </select>
                     </div>
-                    <div class="col-6 col-md-3">
-                      <label class="form-label small fw-medium">Report Type</label>
-                      <select v-model="reportFilters.type" class="form-select form-select-sm">
-                        <option value="overview">Overview</option>
-                        <option value="income">Income Analysis</option>
-                        <option value="expense">Expense Analysis</option>
-                        <option value="category">Category Breakdown</option>
-                      </select>
-                    </div>
+
                     <div class="col-6 col-md-3" v-if="reportFilters.period === 'custom'">
-                      <label class="form-label small fw-medium">Start Date</label>
+                      <label class="form-label small fw-medium">Tanggal Mulai</label>
                       <input
                         v-model="reportFilters.startDate"
                         type="date"
@@ -412,7 +397,7 @@ onMounted(() => {
                       />
                     </div>
                     <div class="col-6 col-md-3" v-if="reportFilters.period === 'custom'">
-                      <label class="form-label small fw-medium">End Date</label>
+                      <label class="form-label small fw-medium">Tanggal Selesai</label>
                       <input
                         v-model="reportFilters.endDate"
                         type="date"
@@ -433,7 +418,7 @@ onMounted(() => {
             <div class="col-12 col-lg-8 mb-3">
               <div class="card border-0">
                 <div class="card-header bg-transparent border-0">
-                  <h6 class="card-title mb-0 fw-medium">Income vs Expenses Trend</h6>
+                  <h6 class="card-title mb-0 fw-medium">Tren Pemasukan vs Pengeluaran</h6>
                 </div>
                 <div class="card-body">
                   <div
@@ -444,7 +429,7 @@ onMounted(() => {
                   </div>
                   <div v-else class="empty-chart">
                     <i class="bi bi-bar-chart text-muted"></i>
-                    <p class="text-muted mb-0 small">No data available for the selected period</p>
+                    <p class="text-muted mb-0 small">Tidak ada data untuk periode yang dipilih</p>
                   </div>
                 </div>
               </div>
@@ -454,7 +439,7 @@ onMounted(() => {
             <div class="col-12 col-lg-4 mb-3">
               <div class="card border-0">
                 <div class="card-header bg-transparent border-0">
-                  <h6 class="card-title mb-0 fw-medium">Expense Categories</h6>
+                  <h6 class="card-title mb-0 fw-medium">Kategori Pengeluaran</h6>
                 </div>
                 <div class="card-body">
                   <div
@@ -465,7 +450,7 @@ onMounted(() => {
                   </div>
                   <div v-else class="empty-chart">
                     <i class="bi bi-pie-chart text-muted"></i>
-                    <p class="text-muted mb-0 small">No expense data available</p>
+                    <p class="text-muted mb-0 small">Tidak ada data pengeluaran</p>
                   </div>
                 </div>
               </div>
@@ -479,7 +464,7 @@ onMounted(() => {
             <div class="col-12">
               <div class="card border-0 h-100">
                 <div class="card-header bg-transparent border-0 p-3">
-                  <h6 class="card-title mb-0 fw-medium">Category Breakdown</h6>
+                  <h6 class="card-title mb-0 fw-medium">Rincian Kategori</h6>
                 </div>
                 <div class="card-body p-2">
                   <div class="row g-2">
@@ -488,7 +473,7 @@ onMounted(() => {
                         <div class="card-header bg-transparent border-0 p-2">
                           <h6 class="text-success mb-0 d-flex align-items-center">
                             <i class="bi bi-arrow-up-circle me-2"></i>
-                            Income Categories
+                            Kategori Pemasukan
                           </h6>
                         </div>
                         <div class="card-body p-2">
@@ -524,7 +509,7 @@ onMounted(() => {
                           </div>
                           <div v-else class="empty-category">
                             <i class="bi bi-inbox text-muted"></i>
-                            <p class="text-muted mb-0 small">No income data available</p>
+                            <p class="text-muted mb-0 small">Tidak ada data pemasukan</p>
                           </div>
                         </div>
                       </div>
@@ -536,7 +521,7 @@ onMounted(() => {
                         <div class="card-header bg-transparent border-0 p-2">
                           <h6 class="text-danger mb-0 d-flex align-items-center">
                             <i class="bi bi-arrow-up-circle me-2"></i>
-                            Expense Categories
+                            Kategori Pengeluaran
                           </h6>
                           <div class="card-body p-2">
                             <div v-if="expenseCategories.length > 0" class="category-grid">
@@ -571,7 +556,7 @@ onMounted(() => {
                             </div>
                             <div v-else class="empty-category">
                               <i class="bi bi-inbox text-muted"></i>
-                              <p class="text-muted mb-0 small">No expense data available</p>
+                              <p class="text-muted mb-0 small">Tidak ada data pengeluaran</p>
                             </div>
                           </div>
                         </div>
@@ -594,7 +579,7 @@ onMounted(() => {
                   class="card-header bg-transparent border-0 p-3 d-flex justify-content-between align-items-center"
                 >
                   <!-- Consistent padding -->
-                  <h6 class="card-title mb-0 fw-medium">Monthly Comparison</h6>
+                  <h6 class="card-title mb-0 fw-medium">Perbandingan Bulanan</h6>
                   <button class="btn btn-sm btn-outline-secondary d-md-none">
                     <i class="bi bi-download"></i>
                   </button>
@@ -626,7 +611,7 @@ onMounted(() => {
                         <div class="row g-2 text-center">
                           <div class="col-4">
                             <div class="metric-item">
-                              <small class="text-muted d-block">Income</small>
+                              <small class="text-muted d-block">Pemasukan</small>
                               <div class="fw-bold text-success small">
                                 {{ formatCurrency(month.income) }}
                               </div>
@@ -634,7 +619,7 @@ onMounted(() => {
                           </div>
                           <div class="col-4">
                             <div class="metric-item">
-                              <small class="text-muted d-block">Expenses</small>
+                              <small class="text-muted d-block">Pengeluaran</small>
                               <div class="fw-bold text-danger small">
                                 {{ formatCurrency(month.expenses) }}
                               </div>
@@ -642,7 +627,7 @@ onMounted(() => {
                           </div>
                           <div class="col-4">
                             <div class="metric-item">
-                              <small class="text-muted d-block">Net</small>
+                              <small class="text-muted d-block">Bersih</small>
                               <div
                                 class="fw-bold small"
                                 :class="month.net >= 0 ? 'text-success' : 'text-danger'"
@@ -660,11 +645,11 @@ onMounted(() => {
                       <table class="table table-hover mb-0">
                         <thead class="table-light">
                           <tr>
-                            <th>Month</th>
-                            <th class="text-end">Income</th>
-                            <th class="text-end">Expenses</th>
-                            <th class="text-end">Net Amount</th>
-                            <th class="text-end">Savings Rate</th>
+                            <th>Bulan</th>
+                            <th class="text-end">Pemasukan</th>
+                            <th class="text-end">Pengeluaran</th>
+                            <th class="text-end">Jumlah Bersih</th>
+                            <th class="text-end">Tingkat Tabungan</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -703,9 +688,9 @@ onMounted(() => {
                   </div>
                   <div v-else class="empty-state py-4">
                     <i class="bi bi-calendar-x text-muted"></i>
-                    <h6 class="text-muted mt-3">No monthly data available</h6>
+                    <h6 class="text-muted mt-3">Tidak ada data bulanan</h6>
                     <p class="text-muted small">
-                      Start adding transactions to see monthly comparisons
+                      Mulai tambahkan transaksi untuk melihat perbandingan bulanan
                     </p>
                   </div>
                 </div>
@@ -714,7 +699,7 @@ onMounted(() => {
           </div>
         </div>
         <div class="report-footer mt-4 text-center text-muted small">
-          Generated by CashFlow App - © {{ new Date().getFullYear() }}
+          Dibuat oleh Aplikasi CashFlow - © {{ new Date().getFullYear() }}
         </div>
       </div>
     </div>

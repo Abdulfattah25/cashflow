@@ -1,9 +1,9 @@
 <template>
   <AppLayout>
     <!-- Loading State -->
-    <div v-if="loading" class="text-center py-5">
+    <div v-if="loading" class="text-center py-1">
       <div class="spinner-border" role="status">
-        <span class="visually-hidden">Loading...</span>
+        <span class="visually-hidden">Memuat...</span>
       </div>
     </div>
 
@@ -38,7 +38,7 @@
       <!-- Stats Cards -->
       <div class="row mb-3 g-2">
         <!-- Net Balance -->
-        <div class="col-12 col-md-4 mb-2">
+        <div class="col-12 col-md-4 mb-1">
           <div class="stats-card card net border-0">
             <div class="card-body p-3 text-center">
               <div class="stats-icon net mb-2">
@@ -47,13 +47,13 @@
               <h6 class="stats-value net mb-1 text-primary fs-5">
                 {{ formatCurrency(summary.netAmount) }}
               </h6>
-              <p class="stats-label small mb-0">Net Balance</p>
+              <p class="stats-label small mb-0">Saldo Bersih</p>
             </div>
           </div>
         </div>
 
         <!-- Income -->
-        <div class="col-6 col-md-4">
+        <div class="col-6 col-md-4 mb-1">
           <div class="stats-card card income border-0">
             <div class="card-body p-3 text-center">
               <div class="stats-icon income mb-2">
@@ -62,13 +62,13 @@
               <h5 class="stats-value income mb-1 fs-5">
                 {{ formatCurrency(summary.totalIncome) }}
               </h5>
-              <p class="stats-label small mb-0">Income</p>
+              <p class="stats-label small mb-0">Pendapatan</p>
             </div>
           </div>
         </div>
 
         <!-- Expenses -->
-        <div class="col-6 col-md-4">
+        <div class="col-6 col-md-4 mb-1">
           <div class="stats-card card expense border-0">
             <div class="card-body p-3 text-center">
               <div class="stats-icon expense mb-2">
@@ -77,18 +77,18 @@
               <h5 class="stats-value expense mb-1 fs-5">
                 {{ formatCurrency(summary.totalExpenses) }}
               </h5>
-              <p class="stats-label small mb-0">Expenses</p>
+              <p class="stats-label small mb-0">Pengeluaran</p>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Quick Actions -->
-      <div class="row mb-3">
+      <div class="row my-2">
         <div class="col-12">
           <div class="card border-0">
             <div class="card-header bg-transparent border-0 pb-2">
-              <h6 class="card-title mb-0 fw-medium">Quick Actions</h6>
+              <h6 class="card-title mb-0 fw-medium">Aksi Cepat</h6>
             </div>
             <div class="card-body pt-0">
               <div class="row g-2">
@@ -100,7 +100,7 @@
                     data-bs-target="#transactionModal"
                   >
                     <i class="bi bi-plus-circle fs-4 mb-1"></i>
-                    <span class="small">Add Income</span>
+                    <span class="small">Tambah Pemasukan</span>
                   </button>
                 </div>
                 <div class="col-6 col-md-4 col-lg-3">
@@ -111,7 +111,7 @@
                     data-bs-target="#transactionModal"
                   >
                     <i class="bi bi-dash-circle fs-4 mb-1"></i>
-                    <span class="small">Add Expense</span>
+                    <span class="small">Tambah Pengeluaran</span>
                   </button>
                 </div>
                 <div class="col-6 col-md-4 col-lg-3">
@@ -120,7 +120,7 @@
                     class="btn btn-primary w-100 d-flex flex-column align-items-center justify-content-center py-1 text-decoration-none"
                   >
                     <i class="bi bi-list-ul fs-4 mb-1"></i>
-                    <span class="small">View All</span>
+                    <span class="small">Lihat Semua</span>
                   </router-link>
                 </div>
                 <div class="col-6 col-md-4 col-lg-3">
@@ -129,7 +129,7 @@
                     class="btn btn-info w-100 d-flex flex-column align-items-center justify-content-center py-1"
                   >
                     <i class="bi bi-graph-up fs-4 mb-1 text-light"></i>
-                    <span class="small text-light">Reports</span>
+                    <span class="small text-light">Laporan</span>
                   </router-link>
                 </div>
               </div>
@@ -141,14 +141,14 @@
       <!-- Recent Transactions & Category Breakdown -->
       <div class="row g-2">
         <!-- Recent Transactions -->
-        <div class="col-12 mb-3">
+        <div class="col-12 mb-2">
           <div class="card border-0">
             <div
               class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center pb-2"
             >
-              <h6 class="card-title mb-0 fw-medium">Recent Transactions</h6>
-              <router-link to="/transactions" class="btn btn-outline-primary btn-sm">
-                View All
+              <h6 class="card-title mb-0 fw-medium">Transaksi Terbaru</h6>
+              <router-link to="/transactions" class="btn btn-outline-primary btn-sm btn-see-all">
+                Lihat Semua
               </router-link>
             </div>
             <div class="card-body p-0">
@@ -174,9 +174,6 @@
                         <div class="me-2">
                           <div class="fw-medium text-truncate">{{ transaction.description }}</div>
                           <div class="d-flex align-items-center mt-1">
-                            <span class="badge bg-light text-dark me-2 small">{{
-                              transaction.category
-                            }}</span>
                             <small class="text-muted">{{ formatDate(transaction.date) }}</small>
                           </div>
                         </div>
@@ -202,15 +199,15 @@
               <!-- Empty State -->
               <div v-if="recentTransactions.length === 0" class="empty-state py-4">
                 <i class="bi bi-inbox"></i>
-                <h6>No transactions yet</h6>
-                <p class="small">Start by adding your first transaction!</p>
+                <h6>Belum ada transaksi</h6>
+                <p class="small">Mulai dengan menambahkan transaksi pertama Anda!</p>
                 <button
                   class="btn btn-primary btn-sm"
                   @click="openTransactionModal('expense')"
                   data-bs-toggle="modal"
                   data-bs-target="#transactionModal"
                 >
-                  Add Transaction
+                  Tambah Transaksi
                 </button>
               </div>
             </div>
@@ -218,10 +215,10 @@
         </div>
 
         <!-- Category Breakdown -->
-        <div class="col-12 mb-3">
+        <div class="col-12 mb-0">
           <div class="card border-0">
             <div class="card-header bg-transparent border-0 pb-2">
-              <h6 class="card-title mb-0 fw-medium">Spending by Category</h6>
+              <h6 class="card-title mb-0 fw-medium">Pengeluaran per Kategori</h6>
             </div>
             <div class="card-body">
               <div v-for="category in topCategories" :key="category.name" class="mb-3">
@@ -239,7 +236,7 @@
 
               <div v-if="topCategories.length === 0" class="text-center text-muted py-3">
                 <i class="bi bi-pie-chart fs-2 mb-2 d-block"></i>
-                <small>No spending data available</small>
+                <small>Data pengeluaran belum tersedia</small>
               </div>
             </div>
           </div>
@@ -251,13 +248,13 @@
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
-              <h6 class="modal-title">Add New Transaction</h6>
+              <h6 class="modal-title">Tambah Transaksi Baru</h6>
               <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
               <form @submit.prevent="saveTransaction">
                 <div class="mb-3">
-                  <label class="form-label small fw-medium">Type</label>
+                  <label class="form-label small fw-medium">Tipe</label>
                   <div class="btn-group w-100" role="group">
                     <input
                       type="radio"
@@ -268,7 +265,7 @@
                     />
                     <label class="btn btn-outline-success" for="income">
                       <i class="bi bi-arrow-up-circle me-1"></i>
-                      Income
+                      Pemasukan
                     </label>
                     <input
                       type="radio"
@@ -279,13 +276,13 @@
                     />
                     <label class="btn btn-outline-danger" for="expense">
                       <i class="bi bi-arrow-down-circle me-1"></i>
-                      Expense
+                      Pengeluaran
                     </label>
                   </div>
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label small fw-medium">Amount</label>
+                  <label class="form-label small fw-medium">Jumlah</label>
                   <div class="input-group">
                     <span class="input-group-text">Rp</span>
                     <input
@@ -300,18 +297,18 @@
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label small fw-medium">Description</label>
+                  <label class="form-label small fw-medium">Deskripsi</label>
                   <input
                     v-model="transactionForm.description"
                     type="text"
                     class="form-control"
-                    placeholder="Enter description"
+                    placeholder="Masukkan deskripsi"
                     required
                   />
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label small fw-medium">Category</label>
+                  <label class="form-label small fw-medium">Kategori</label>
                   <select v-model="transactionForm.category" class="form-select" required>
                     <option value="">Select Category</option>
                     <option
@@ -325,25 +322,13 @@
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label small fw-medium">Date</label>
+                  <label class="form-label small fw-medium">Tanggal</label>
                   <input v-model="transactionForm.date" type="date" class="form-control" required />
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label small fw-medium">Notes (Optional)</label>
-                  <textarea
-                    v-model="transactionForm.notes"
-                    class="form-control"
-                    rows="3"
-                    placeholder="Additional notes..."
-                  ></textarea>
                 </div>
               </form>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                Cancel
-              </button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
               <button
                 type="button"
                 class="btn btn-primary"
@@ -351,7 +336,7 @@
                 :disabled="loading"
               >
                 <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                Save Transaction
+                Simpan Transaksi
               </button>
             </div>
           </div>
@@ -498,9 +483,10 @@ const formatDate = (date) => {
 
 const getDayGreeting = () => {
   const hour = new Date().getHours()
-  if (hour < 12) return 'Good Morning'
-  if (hour < 17) return 'Good Afternoon'
-  return 'Good Evening'
+  if (hour < 12) return 'Selamat Pagi'
+  if (hour < 15) return 'Selamat Siang'
+  if (hour < 18) return 'Selamat Sore'
+  return 'Selamat Malam'
 }
 
 onMounted(async () => {
@@ -652,6 +638,12 @@ onMounted(async () => {
 }
 
 @media (max-width: 576px) {
+  .btn-see-all {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.75rem !important;
+    line-height: 1.1 !important;
+    border-radius: 6px !important;
+  }
   .stats-value {
     font-size: 1.1rem;
   }

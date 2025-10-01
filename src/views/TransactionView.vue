@@ -3,7 +3,7 @@
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-5">
       <div class="spinner-border" role="status">
-        <span class="visually-hidden">Loading...</span>
+        <span class="visually-hidden">Memuat...</span>
       </div>
     </div>
 
@@ -19,8 +19,8 @@
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center">
             <div>
-              <h4 class="mb-1">Transactions</h4>
-              <p class="text-muted mb-0 small">Manage your income and expenses</p>
+              <h4 class="mb-1">Transaksi</h4>
+              <p class="text-muted mb-0 small">Kelola pemasukan dan pengeluaran Anda</p>
             </div>
             <button
               class="btn btn-primary btn-sm"
@@ -29,39 +29,42 @@
               data-bs-target="#transactionModal"
             >
               <i class="bi bi-plus-circle me-1"></i>
-              <span class="d-none d-sm-inline">Add Transaction</span>
-              <span class="d-sm-none">Add</span>
+              <span class="d-none d-sm-inline">Tambah Transaksi</span>
+              <span class="d-sm-none">Tambah</span>
             </button>
           </div>
         </div>
       </div>
 
       <!-- Summary Cards -->
-      <div class="row mb-3 g-2">
+      <div class="row mb-0 g-2">
         <div class="col-12 col-md-4">
           <div class="card net-card border-0">
             <div class="card-body p-3 text-center">
-              <h5 class="card-title mb-1 smallFont text-muted">Net Amount</h5>
-              <h5 class="smallFont mb-0" :class="summary.netAmount >= 0 ? 'positive' : 'negative'">
-                {{ formatCurrency(summary.netAmount) }}
+              <h5 class="card-title mb-1 smallFont text-muted">Jumlah Bersih</h5>
+              <h5
+                class="smallFont mb-0"
+                :class="filteredSummary.netAmount >= 0 ? 'positive' : 'negative'"
+              >
+                {{ formatCurrency(filteredSummary.netAmount) }}
               </h5>
             </div>
           </div>
         </div>
-        <div class="col-6 col-md-4">
+        <div class="col-6 col-md-4 mt-0">
           <div class="card income-card border-0">
             <div class="card-body p-3 text-center">
-              <h5 class="card-title text-white mb-1 smallFont text-muted">Income</h5>
-              <h5 class="smallFont mb-0">{{ formatCurrency(summary.totalIncome) }}</h5>
+              <h5 class="card-title text-white mb-1 smallFont text-muted">Pemasukan</h5>
+              <h5 class="smallFont mb-0">{{ formatCurrency(filteredSummary.totalIncome) }}</h5>
             </div>
           </div>
         </div>
-        <div class="col-6 col-md-4">
+        <div class="col-6 col-md-4 mt-0">
           <div class="card expense-card border-0">
             <div class="card-body p-3 text-center">
-              <h5 class="card-title text-white mb-1 smallFont text-muted">Expenses</h5>
+              <h5 class="card-title text-white mb-1 smallFont text-muted">Pengeluaran</h5>
               <h5 class="smallFont mb-0">
-                {{ formatCurrency(summary.totalExpenses) }}
+                {{ formatCurrency(filteredSummary.totalExpenses) }}
               </h5>
             </div>
           </div>
@@ -69,12 +72,12 @@
       </div>
 
       <!-- Filters - Mobile Optimized -->
-      <div class="row mb-3">
+      <div class="row mb-0">
         <div class="col-12">
           <div class="card border-0">
-            <div class="card-header bg-transparent border-0 pb-2">
+            <div class="card-header bg-transparent border-0 py-3">
               <div class="d-flex justify-content-between align-items-center">
-                <h6 class="card-title mb-0 fw-medium">Filters</h6>
+                <h6 class="card-title mb-0 fw-medium">Filter</h6>
                 <button
                   class="btn btn-sm btn-outline-secondary d-md-none"
                   type="button"
@@ -89,26 +92,26 @@
               <div class="card-body pt-0">
                 <div class="row g-2">
                   <div class="col-6 col-md-3">
-                    <label class="form-label small fw-medium">Date Range</label>
+                    <label class="form-label small fw-medium">Rentang Tanggal</label>
                     <select v-model="filters.dateRange" class="form-select form-select-sm">
-                      <option value="this-month">This Month</option>
-                      <option value="last-month">Last Month</option>
-                      <option value="this-year">This Year</option>
-                      <option value="custom">Custom Range</option>
+                      <option value="this-month">Bulan Ini</option>
+                      <option value="last-month">Bulan Lalu</option>
+                      <option value="this-year">Tahun Ini</option>
+                      <option value="custom">Rentang Kustom</option>
                     </select>
                   </div>
                   <div class="col-6 col-md-3">
-                    <label class="form-label small fw-medium">Type</label>
+                    <label class="form-label small fw-medium">Jenis</label>
                     <select v-model="filters.type" class="form-select form-select-sm">
-                      <option value="">All Types</option>
-                      <option value="income">Income</option>
-                      <option value="expense">Expense</option>
+                      <option value="">Semua Jenis</option>
+                      <option value="income">Pemasukan</option>
+                      <option value="expense">Pengeluaran</option>
                     </select>
                   </div>
                   <div class="col-6 col-md-3">
-                    <label class="form-label small fw-medium">Category</label>
+                    <label class="form-label small fw-medium">Kategori</label>
                     <select v-model="filters.category" class="form-select form-select-sm">
-                      <option value="">All Categories</option>
+                      <option value="">Semua Kategori</option>
                       <option
                         v-for="category in categories"
                         :key="category.id"
@@ -119,7 +122,7 @@
                     </select>
                   </div>
                   <div class="col-6 col-md-3">
-                    <label class="form-label small fw-medium">Search</label>
+                    <label class="form-label small fw-medium">Cari</label>
                     <div class="input-group input-group-md">
                       <span class="input-group-text">
                         <i class="bi bi-search"></i>
@@ -128,9 +131,30 @@
                         v-model="filters.search"
                         type="text"
                         class="form-control"
-                        placeholder="Search..."
+                        placeholder="Cari..."
                       />
                     </div>
+                  </div>
+                </div>
+                <!-- Custom range inputs -->
+                <div class="row g-2 mt-2" v-if="filters.dateRange === 'custom'">
+                  <div class="col-6 col-md-3">
+                    <label class="form-label small fw-medium">Mulai</label>
+                    <input
+                      v-model="filters.customStartDate"
+                      type="date"
+                      class="form-control form-control-sm"
+                      :max="filters.customEndDate || undefined"
+                    />
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <label class="form-label small fw-medium">Selesai</label>
+                    <input
+                      v-model="filters.customEndDate"
+                      type="date"
+                      class="form-control form-control-sm"
+                      :min="filters.customStartDate || undefined"
+                    />
                   </div>
                 </div>
               </div>
@@ -146,11 +170,11 @@
             <div
               class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center pb-2"
             >
-              <h6 class="card-title mb-0 fw-medium">Transaction History</h6>
+              <h6 class="card-title mb-0 fw-medium">Riwayat Transaksi</h6>
               <div class="d-flex gap-2">
                 <button class="btn btn-sm btn-outline-secondary d-md-inline-flex">
                   <i class="bi bi-download me-1"></i>
-                  Export
+                  Ekspor
                 </button>
                 <div class="dropdown">
                   <button
@@ -158,27 +182,23 @@
                     data-bs-toggle="dropdown"
                   >
                     <i class="bi bi-sort-down d-md-none"></i>
-                    <span class="d-none d-md-inline">Sort</span>
+                    <span class="d-none d-md-inline">Urutkan</span>
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end">
                     <li>
-                      <a class="dropdown-item" href="#" @click="sortBy('date', 'desc')"
-                        >Newest First</a
-                      >
+                      <a class="dropdown-item" href="#" @click="sortBy('date', 'desc')">Terbaru</a>
                     </li>
                     <li>
-                      <a class="dropdown-item" href="#" @click="sortBy('date', 'asc')"
-                        >Oldest First</a
-                      >
+                      <a class="dropdown-item" href="#" @click="sortBy('date', 'asc')">Terlama</a>
                     </li>
                     <li>
                       <a class="dropdown-item" href="#" @click="sortBy('amount', 'desc')"
-                        >Highest Amount</a
+                        >Nominal Tertinggi</a
                       >
                     </li>
                     <li>
                       <a class="dropdown-item" href="#" @click="sortBy('amount', 'asc')"
-                        >Lowest Amount</a
+                        >Nominal Terendah</a
                       >
                     </li>
                   </ul>
@@ -193,63 +213,61 @@
                   :key="transaction.id"
                   class="transaction-item p-3 border-bottom position-relative"
                 >
-                  <div class="d-flex align-items-start">
-                    <div
-                      class="transaction-icon me-2 flex-shrink-0"
-                      :style="{
-                        background: transaction.color + '20',
-                        color: transaction.color,
-                      }"
-                    >
-                      <i :class="transaction.icon"></i>
-                    </div>
-                    <div class="flex-grow-1 min-w-0">
-                      <!-- Main content row -->
-                      <div class="d-flex justify-content-between align-items-start mb-1">
-                        <div class="flex-grow-1 min-w-0 me-2 transaction-description">
-                          <div class="fw-medium text-truncate" :title="transaction.description">
-                            {{ transaction.description }}
-                          </div>
-                          <div class="d-flex align-items-center flex-wrap gap-1 mt-1">
-                            <span class="badge bg-light text-dark">{{ transaction.category }}</span>
-                            <span
-                              class="badge"
-                              :class="transaction.type === 'income' ? 'bg-success' : 'bg-danger'"
-                            >
-                              {{ transaction.type }}
-                            </span>
-                          </div>
+                  <div class="d-flex justify-content-between align-items-start gap-2">
+                    <!-- Left: icon + description + category -->
+                    <div class="transaction-left d-flex align-items-start flex-grow-1 min-w-0">
+                      <div
+                        class="transaction-icon me-2 flex-shrink-0"
+                        :style="{
+                          background: transaction.color + '20',
+                          color: transaction.color,
+                        }"
+                      >
+                        <i :class="transaction.icon"></i>
+                      </div>
+
+                      <div class="flex-grow-1 min-w-0 me-2 transaction-description">
+                        <div class="fw-medium text-truncate" :title="transaction.description">
+                          {{ transaction.description }}
                         </div>
-                        <div class="transaction-amount-date text-end flex-shrink-0 me-2">
-                          <span
-                            class="fw-bold d-block small"
-                            :class="transaction.type === 'income' ? 'text-success' : 'text-danger'"
-                          >
-                            {{ transaction.type === 'expense' ? '-' : '+'
-                            }}{{ formatCurrency(transaction.amount) }}
-                          </span>
-                          <small class="text-muted">{{ formatDate(transaction.date) }}</small>
-                        </div>
-                        <!-- Action buttons -->
-                        <div class="action-buttons flex-shrink-0 d-flex gap-1">
-                          <button
-                            class="btn btn-primary btn-sm"
-                            @click="editTransaction(transaction)"
-                            data-bs-toggle="modal"
-                            data-bs-target="#transactionModal"
-                            title="Edit"
-                          >
-                            <i class="bi bi-pencil"></i>
-                          </button>
-                          <button
-                            class="btn btn-danger btn-sm"
-                            @click="confirmDelete(transaction.id)"
-                            title="Delete"
-                          >
-                            <i class="bi bi-trash"></i>
-                          </button>
+                        <div class="mt-1">
+                          <span class="badge bg-light text-dark">{{ transaction.category }}</span>
                         </div>
                       </div>
+                    </div>
+
+                    <!-- Middle: amount + date -->
+                    <div class="transaction-amount-date text-end flex-shrink-0 ms-2">
+                      <div
+                        class="transaction-amount fw-bold small"
+                        :class="transaction.type === 'income' ? 'text-success' : 'text-danger'"
+                      >
+                        {{ transaction.type === 'expense' ? '-' : '+'
+                        }}{{ formatCurrency(transaction.amount) }}
+                      </div>
+                      <small class="text-muted d-block mt-1">{{
+                        formatDate(transaction.date)
+                      }}</small>
+                    </div>
+
+                    <!-- Right: action buttons -->
+                    <div class="action-buttons d-flex flex-shrink-0 gap-1 ms-2">
+                      <button
+                        class="btn btn-primary btn-sm"
+                        @click="editTransaction(transaction)"
+                        data-bs-toggle="modal"
+                        data-bs-target="#transactionModal"
+                        title="Ubah"
+                      >
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button
+                        class="btn btn-danger btn-sm"
+                        @click="confirmDelete(transaction.id)"
+                        title="Hapus"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -258,15 +276,17 @@
               <!-- Empty State -->
               <div v-if="filteredTransactions.length === 0" class="empty-state py-4">
                 <i class="bi bi-inbox text-muted"></i>
-                <h6 class="text-muted mt-3">No transactions found</h6>
-                <p class="text-muted small">Try adjusting your filters or add a new transaction.</p>
+                <h6 class="text-muted mt-3">Tidak ada transaksi</h6>
+                <p class="text-muted small">
+                  Coba sesuaikan filter Anda atau tambah transaksi baru.
+                </p>
                 <button
                   class="btn btn-primary btn-sm"
                   @click="openAddModal"
                   data-bs-toggle="modal"
                   data-bs-target="#transactionModal"
                 >
-                  Add Transaction
+                  Tambah Transaksi
                 </button>
               </div>
             </div>
@@ -280,7 +300,7 @@
           <div class="modal-content">
             <div class="modal-header">
               <h6 class="modal-title">
-                {{ editingTransaction ? 'Edit Transaction' : 'Add New Transaction' }}
+                {{ editingTransaction ? 'Ubah Transaksi' : 'Tambah Transaksi Baru' }}
               </h6>
               <button
                 type="button"
@@ -292,7 +312,7 @@
             <div class="modal-body">
               <form @submit.prevent="saveTransaction">
                 <div class="mb-3">
-                  <label class="form-label small fw-medium">Type</label>
+                  <label class="form-label small fw-medium">Jenis</label>
                   <div class="btn-group w-100" role="group">
                     <input
                       type="radio"
@@ -303,7 +323,7 @@
                     />
                     <label class="btn btn-outline-success" for="income-edit">
                       <i class="bi bi-arrow-up-circle me-1"></i>
-                      Income
+                      Pemasukan
                     </label>
                     <input
                       type="radio"
@@ -314,13 +334,13 @@
                     />
                     <label class="btn btn-outline-danger" for="expense-edit">
                       <i class="bi bi-arrow-down-circle me-1"></i>
-                      Expense
+                      Pengeluaran
                     </label>
                   </div>
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label small fw-medium">Amount</label>
+                  <label class="form-label small fw-medium">Jumlah</label>
                   <div class="input-group">
                     <span class="input-group-text">Rp</span>
                     <input
@@ -335,20 +355,20 @@
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label small fw-medium">Description</label>
+                  <label class="form-label small fw-medium">Deskripsi</label>
                   <input
                     v-model="transactionForm.description"
                     type="text"
                     class="form-control"
-                    placeholder="Enter description"
+                    placeholder="Masukkan deskripsi"
                     required
                   />
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label small fw-medium">Category</label>
+                  <label class="form-label small fw-medium">Kategori</label>
                   <select v-model="transactionForm.category" class="form-select" required>
-                    <option value="">Select Category</option>
+                    <option value="">Pilih Kategori</option>
                     <option
                       v-for="category in getCategoriesByType(transactionForm.type)"
                       :key="category.id"
@@ -360,7 +380,7 @@
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label small fw-medium">Date</label>
+                  <label class="form-label small fw-medium">Tanggal</label>
                   <input v-model="transactionForm.date" type="date" class="form-control" required />
                 </div>
               </form>
@@ -372,7 +392,7 @@
                 data-bs-dismiss="modal"
                 @click="resetForm"
               >
-                Cancel
+                Batal
               </button>
               <button
                 type="button"
@@ -384,7 +404,43 @@
                   v-if="transactionsLoading"
                   class="spinner-border spinner-border-sm me-2"
                 ></span>
-                {{ editingTransaction ? 'Update' : 'Save' }} Transaction
+                {{ editingTransaction ? 'Perbarui' : 'Simpan' }} Transaksi
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Confirm Delete Modal -->
+      <div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h6 class="modal-title">Hapus Transaksi?</h6>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <p class="mb-2">Anda yakin ingin menghapus transaksi berikut?</p>
+              <div class="p-2 bg-light rounded small" v-if="pendingDelete">
+                <div class="fw-medium">{{ pendingDelete.description }}</div>
+                <div class="d-flex justify-content-between mt-1">
+                  <span class="text-muted">{{ formatDate(pendingDelete.date) }}</span>
+                  <span
+                    class="fw-semibold"
+                    :class="pendingDelete.type === 'income' ? 'text-success' : 'text-danger'"
+                  >
+                    {{ pendingDelete.type === 'expense' ? '-' : '+'
+                    }}{{ formatCurrency(pendingDelete.amount) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+                Batal
+              </button>
+              <button type="button" class="btn btn-danger btn-sm" @click="performDelete">
+                Hapus
               </button>
             </div>
           </div>
@@ -426,6 +482,8 @@ const filters = reactive({
   category: '',
   type: '',
   search: '',
+  customStartDate: '',
+  customEndDate: '',
 })
 
 // Transaction form
@@ -439,6 +497,7 @@ const transactionForm = reactive({
 })
 
 const editingTransaction = ref(null)
+const pendingDelete = ref(null)
 
 // Computed properties
 const loading = computed(() => transactionsLoading.value || categoriesLoading.value)
@@ -468,32 +527,81 @@ const filteredTransactions = computed(() => {
     )
   }
 
-  // Filter by date range
-  if (filters.dateRange !== 'custom') {
-    const now = new Date()
-    const startDate = new Date()
-
-    switch (filters.dateRange) {
-      case 'this-month':
-        startDate.setDate(1)
-        break
-      case 'last-month':
-        startDate.setMonth(now.getMonth() - 1)
-        startDate.setDate(1)
-        break
-      case 'this-year':
-        startDate.setMonth(0)
-        startDate.setDate(1)
-        break
+  // Locale-aware date range filtering (inclusive)
+  const parseLocalDate = (value) => {
+    // value can be 'YYYY-MM-DD' or ISO; ensure local date without TZ offset issues
+    if (!value) return null
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      const [y, m, d] = value.split('-').map(Number)
+      return new Date(y, m - 1, d)
     }
+    const dt = new Date(value)
+    return isNaN(dt.getTime()) ? null : dt
+  }
 
-    filtered = filtered.filter((t) => new Date(t.date) >= startDate)
+  const startOfDay = (dt) => new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), 0, 0, 0, 0)
+  const endOfDay = (dt) => new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), 23, 59, 59, 999)
+
+  const getDateRange = () => {
+    const now = new Date()
+    const todayStart = startOfDay(now)
+    switch (filters.dateRange) {
+      case 'this-month': {
+        const start = new Date(now.getFullYear(), now.getMonth(), 1)
+        const end = endOfDay(now)
+        return { start: startOfDay(start), end }
+      }
+      case 'last-month': {
+        const firstLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+        const lastLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
+        return { start: startOfDay(firstLastMonth), end: endOfDay(lastLastMonth) }
+      }
+      case 'this-year': {
+        const start = new Date(now.getFullYear(), 0, 1)
+        const end = endOfDay(now)
+        return { start: startOfDay(start), end }
+      }
+      case 'custom': {
+        const start = parseLocalDate(filters.customStartDate)
+        const end = parseLocalDate(filters.customEndDate)
+        if (!start && !end) return null
+        const startFinal = start ? startOfDay(start) : new Date(0)
+        const endFinal = end ? endOfDay(end) : endOfDay(now)
+        return { start: startFinal, end: endFinal }
+      }
+      default:
+        return { start: todayStart, end: endOfDay(now) }
+    }
+  }
+
+  const range = getDateRange()
+  if (range) {
+    filtered = filtered.filter((t) => {
+      const tDate = parseLocalDate(t.date)
+      if (!tDate) return false
+      return tDate >= range.start && tDate <= range.end
+    })
   }
 
   return filtered.sort((a, b) => new Date(b.date) - new Date(a.date))
 })
 
-// Methods
+// Summary that respects current filters
+const filteredSummary = computed(() => {
+  let totalIncome = 0
+  let totalExpenses = 0
+  for (const t of filteredTransactions.value) {
+    const amt = Number(t.amount) || 0
+    if (t.type === 'income') totalIncome += amt
+    else if (t.type === 'expense') totalExpenses += amt
+  }
+  return {
+    totalIncome,
+    totalExpenses,
+    netAmount: totalIncome - totalExpenses,
+  }
+})
+
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
@@ -534,15 +642,18 @@ const saveTransaction = async () => {
       await addTransaction(transactionForm)
     }
 
-    // Close modal and reset form
     const modal = document.getElementById('transactionModal')
-    const bsModal = bootstrap.Modal.getInstance(modal)
-    bsModal.hide()
+    // eslint-disable-next-line no-undef
+    const bsModal =
+      typeof bootstrap !== 'undefined' && bootstrap?.Modal?.getInstance
+        ? bootstrap.Modal.getInstance(modal)
+        : null
+    if (bsModal) bsModal.hide()
+
     resetForm()
   } catch (err) {
     console.error('Failed to save transaction:', err)
-    // Show error message to user
-    alert('Failed to save transaction. Please try again.')
+    alert('Gagal menyimpan transaksi. Silakan coba lagi.')
   }
 }
 
@@ -558,14 +669,33 @@ const editTransaction = (transaction) => {
   })
 }
 
-const confirmDelete = async (id) => {
-  if (confirm('Are you sure you want to delete this transaction?')) {
-    try {
-      await deleteTransaction(id)
-    } catch (err) {
-      console.error('Failed to delete transaction:', err)
-      alert('Failed to delete transaction. Please try again.')
-    }
+const confirmDelete = (id) => {
+  const tx = transactions.value.find((t) => t.id === id)
+  pendingDelete.value = tx
+  const modalEl = document.getElementById('confirmDeleteModal')
+  // eslint-disable-next-line no-undef
+  const modal =
+    typeof bootstrap !== 'undefined' && bootstrap?.Modal ? new bootstrap.Modal(modalEl) : null
+  if (modal) modal.show()
+}
+
+const performDelete = async () => {
+  if (!pendingDelete.value?.id) return
+  try {
+    await deleteTransaction(pendingDelete.value.id)
+    await fetchTransactions()
+  } catch (err) {
+    console.error('Failed to delete transaction:', err)
+    alert('Gagal menghapus transaksi. Silakan coba lagi.')
+  } finally {
+    const modalEl = document.getElementById('confirmDeleteModal')
+    // eslint-disable-next-line no-undef
+    const instance =
+      typeof bootstrap !== 'undefined' && bootstrap?.Modal?.getInstance
+        ? bootstrap.Modal.getInstance(modalEl)
+        : null
+    if (instance) instance.hide()
+    pendingDelete.value = null
   }
 }
 
@@ -574,11 +704,21 @@ const sortBy = (field, order) => {
   // You can add sorting state if needed
 }
 
-// Watch for type changes to reset category
 watch(
   () => transactionForm.type,
   () => {
     transactionForm.category = ''
+  },
+)
+
+// Clear custom dates when range is not 'custom'
+watch(
+  () => filters.dateRange,
+  (val) => {
+    if (val !== 'custom') {
+      filters.customStartDate = ''
+      filters.customEndDate = ''
+    }
   },
 )
 
@@ -740,10 +880,13 @@ onMounted(async () => {
     gap: 0.5rem;
   }
 
-  /* Ensure amount and date take minimal space */
-  .transaction-item .text-end {
-    min-width: 60px;
-    max-width: 80px;
+  /* Ensure amount and date have enough space and don't get truncated */
+  .transaction-item .transaction-amount-date {
+    min-width: 96px;
+    max-width: 140px;
+  }
+  .transaction-item .transaction-amount-date .transaction-amount {
+    white-space: nowrap;
   }
 
   /* Action buttons fixed width */
@@ -762,8 +905,6 @@ onMounted(async () => {
   /* Compact amount and date section */
   .transaction-amount-date {
     flex-shrink: 0;
-    min-width: 60px;
-    max-width: 80px;
   }
 
   /* Responsive adjustments for very small screens */
@@ -774,8 +915,8 @@ onMounted(async () => {
     }
 
     .transaction-amount-date {
-      min-width: 50px;
-      max-width: 60px;
+      min-width: 88px;
+      max-width: 120px;
     }
 
     .action-buttons {
@@ -914,5 +1055,15 @@ onMounted(async () => {
 .transaction-amount-date {
   text-align: right;
   white-space: nowrap;
+}
+</style>
+<style>
+/* Ensure modal overlays bottom navigation on mobile */
+.modal {
+  z-index: 2000 !important;
+}
+
+.modal-backdrop {
+  z-index: 1990 !important;
 }
 </style>

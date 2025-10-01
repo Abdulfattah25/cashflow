@@ -64,17 +64,6 @@
           </router-link>
         </li>
 
-        <li class="nav-item mb-2">
-          <router-link
-            to="/profile"
-            class="nav-link text-white"
-            :class="{ 'active bg-light text-primary': $route.name === 'profile' }"
-          >
-            <i class="bi bi-person-circle me-2"></i>
-            Profile
-          </router-link>
-        </li>
-
         <li v-if="authStore.user?.role === 'admin'" class="nav-item mb-2">
           <router-link
             to="/admin"
@@ -83,6 +72,17 @@
           >
             <i class="bi bi-shield-check me-2"></i>
             Admin Panel
+          </router-link>
+        </li>
+
+        <li class="nav-item mb-2">
+          <router-link
+            to="/profile"
+            class="nav-link text-white"
+            :class="{ 'active bg-light text-primary': $route.name === 'profile' }"
+          >
+            <i class="bi bi-person-circle me-2"></i>
+            Profile
           </router-link>
         </li>
       </ul>

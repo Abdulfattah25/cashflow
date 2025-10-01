@@ -119,7 +119,7 @@ const logout = async () => {
 .app-header {
   position: fixed; /* align with global layout */
   top: 0;
-  z-index: 1080;
+  z-index: 1040;
   background: #fff;
   border-bottom: 1px solid rgba(0,0,0,0.05);
   height: var(--header-height);

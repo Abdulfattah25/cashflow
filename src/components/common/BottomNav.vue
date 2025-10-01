@@ -28,11 +28,30 @@
       <i class="bi bi-bar-chart"></i>
       <span>Report</span>
     </router-link>
+
+    <router-link to="/profile" class="nav-item" :class="{ active: $route.name === 'profile' }">
+      <i class="bi bi-person-circle"></i>
+      <span>Profile</span>
+    </router-link>
+
+    <router-link
+      v-if="isAdmin"
+      to="/admin"
+      class="nav-item"
+      :class="{ active: $route.name === 'admin' }"
+    >
+      <i class="bi bi-shield-check"></i>
+      <span>Admin</span>
+    </router-link>
   </nav>
 </template>
 
 <script setup>
-// purely presentational; relies on router-link active state
+import { computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
+const isAdmin = computed(() => authStore.user?.role === 'admin')
 </script>
 
 <style scoped>
@@ -45,7 +64,8 @@
   background: #ffffff;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   align-items: center;
   z-index: 1100;
   padding-bottom: env(safe-area-inset-bottom);
