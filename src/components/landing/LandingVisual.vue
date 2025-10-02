@@ -10,7 +10,7 @@
               </div>
               <div>
                 <div class="small text-muted">Pemasukan</div>
-                <div class="h4 mb-0 fw-bold text-success">Rp 5.2 jt</div>
+                <div class="h4 mb-0 fw-bold text-success">Rp 3.6 jt</div>
               </div>
             </div>
           </div>
@@ -23,7 +23,7 @@
               </div>
               <div>
                 <div class="small text-muted">Pengeluaran</div>
-                <div class="h4 mb-0 fw-bold text-danger">Rp 3.8 jt</div>
+                <div class="h4 mb-0 fw-bold text-danger">Rp 2.8 jt</div>
               </div>
             </div>
           </div>
@@ -42,7 +42,7 @@
                 <div class="fw-medium text-dark">Gaji Bulanan</div>
                 <div class="small text-muted">Pemasukan</div>
               </div>
-              <div class="text-success fw-bold">+Rp 5.000.000</div>
+              <div class="text-success fw-bold">+Rp 3.600.000</div>
             </div>
             <div class="transaction-row">
               <div class="transaction-icon bg-danger-subtle text-danger">

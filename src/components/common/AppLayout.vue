@@ -1,7 +1,7 @@
 <template>
   <div class="app-layout">
-    <!-- Loading Overlay -->
-    <LoadingSpinner v-if="authStore.loading" class="loading-spinner" />
+    <!-- Loading Overlay - Only show for initial auth or critical operations -->
+    <LoadingSpinner v-if="authStore.loading && !authStore.initialized" class="loading-spinner" />
 
     <!-- Mobile Overlay -->
     <div v-if="sidebarOpen" class="sidebar-overlay d-lg-none" @click="closeSidebar"></div>
@@ -83,8 +83,8 @@ onUnmounted(() => {
   flex: 1;
   margin-left: 0;
   transition: margin-left 0.3s ease;
-  padding-top: var(--header-height, 70px); 
-  min-height: 100vh; 
+  padding-top: var(--header-height, 70px);
+  min-height: 100vh;
 }
 
 @media (min-width: 992px) {
@@ -93,11 +93,11 @@ onUnmounted(() => {
   }
 
   .main-content {
-    margin-left: var(--sidebar-width, 250px); 
-    margin-top: 0; 
+    margin-left: var(--sidebar-width, 250px);
+    margin-top: 0;
     padding-top: var(--header-height, 70px);
-    padding-left: 1rem; 
-    padding-right: 1.5rem; 
+    padding-left: 1rem;
+    padding-right: 1.5rem;
     padding-bottom: 1rem;
     min-height: 100vh;
   }
@@ -109,7 +109,7 @@ onUnmounted(() => {
   }
 
   .main-content {
-    margin-left: 150px; 
+    margin-left: 150px;
     margin-top: 0;
     padding-top: 35px;
     padding-left: 0;
@@ -128,9 +128,7 @@ onUnmounted(() => {
 
 @media (max-width: 767.98px) {
   .main-content {
-    min-height: calc(
-      100vh - var(--header-height, 70px) - var(--bottom-nav-height, 64px)
-    );
+    min-height: calc(100vh - var(--header-height, 70px) - var(--bottom-nav-height, 64px));
     padding-left: 0.5rem;
     padding-right: 0.5rem;
     padding-bottom: 1.4rem;

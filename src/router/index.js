@@ -69,28 +69,20 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
-  // Wait for auth to be fully initialized if still loading
-  if (authStore.loading) {
-    // Wait for loading to complete
-    await new Promise((resolve) => {
-      const unwatch = authStore.$subscribe(() => {
-        if (!authStore.loading) {
-          unwatch()
-          resolve()
-        }
-      })
-    })
-  }
-
-  // Initialize auth if not already done (but not loading)
-  if (!authStore.isAuthenticated && authStore.user === null && !authStore.loading) {
-    await authStore.initAuth()
+  // Initialize auth if not already done
+  if (!authStore.initialized) {
+    try {
+      await authStore.initAuth()
+    } catch (error) {
+      console.error('Auth initialization failed:', error)
+      // Continue navigation anyway to prevent infinite loading
+    }
   }
 
   // Handle authentication requirements
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    // For auth-required routes, stay on landing page
-    next('/')
+    // For auth-required routes, redirect to login
+    next('/login')
     return
   }
 

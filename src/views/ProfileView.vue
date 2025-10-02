@@ -28,7 +28,7 @@
             <!-- Logout Button -->
             <div class="row mx-2">
               <div class="col-12 text-start">
-                <button class="btn btn-secondary" @click="logout" :disabled="loggingOut">
+                <button class="btn btn-danger" @click="logout" :disabled="loggingOut">
                   <i class="bi bi-box-arrow-right me-2"></i>
                   {{ loggingOut ? 'Keluar...' : 'Logout' }}
                 </button>
@@ -54,8 +54,8 @@
                     @click="toggleSection('name')"
                     :class="{ active: activeSection === 'name' }"
                   >
-                    <i class="bi bi-person me-2"></i>
-                    Ganti Nama
+                    <i class="bi bi-person me-1"></i>
+                    <span class="btn-text">Ganti Nama</span>
                   </button>
                 </div>
                 <div class="col-6 col-md-3">
@@ -64,8 +64,8 @@
                     @click="toggleSection('password')"
                     :class="{ active: activeSection === 'password' }"
                   >
-                    <i class="bi bi-lock me-2"></i>
-                    Ganti Password
+                    <i class="bi bi-lock me-1"></i>
+                    <span class="btn-text">Ganti Password</span>
                   </button>
                 </div>
                 <div class="col-6 col-md-3">
@@ -74,8 +74,8 @@
                     @click="toggleSection('theme')"
                     :class="{ active: activeSection === 'theme' }"
                   >
-                    <i class="bi bi-palette me-2"></i>
-                    Pilih Tema
+                    <i class="bi bi-palette me-1"></i>
+                    <span class="btn-text">Pilih Tema</span>
                   </button>
                 </div>
                 <div class="col-6 col-md-3">
@@ -84,8 +84,8 @@
                     @click="toggleSection('categories')"
                     :class="{ active: activeSection === 'categories' }"
                   >
-                    <i class="bi bi-tags me-2"></i>
-                    Kelola Kategori
+                    <i class="bi bi-tags me-1"></i>
+                    <span class="btn-text">Kelola Kategori</span>
                   </button>
                 </div>
                 <div class="col-6 col-md-3">
@@ -94,8 +94,8 @@
                     @click="toggleSection('delete')"
                     :class="{ active: activeSection === 'delete' }"
                   >
-                    <i class="bi bi-trash me-2"></i>
-                    Hapus Akun
+                    <i class="bi bi-trash me-1"></i>
+                    <span class="btn-text">Hapus Akun</span>
                   </button>
                 </div>
               </div>
@@ -113,17 +113,19 @@
                         <div class="col-md-6 mb-3">
                           <label class="form-label">Nama Lengkap Baru</label>
                           <input
+                            ref="nameInput"
                             type="text"
                             class="form-control"
                             v-model="tempFullName"
                             placeholder="Masukkan nama lengkap"
+                            @keyup.enter="updateName"
                           />
                         </div>
                         <div class="col-md-3 mb-3 d-flex align-items-end">
                           <button
                             class="btn btn-primary w-100"
                             @click="updateName"
-                            :disabled="saving"
+                            :disabled="saving || !tempFullName.trim()"
                           >
                             {{ saving ? 'Menyimpan...' : 'Simpan' }}
                           </button>
@@ -208,11 +210,12 @@
                             type="text"
                             class="form-control"
                             placeholder="Nama kategori"
+                            @keyup.enter="saveCategory"
                           />
                         </div>
                         <div class="col-6 col-md-3">
                           <label class="form-label">Jenis</label>
-                          <select v-model="catForm.type" class="form-select">
+                          <select v-model="catForm.type" class="form-select" :disabled="catEditing">
                             <option value="income">Pemasukan</option>
                             <option value="expense">Pengeluaran</option>
                           </select>
@@ -225,13 +228,21 @@
                             class="form-control form-control-color"
                           />
                         </div>
-                        <div class="col-3 col-md-3">
+                        <div class="col-12 col-md-3 d-flex gap-2">
                           <button
-                            class="btn btn-primary w-100"
+                            class="btn btn-primary flex-fill"
                             @click="saveCategory"
-                            :disabled="catSaving || !catForm.name"
+                            :disabled="catSaving || !catForm.name.trim()"
                           >
                             {{ catEditing ? 'Perbarui' : 'Tambah' }}
+                          </button>
+                          <button
+                            v-if="catEditing"
+                            class="btn btn-secondary"
+                            @click="resetCatForm"
+                            :disabled="catSaving"
+                          >
+                            Batal
                           </button>
                         </div>
                       </div>
@@ -245,7 +256,7 @@
                                   <th>Nama</th>
                                   <th>Jenis</th>
                                   <th>Warna</th>
-                                  <th style="width: 110px" class="text-end">Aksi</th>
+                                  <th style="width: 90px" class="text-center">Aksi</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -262,19 +273,25 @@
                                       >&nbsp;&nbsp;</span
                                     >
                                   </td>
-                                  <td class="text-end">
-                                    <button
-                                      class="btn btn-sm btn-outline-secondary me-1"
-                                      @click="editCategory(c)"
-                                    >
-                                      <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button
-                                      class="btn btn-sm btn-outline-danger"
-                                      @click="openRemoveCategory(c)"
-                                    >
-                                      <i class="bi bi-trash"></i>
-                                    </button>
+                                  <td class="text-center">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                      <button
+                                        class="btn btn-success"
+                                        @click="editCategory(c)"
+                                        title="Edit kategori"
+                                        :disabled="catSaving"
+                                      >
+                                        <i class="bi bi-pencil"></i>
+                                      </button>
+                                      <button
+                                        class="btn btn-danger"
+                                        @click="openRemoveCategory(c)"
+                                        title="Hapus kategori"
+                                        :disabled="catSaving"
+                                      >
+                                        <i class="bi bi-trash"></i>
+                                      </button>
+                                    </div>
                                   </td>
                                 </tr>
                               </tbody>
@@ -318,7 +335,12 @@
               <h5 class="modal-title text-danger">
                 <i class="bi bi-exclamation-triangle me-2"></i>Konfirmasi Hapus Akun
               </h5>
-              <button type="button" class="btn-close" @click="showDeleteModal = false"></button>
+              <button
+                type="button"
+                class="btn-close"
+                @click="closeDeleteModal"
+                aria-label="Close"
+              ></button>
             </div>
             <div class="modal-body">
               <div class="alert alert-danger">
@@ -334,7 +356,7 @@
               />
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" @click="showDeleteModal = false">
+              <button type="button" class="btn btn-secondary" @click="closeDeleteModal">
                 Batal
               </button>
               <button
@@ -358,7 +380,12 @@
               <h5 class="modal-title text-danger">
                 <i class="bi bi-exclamation-triangle me-2"></i>Hapus Kategori
               </h5>
-              <button type="button" class="btn-close" @click="showCatDeleteModal = false"></button>
+              <button
+                type="button"
+                class="btn-close"
+                @click="closeCategoryModal"
+                aria-label="Close"
+              ></button>
             </div>
             <div class="modal-body">
               <div class="alert alert-warning">
@@ -373,7 +400,7 @@
               </p>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" @click="showCatDeleteModal = false">
+              <button type="button" class="btn btn-secondary" @click="closeCategoryModal">
                 Batal
               </button>
               <button type="button" class="btn btn-danger" @click="confirmRemoveCategory">
@@ -388,7 +415,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabase'
@@ -412,6 +439,7 @@ const showDeleteModal = ref(false)
 const deleteConfirmation = ref('')
 const deleting = ref(false)
 const loggingOut = ref(false)
+const nameInput = ref(null)
 
 // Categories management
 const {
@@ -427,14 +455,44 @@ const catEditing = computed(() => !!catForm.value.id)
 const catSaving = computed(() => catLoading.value)
 const showCatDeleteModal = ref(false)
 const deleteTargetCat = ref(null)
+const modalInstances = ref({
+  deleteAccount: null,
+  deleteCategory: null,
+})
 
 const canChangePassword = computed(() => {
   return newPassword.value.length >= 6 && newPassword.value === confirmPassword.value
 })
 
-onMounted(() => {
-  loadUserSettings()
-  fetchCategories()
+onMounted(async () => {
+  // Only load user settings if user is already authenticated
+  if (authStore.isAuthenticated) {
+    loadUserSettings()
+
+    // Use cached categories or fetch if needed
+    if (!categories.value.length) {
+      await fetchCategories()
+    }
+  }
+})
+
+onUnmounted(() => {
+  // Clean up any remaining modal instances and overlays
+  if (modalInstances.value.deleteAccount) {
+    modalInstances.value.deleteAccount.dispose()
+  }
+  if (modalInstances.value.deleteCategory) {
+    modalInstances.value.deleteCategory.dispose()
+  }
+
+  // Remove any remaining modal backdrops
+  const backdrops = document.querySelectorAll('.modal-backdrop')
+  backdrops.forEach((backdrop) => backdrop.remove())
+
+  // Reset body classes that Bootstrap might have added
+  document.body.classList.remove('modal-open')
+  document.body.style.overflow = ''
+  document.body.style.paddingRight = ''
 })
 
 const loadUserSettings = () => {
@@ -452,6 +510,11 @@ const toggleSection = (section) => {
 
   if (activeSection.value === 'name') {
     tempFullName.value = fullName.value
+    nextTick(() => {
+      if (nameInput.value) {
+        nameInput.value.focus()
+      }
+    })
   } else if (activeSection.value === 'password') {
     newPassword.value = ''
     confirmPassword.value = ''
@@ -468,30 +531,40 @@ const resetCatForm = () => {
 }
 
 const saveCategory = async () => {
-  if (!catForm.value.name) return
-  if (catForm.value.id) {
-    const ok = await updateCategory(catForm.value.id, {
-      name: catForm.value.name,
-      color: catForm.value.color,
-    })
-    if (ok) {
-      showToast('Kategori diperbarui', 'success')
-      resetCatForm()
+  if (!catForm.value.name.trim()) return
+
+  try {
+    const categoryName = catForm.value.name.trim()
+
+    if (catForm.value.id) {
+      // Update existing category
+      const ok = await updateCategory(catForm.value.id, {
+        name: categoryName,
+        color: catForm.value.color,
+      })
+      if (ok) {
+        showToast(`Kategori "${categoryName}" berhasil diperbarui`, 'success')
+        resetCatForm()
+      } else {
+        showToast(`Gagal memperbarui kategori "${categoryName}"`, 'danger')
+      }
     } else {
-      showToast('Gagal memperbarui kategori', 'danger')
+      // Add new category
+      const ok = await addCategory({
+        name: categoryName,
+        type: catForm.value.type,
+        color: catForm.value.color,
+      })
+      if (ok) {
+        showToast(`Kategori "${categoryName}" berhasil ditambahkan`, 'success')
+        resetCatForm()
+      } else {
+        showToast(`Gagal menambah kategori "${categoryName}"`, 'danger')
+      }
     }
-  } else {
-    const ok = await addCategory({
-      name: catForm.value.name,
-      type: catForm.value.type,
-      color: catForm.value.color,
-    })
-    if (ok) {
-      showToast('Kategori ditambahkan', 'success')
-      resetCatForm()
-    } else {
-      showToast('Gagal menambah kategori', 'danger')
-    }
+  } catch (error) {
+    console.error('Error saving category:', error)
+    showToast('Terjadi kesalahan saat menyimpan kategori', 'danger')
   }
 }
 
@@ -576,14 +649,15 @@ const deleteAccount = async () => {
     // This would require admin privileges in production
     // For now, just sign out the user
     await authStore.signOut()
-    router.push('/')
     showToast('Akun berhasil dihapus', 'success')
+    router.push('/')
   } catch (error) {
     console.error('Error deleting account:', error)
     showToast('Gagal menghapus akun: ' + error.message, 'danger')
   } finally {
     deleting.value = false
     showDeleteModal.value = false
+    deleteConfirmation.value = ''
   }
 }
 
@@ -623,15 +697,55 @@ watch(user, (newUser) => {
 
 watch(showDeleteModal, (show) => {
   if (show) {
-    const modal = new bootstrap.Modal(document.getElementById('deleteAccountModal'))
-    modal.show()
+    setTimeout(() => {
+      const modalElement = document.getElementById('deleteAccountModal')
+      if (modalElement && window.bootstrap) {
+        modalInstances.value.deleteAccount = new bootstrap.Modal(modalElement, {
+          backdrop: 'static',
+          keyboard: false,
+        })
+        modalInstances.value.deleteAccount.show()
+
+        // Handle modal close events
+        modalElement.addEventListener('hidden.bs.modal', () => {
+          showDeleteModal.value = false
+          deleteConfirmation.value = ''
+        })
+      }
+    }, 50)
+  } else {
+    // Properly close modal
+    if (modalInstances.value.deleteAccount) {
+      modalInstances.value.deleteAccount.hide()
+      modalInstances.value.deleteAccount = null
+    }
   }
 })
 
 watch(showCatDeleteModal, (show) => {
   if (show) {
-    const modal = new bootstrap.Modal(document.getElementById('deleteCategoryModal'))
-    modal.show()
+    setTimeout(() => {
+      const modalElement = document.getElementById('deleteCategoryModal')
+      if (modalElement && window.bootstrap) {
+        modalInstances.value.deleteCategory = new bootstrap.Modal(modalElement, {
+          backdrop: 'static',
+          keyboard: false,
+        })
+        modalInstances.value.deleteCategory.show()
+
+        // Handle modal close events
+        modalElement.addEventListener('hidden.bs.modal', () => {
+          showCatDeleteModal.value = false
+          deleteTargetCat.value = null
+        })
+      }
+    }, 50)
+  } else {
+    // Properly close modal
+    if (modalInstances.value.deleteCategory) {
+      modalInstances.value.deleteCategory.hide()
+      modalInstances.value.deleteCategory = null
+    }
   }
 })
 
@@ -640,12 +754,35 @@ const openRemoveCategory = (c) => {
   showCatDeleteModal.value = true
 }
 
-const confirmRemoveCategory = async () => {
-  if (!deleteTargetCat.value) return
-  const ok = await deleteCategory(deleteTargetCat.value.id)
-  showToast(ok ? 'Kategori dihapus' : 'Gagal menghapus kategori', ok ? 'success' : 'danger')
+const closeDeleteModal = () => {
+  showDeleteModal.value = false
+  deleteConfirmation.value = ''
+}
+
+const closeCategoryModal = () => {
   showCatDeleteModal.value = false
   deleteTargetCat.value = null
+}
+
+const confirmRemoveCategory = async () => {
+  if (!deleteTargetCat.value) return
+
+  try {
+    const categoryName = deleteTargetCat.value.name
+    const ok = await deleteCategory(deleteTargetCat.value.id)
+
+    if (ok) {
+      showToast(`Kategori "${categoryName}" berhasil dihapus`, 'success')
+    } else {
+      showToast(`Gagal menghapus kategori "${categoryName}"`, 'danger')
+    }
+  } catch (error) {
+    console.error('Error deleting category:', error)
+    showToast('Terjadi kesalahan saat menghapus kategori', 'danger')
+  } finally {
+    showCatDeleteModal.value = false
+    deleteTargetCat.value = null
+  }
 }
 </script>
 
@@ -773,8 +910,26 @@ const confirmRemoveCategory = async () => {
   }
 
   .setting-btn {
-    height: 2.5rem;
-    font-size: 0.875rem;
+    height: 2.8rem;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;
+  }
+
+  .setting-btn .btn-text {
+    font-size: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .setting-btn i {
+    margin-right: 0.25rem !important;
+    font-size: 0.9rem;
+    flex-shrink: 0;
   }
 
   .d-flex.justify-content-between {
@@ -786,5 +941,78 @@ const confirmRemoveCategory = async () => {
   .d-flex.justify-content-between h2 {
     text-align: center;
   }
+
+  .table-responsive {
+    font-size: 0.85rem;
+  }
+
+  .btn-sm {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.75rem;
+  }
+
+  .col-3.col-md-3 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  /* Responsive table for categories */
+  .table td,
+  .table th {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.8rem;
+  }
+
+  .table th:last-child,
+  .table td:last-child {
+    width: 80px;
+  }
+
+  /* Mobile button group adjustments */
+  .btn-group-sm .btn {
+    padding: 0.15rem 0.3rem;
+    font-size: 0.7rem;
+  }
+}
+
+/* Desktop button group enhancements */
+.btn-group .btn {
+  transition: all 0.2s ease;
+  border-width: 1px;
+}
+
+.btn-group .btn:hover {
+  transform: translateY(-1px);
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-group .btn:focus {
+  z-index: 3;
+}
+
+.btn-group .btn:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.btn-group .btn:last-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: 0;
+}
+
+.btn-group .btn:hover:first-child {
+  border-right: 1px solid transparent;
+}
+
+/* Table action column styling */
+.table td:last-child {
+  padding: 0.5rem 0.25rem;
+}
+
+.table .btn-group {
+  white-space: nowrap;
 }
 </style>

@@ -11,12 +11,21 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Track if auth has been initialized to prevent duplicate calls
   const initialized = ref(false)
+  const initPromise = ref(null)
 
   // Initialize auth state
   const initAuth = async () => {
     // Prevent duplicate initialization
-    if (initialized.value) return
+    if (initialized.value) return user.value
 
+    // If already initializing, return existing promise
+    if (initPromise.value) return initPromise.value
+
+    initPromise.value = _performInit()
+    return initPromise.value
+  }
+
+  const _performInit = async () => {
     loading.value = true
     try {
       const {
@@ -30,12 +39,24 @@ export const useAuthStore = defineStore('auth', () => {
       }
 
       initialized.value = true
+      return user.value
     } catch (err) {
       error.value = err.message
       console.error('Auth initialization error:', err)
+      initialized.value = true // Mark as initialized even on error
+      return null
     } finally {
       loading.value = false
+      initPromise.value = null // Clear promise
     }
+  }
+
+  // Reset initialization state (for logout)
+  const resetAuth = () => {
+    initialized.value = false
+    initPromise.value = null
+    user.value = null
+    error.value = null
   }
 
   // Fetch user profile data
@@ -47,7 +68,10 @@ export const useAuthStore = defineStore('auth', () => {
         .eq('id', authUser.id)
         .single()
 
-      if (profileError) throw profileError
+      if (profileError && profileError.code !== 'PGRST116') {
+        // PGRST116 = no rows returned, which is fine for new users
+        throw profileError
+      }
 
       user.value = {
         ...authUser,
@@ -103,7 +127,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const { error: signOutError } = await supabase.auth.signOut()
       if (signOutError) throw signOutError
-      user.value = null
+      resetAuth()
     } catch (err) {
       error.value = err.message
     } finally {
@@ -141,6 +165,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     initialized,
     initAuth,
+    resetAuth,
     fetchUserProfile,
     signUp,
     signIn,

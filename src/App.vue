@@ -42,6 +42,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useCategories } from '@/composables/useCategories'
 import { supabase } from '@/lib/supabase'
 import LandingPage from '@/components/landing/LandingPage.vue'
 import AuthModal from '@/components/auth/AuthModal.vue'
@@ -83,15 +84,19 @@ const initializeApp = async () => {
         if (!router.currentRoute.value.meta.requiresAuth) {
           router.push('/')
         }
-        showToast('Login berhasil', 'success')
+        setTimeout(() => showToast('Login berhasil', 'success'), 500)
       }
 
       if (event === 'SIGNED_OUT') {
+        // Clear categories cache on logout
+        const { clearCache } = useCategories()
+        clearCache()
+
         // Only redirect if currently on an auth-required page
         if (router.currentRoute.value.meta.requiresAuth) {
           router.push('/')
         }
-        showToast('Logout berhasil', 'info')
+        setTimeout(() => showToast('Logout berhasil', 'info'), 500)
       }
     })
   } catch (error) {
