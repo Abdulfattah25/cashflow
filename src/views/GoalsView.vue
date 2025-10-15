@@ -330,37 +330,37 @@ onMounted(async () => {
       <!-- Summary Cards -->
       <div class="row mb-3 g-2">
         <div class="col-6 col-md-3">
-          <div class="card summary-card total-goals border-0 text-center">
+          <div class="card summary-card total-goals border-0 text-center text-light">
             <div class="card-body p-3">
               <i class="bi bi-bullseye summary-icon mb-2"></i>
-              <h6 class="card-title text-muted mb-1 small">Total Target</h6>
+              <h6 class="card-title text-light mb-1 small">Total Target</h6>
               <h5 class="mb-0">{{ goalSummary.totalGoals }}</h5>
             </div>
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div class="card summary-card completed-goals border-0 text-center">
+          <div class="card summary-card completed-goals border-0 text-center text-light">
             <div class="card-body p-3">
               <i class="bi bi-check-circle summary-icon mb-2"></i>
-              <h6 class="card-title text-muted mb-1 small">Selesai</h6>
+              <h6 class="card-title text-light mb-1 small">Selesai</h6>
               <h5 class="mb-0">{{ goalSummary.completedGoals }}</h5>
             </div>
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div class="card summary-card total-target border-0 text-center">
+          <div class="card summary-card total-target border-0 text-center text-light">
             <div class="card-body p-3">
               <i class="bi bi-cash-stack summary-icon mb-2"></i>
-              <h6 class="card-title text-muted mb-1 small">Total Target</h6>
+              <h6 class="card-title text-light mb-1 small">Total Target</h6>
               <h5 class="mb-0">{{ formatCurrency(goalSummary.totalTarget) }}</h5>
             </div>
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div class="card summary-card total-saved border-0 text-center">
+          <div class="card summary-card total-saved border-0 text-center text-light">
             <div class="card-body p-3">
               <i class="bi bi-graph-up summary-icon mb-2"></i>
-              <h6 class="card-title text-muted mb-1 small">Total Tersimpan</h6>
+              <h6 class="card-title text-light mb-1 small">Total Tersimpan</h6>
               <h5 class="mb-0">{{ formatCurrency(goalSummary.totalSaved) }}</h5>
             </div>
           </div>
@@ -831,19 +831,23 @@ onMounted(async () => {
 }
 
 .summary-card.total-goals {
-  background: linear-gradient(135deg, #ffffff 0%, #63e76a 100%);
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  box-shadow: 0 4px 15px rgba(56, 239, 125, 0.25);
 }
 
 .summary-card.completed-goals {
-  background: linear-gradient(135deg, #ffffff 0%, #e06565 100%);
+  background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+  box-shadow: 0 4px 15px rgba(238, 9, 121, 0.25);
 }
 
 .summary-card.total-target {
-  background: linear-gradient(135deg, #ffffff 0%, #839ef5 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.25);
 }
 
 .summary-card.total-saved {
-  background: linear-gradient(135deg, #ffffff 0%, hsl(61, 82%, 67%) 100%);
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  box-shadow: 0 4px 15px rgba(240, 147, 251, 0.25);
 }
 
 .summary-icon {

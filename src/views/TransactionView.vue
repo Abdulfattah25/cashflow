@@ -38,13 +38,13 @@
 
       <!-- Summary Cards -->
       <div class="row mb-0 g-2">
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-4 mt-0">
           <div class="card net-card border-0">
-            <div class="card-body p-3 text-center">
-              <div class="stats-icon mb-0 text-dark">
+            <div class="card-body p-3 text-center text-light">
+              <div class="mb-2">
                 <i class="bi bi-wallet2"></i>
               </div>
-              <h5 class="card-title mb-1 smallFont text-muted">Jumlah Bersih</h5>
+              <h5 class="card-title mb-1 smallFont text-light">Jumlah Bersih</h5>
               <h5
                 class="smallFont mb-0"
                 :class="filteredSummary.netAmount >= 0 ? 'positive' : 'negative'"
@@ -56,22 +56,22 @@
         </div>
         <div class="col-6 col-md-4 mt-0">
           <div class="card income-card border-0">
-            <div class="card-body p-3 text-center">
-              <div class="stats-icon mb-2 text-dark">
+            <div class="card-body p-3 text-center text-light">
+              <div class="mb-2">
                 <i class="bi bi-arrow-up-circle"></i>
               </div>
-              <h5 class="card-title text-white mb-1 smallFont text-muted">Pemasukan</h5>
+              <h5 class="card-title mb-1 smallFont text-light">Pemasukan</h5>
               <h5 class="smallFont mb-0">{{ formatCurrency(filteredSummary.totalIncome) }}</h5>
             </div>
           </div>
         </div>
         <div class="col-6 col-md-4 mt-0">
           <div class="card expense-card border-0">
-            <div class="card-body p-3 text-center">
-              <div class="stats-icon text-dark mb-2">
+            <div class="card-body p-3 text-center text-light">
+              <div class="mb-2">
                 <i class="bi bi-arrow-down-circle"></i>
               </div>
-              <h5 class="card-title text-white mb-1 smallFont text-muted">Pengeluaran</h5>
+              <h5 class="card-title mb-1 smallFont text-light">Pengeluaran</h5>
               <h5 class="smallFont mb-0">
                 {{ formatCurrency(filteredSummary.totalExpenses) }}
               </h5>
@@ -857,18 +857,18 @@ onUnmounted(() => {
 
 <style scoped>
 .net-card {
-  background: linear-gradient(135deg, #ffffff 0%, #839ef5 100%);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.25);
 }
 
 .income-card {
-  background: linear-gradient(135deg, #ffffff 0%, #63e76a 100%);
-  box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  box-shadow: 0 4px 15px rgba(56, 239, 125, 0.25);
 }
 
 .expense-card {
-  background: linear-gradient(135deg, #ffffff 0%, #e06565 100%);
-  box-shadow: 0 4px 15px rgba(250, 112, 154, 0.3);
+  background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+  box-shadow: 0 4px 15px rgba(238, 9, 121, 0.25);
 }
 
 /* Ensure transaction icons are always circular and properly sized */

@@ -42,12 +42,12 @@
           <div class="stats-card card net border-0">
             <div class="card-body p-3 text-center">
               <div class="stats-icon net mb-2">
-                <i class="bi bi-wallet2"></i>
+                <i class="bi bi-wallet2 text-light"></i>
               </div>
-              <h6 class="stats-value net mb-1 text-primary fs-5">
+              <h6 class="stats-value net mb-1 text-light fs-5">
                 {{ formatCurrency(summary.netAmount) }}
               </h6>
-              <p class="stats-label small mb-0">Saldo Bersih</p>
+              <p class="stats-label small mb-0 text-light opacity-75">Saldo Bersih</p>
             </div>
           </div>
         </div>
@@ -59,10 +59,10 @@
               <div class="stats-icon income mb-2">
                 <i class="bi bi-arrow-up-circle text-light"></i>
               </div>
-              <h5 class="stats-value income mb-1 fs-5">
+              <h5 class="stats-value income mb-1 fs-5 text-light">
                 {{ formatCurrency(summary.totalIncome) }}
               </h5>
-              <p class="stats-label small mb-0">Pendapatan</p>
+              <p class="stats-label small mb-0 text-light opacity-75">Pendapatan</p>
             </div>
           </div>
         </div>
@@ -74,10 +74,10 @@
               <div class="stats-icon expense mb-2">
                 <i class="bi bi-arrow-down-circle text-light"></i>
               </div>
-              <h5 class="stats-value expense mb-1 fs-5">
+              <h5 class="stats-value expense mb-1 fs-5 text-light">
                 {{ formatCurrency(summary.totalExpenses) }}
               </h5>
-              <p class="stats-label small mb-0">Pengeluaran</p>
+              <p class="stats-label small mb-0 text-light opacity-75">Pengeluaran</p>
             </div>
           </div>
         </div>
@@ -94,42 +94,42 @@
               <div class="row g-2">
                 <div class="col-6 col-md-4 col-lg-3">
                   <button
-                    class="btn btn-success w-100 d-flex flex-column align-items-center justify-content-center py-1"
+                    class="btn quick-action-btn income-action w-100 d-flex flex-column align-items-center justify-content-center py-3"
                     @click="openTransactionModal('income')"
                     data-bs-toggle="modal"
                     data-bs-target="#transactionModal"
                   >
-                    <i class="bi bi-plus-circle fs-4 mb-1"></i>
-                    <span class="small">Tambah Pemasukan</span>
+                    <i class="bi bi-plus-circle fs-3 mb-2"></i>
+                    <span class="small fw-medium">Tambah Pemasukan</span>
                   </button>
                 </div>
                 <div class="col-6 col-md-4 col-lg-3">
                   <button
-                    class="btn btn-danger w-100 d-flex flex-column align-items-center justify-content-center py-1"
+                    class="btn quick-action-btn expense-action w-100 d-flex flex-column align-items-center justify-content-center py-3"
                     @click="openTransactionModal('expense')"
                     data-bs-toggle="modal"
                     data-bs-target="#transactionModal"
                   >
-                    <i class="bi bi-dash-circle fs-4 mb-1"></i>
-                    <span class="small">Tambah Pengeluaran</span>
+                    <i class="bi bi-dash-circle fs-3 mb-2"></i>
+                    <span class="small fw-medium">Tambah Pengeluaran</span>
                   </button>
                 </div>
                 <div class="col-6 col-md-4 col-lg-3">
                   <router-link
                     to="/transactions"
-                    class="btn btn-primary w-100 d-flex flex-column align-items-center justify-content-center py-1 text-decoration-none"
+                    class="btn quick-action-btn view-action w-100 d-flex flex-column align-items-center justify-content-center py-3 text-decoration-none"
                   >
-                    <i class="bi bi-list-ul fs-4 mb-1"></i>
-                    <span class="small">Lihat Semua</span>
+                    <i class="bi bi-list-ul fs-3 mb-2"></i>
+                    <span class="small fw-medium">Lihat Semua</span>
                   </router-link>
                 </div>
                 <div class="col-6 col-md-4 col-lg-3">
                   <router-link
                     to="/reports"
-                    class="btn btn-info w-100 d-flex flex-column align-items-center justify-content-center py-1"
+                    class="btn quick-action-btn report-action w-100 d-flex flex-column align-items-center justify-content-center py-3"
                   >
-                    <i class="bi bi-graph-up fs-4 mb-1 text-light"></i>
-                    <span class="small text-light">Laporan</span>
+                    <i class="bi bi-graph-up fs-3 mb-2"></i>
+                    <span class="small fw-medium">Laporan</span>
                   </router-link>
                 </div>
               </div>
@@ -159,9 +159,10 @@
                   :key="transaction.id"
                   class="transaction-item p-3 border-bottom"
                 >
-                  <div class="d-flex align-items-center">
+                  <div class="d-flex align-items-center gap-2">
+                    <!-- Icon -->
                     <div
-                      class="transaction-icon me-3 flex-shrink-0"
+                      class="transaction-icon flex-shrink-0"
                       :style="{
                         background: transaction.color + '20',
                         color: transaction.color,
@@ -169,28 +170,28 @@
                     >
                       <i :class="transaction.icon"></i>
                     </div>
-                    <div class="flex-grow-1 min-w-0">
-                      <div class="d-flex justify-content-between align-items-start">
-                        <div class="me-2">
-                          <div class="fw-medium text-truncate">{{ transaction.description }}</div>
-                          <div class="d-flex align-items-center mt-1">
-                            <small class="text-muted">{{ formatDate(transaction.date) }}</small>
-                          </div>
-                        </div>
-                        <div class="text-end flex-shrink-0">
-                          <span
-                            class="fw-bold"
-                            :class="
-                              transaction.type === 'income'
-                                ? 'transaction-amount income'
-                                : 'transaction-amount expense'
-                            "
-                          >
-                            {{ transaction.type === 'expense' ? '-' : '+'
-                            }}{{ formatCurrency(transaction.amount) }}
-                          </span>
-                        </div>
+
+                    <!-- Description + Date (flex-grow with min-width-0) -->
+                    <div class="transaction-info flex-grow-1 min-w-0">
+                      <div class="transaction-description text-truncate fw-medium">
+                        {{ transaction.description }}
                       </div>
+                      <small class="text-muted d-block">{{ formatDate(transaction.date) }}</small>
+                    </div>
+
+                    <!-- Amount (fixed width, no shrink) -->
+                    <div class="transaction-amount-box flex-shrink-0 text-end">
+                      <span
+                        class="fw-bold d-block"
+                        :class="
+                          transaction.type === 'income'
+                            ? 'transaction-amount income'
+                            : 'transaction-amount expense'
+                        "
+                      >
+                        {{ transaction.type === 'expense' ? '-' : '+'
+                        }}{{ formatCurrency(transaction.amount) }}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -540,18 +541,21 @@ onUnmounted(() => {
 }
 
 .stats-card.income {
-  background: linear-gradient(135deg, #ffffff 0%, #e7e6e6 100%);
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  box-shadow: 0 4px 15px rgba(56, 239, 125, 0.25);
   color: white;
 }
 
 .stats-card.expense {
-  background: linear-gradient(135deg, #ffffff 0%, #e7e6e6 100%);
+  background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+  box-shadow: 0 4px 15px rgba(238, 9, 121, 0.25);
   color: white;
 }
 
 .stats-card.net {
-  background: linear-gradient(135deg, #ffffff 0%, #e7e6e6 100%);
-  color: #333;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.25);
+  color: white;
 }
 
 .stats-icon {
@@ -562,18 +566,19 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .stats-icon.income {
-  background: rgba(61, 177, 38, 0.8);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .stats-icon.expense {
-  background: rgba(230, 46, 46, 0.8);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .stats-icon.net {
-  background: rgba(44, 83, 209, 0.808);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .transaction-icon {
@@ -584,6 +589,22 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   font-size: 0.9rem;
+}
+
+.transaction-info {
+  overflow: hidden;
+}
+
+.transaction-description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.transaction-amount-box {
+  min-width: 90px;
+  max-width: 90px;
 }
 
 .transaction-item {
@@ -627,6 +648,97 @@ onUnmounted(() => {
 
 .btn {
   border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Quick Action Buttons - Light Style */
+.quick-action-btn {
+  border: 2px solid transparent;
+  background: #f8f9fa;
+  position: relative;
+  overflow: hidden;
+}
+
+.quick-action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.08;
+  transition: opacity 0.3s ease;
+}
+
+.quick-action-btn:hover::before {
+  opacity: 0.15;
+}
+
+.quick-action-btn.income-action {
+  color: #10b981;
+  border-color: #10b98120;
+}
+
+.quick-action-btn.income-action::before {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.quick-action-btn.income-action:hover {
+  border-color: #10b98140;
+  color: #059669;
+}
+
+.quick-action-btn.expense-action {
+  color: #ef4444;
+  border-color: #ef444420;
+}
+
+.quick-action-btn.expense-action::before {
+  background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+}
+
+.quick-action-btn.expense-action:hover {
+  border-color: #ef444440;
+  color: #dc2626;
+}
+
+.quick-action-btn.view-action {
+  color: #3b82f6;
+  border-color: #3b82f620;
+}
+
+.quick-action-btn.view-action::before {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.quick-action-btn.view-action:hover {
+  border-color: #3b82f640;
+  color: #2563eb;
+}
+
+.quick-action-btn.report-action {
+  color: #8b5cf6;
+  border-color: #8b5cf620;
+}
+
+.quick-action-btn.report-action::before {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.quick-action-btn.report-action:hover {
+  border-color: #8b5cf640;
+  color: #7c3aed;
+}
+
+.quick-action-btn i,
+.quick-action-btn span {
+  position: relative;
+  z-index: 1;
 }
 
 .progress {
@@ -652,6 +764,7 @@ onUnmounted(() => {
     line-height: 1.1 !important;
     border-radius: 6px !important;
   }
+
   .stats-value {
     font-size: 1.1rem;
   }
@@ -661,7 +774,44 @@ onUnmounted(() => {
   }
 
   .transaction-amount {
+    font-size: 0.85rem;
+  }
+
+  /* Critical fix for text truncation in recent transactions */
+  .transaction-item .d-flex {
+    gap: 0.5rem !important;
+  }
+
+  .transaction-icon {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 0.85rem !important;
+    flex: 0 0 32px !important;
+  }
+
+  .transaction-info {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .transaction-description {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
     font-size: 0.9rem;
+  }
+
+  .transaction-amount-box {
+    flex: 0 0 auto;
+    min-width: 85px;
+    max-width: 85px;
+  }
+
+  .transaction-amount {
+    font-size: 0.85rem;
+    white-space: nowrap;
   }
 
   .modal-dialog {

@@ -318,28 +318,28 @@ onMounted(async () => {
           <h5 class="section-title">Ringkasan</h5>
           <div class="row mb-3 g-2">
             <div class="col-6 col-md-3">
-              <div class="card summary-card income-card border-0 text-center">
+              <div class="card summary-card income-card border-0 text-center text-white">
                 <div class="card-body p-3">
                   <i class="bi bi-arrow-up-circle summary-icon mb-2"></i>
-                  <h5 class="card-title mb-1 small">Total Pemasukan</h5>
+                  <h5 class="card-title mb-1 small text-light">Total Pemasukan</h5>
                   <h5 class="mb-0">{{ formatCurrency(reportSummary.totalIncome) }}</h5>
                 </div>
               </div>
             </div>
             <div class="col-6 col-md-3">
-              <div class="card summary-card expense-card border-0 text-center">
+              <div class="card summary-card expense-card border-0 text-center text-light">
                 <div class="card-body p-3">
                   <i class="bi bi-arrow-down-circle summary-icon mb-2"></i>
-                  <h5 class="card-title mb-1 small">Total Pengeluaran</h5>
+                  <h5 class="card-title mb-1 small text-light">Total Pengeluaran</h5>
                   <h5 class="mb-0">{{ formatCurrency(reportSummary.totalExpenses) }}</h5>
                 </div>
               </div>
             </div>
             <div class="col-6 col-md-3">
-              <div class="card summary-card savings-card border-0 text-center">
+              <div class="card summary-card savings-card border-0 text-center text-light">
                 <div class="card-body p-3">
                   <i class="bi bi-wallet2 summary-icon mb-2"></i>
-                  <h5 class="card-title mb-1 small">Sisa Saldo</h5>
+                  <h5 class="card-title mb-1 small text-light">Sisa Saldo</h5>
                   <h5 class="mb-0">
                     {{ formatCurrency(reportSummary.netSavings) }}
                   </h5>
@@ -347,10 +347,10 @@ onMounted(async () => {
               </div>
             </div>
             <div class="col-6 col-md-3">
-              <div class="card summary-card rate-card border-0 text-center">
+              <div class="card summary-card rate-card border-0 text-center text-light">
                 <div class="card-body p-3">
                   <i class="bi bi-graph-up summary-icon mb-2"></i>
-                  <h5 class="card-title mb-1 small">Rate Sisa Saldo</h5>
+                  <h5 class="card-title mb-1 small text-light">Rate Sisa Saldo</h5>
                   <h5 class="mb-0">{{ reportSummary.savingsRate }}%</h5>
                 </div>
               </div>
@@ -798,19 +798,23 @@ onMounted(async () => {
 }
 
 .summary-card.income-card {
-  background: linear-gradient(135deg, #ffffff 0%, #63e76a 100%);
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  box-shadow: 0 4px 15px rgba(56, 239, 125, 0.25);
 }
 
 .summary-card.expense-card {
-  background: linear-gradient(135deg, #ffffff 0%, #e06565 100%);
+  background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+  box-shadow: 0 4px 15px rgba(238, 9, 121, 0.25);
 }
 
 .summary-card.savings-card {
-  background: linear-gradient(135deg, #ffffff 0%, #839ef5 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.25);
 }
 
 .summary-card.rate-card {
-  background: linear-gradient(135deg, #ffffff 0%, hsl(61, 82%, 67%) 100%);
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  box-shadow: 0 4px 15px rgba(240, 147, 251, 0.25);
 }
 
 .summary-icon {

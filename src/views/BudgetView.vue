@@ -228,28 +228,28 @@ onMounted(async () => {
       <div class="row mb-3 g-2">
         <div class="col-6 col-md-4 col-lg-3">
           <div class="card summary-card total-budget border-0">
-            <div class="card-body p-3 text-center">
+            <div class="card-body p-3 text-center text-light">
               <i class="bi bi-wallet2 summary-icon mb-2"></i>
-              <h6 class="card-title text-muted mb-1 small">Total Anggaran</h6>
+              <h6 class="card-title text-light mb-1 small">Total Anggaran</h6>
               <h5 class="mb-0">{{ formatCurrency(budgetSummary.totalBudget) }}</h5>
             </div>
           </div>
         </div>
         <div class="col-6 col-md-4 col-lg-3">
           <div class="card summary-card total-spent border-0">
-            <div class="card-body p-3 text-center">
+            <div class="card-body p-3 text-center text-light">
               <i class="bi bi-credit-card summary-icon mb-2"></i>
-              <h6 class="card-title text-muted mb-1 small">Total Terpakai</h6>
+              <h6 class="card-title text-light mb-1 small">Total Terpakai</h6>
               <h5 class="mb-0">{{ formatCurrency(budgetSummary.totalSpent) }}</h5>
             </div>
           </div>
         </div>
         <div class="col-6 col-md-4 col-lg-3">
           <div class="card summary-card remaining border-0">
-            <div class="card-body p-3 text-center">
-              <i class="bi bi-piggy-bank summary-icon mb-2"></i>
-              <h6 class="card-title text-muted mb-1 small">Sisa</h6>
-              <h5 class="mb-0" :class="budgetSummary.remaining >= 0 ? 'text-dark' : 'text-danger'">
+            <div class="card-body p-3 text-center text-light">
+              <i class="bi bi-coin summary-icon mb-2"></i>
+              <h6 class="card-title text-light mb-1 small">Sisa</h6>
+              <h5 class="mb-0" :class="budgetSummary.remaining >= 0 ? 'text-light' : 'text-danger'">
                 {{ formatCurrency(budgetSummary.remaining) }}
               </h5>
             </div>
@@ -257,9 +257,9 @@ onMounted(async () => {
         </div>
         <div class="col-6 col-md-4 col-lg-3">
           <div class="card summary-card usage-rate border-0">
-            <div class="card-body p-3 text-center">
+            <div class="card-body p-3 text-center text-light">
               <i class="bi bi-speedometer2 summary-icon mb-2"></i>
-              <h6 class="card-title text-muted mb-1 small">Tingkat Pemakaian</h6>
+              <h6 class="card-title text-light mb-1 small">Tingkat Pemakaian</h6>
               <h5 class="mb-0">{{ budgetSummary.usageRate }}%</h5>
             </div>
           </div>
@@ -553,19 +553,23 @@ onMounted(async () => {
 }
 
 .summary-card.total-budget {
-  background: linear-gradient(135deg, #ffffff 0%, #63e76a 100%);
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  box-shadow: 0 4px 15px rgba(56, 239, 125, 0.25);
 }
 
 .summary-card.total-spent {
-  background: linear-gradient(135deg, #ffffff 0%, #e06565 100%);
+  background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+  box-shadow: 0 4px 15px rgba(238, 9, 121, 0.25);
 }
 
 .summary-card.remaining {
-  background: linear-gradient(135deg, #ffffff 0%, #839ef5 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.25);
 }
 
 .summary-card.usage-rate {
-  background: linear-gradient(135deg, #ffffff 0%, hsl(61, 82%, 67%) 100%);
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  box-shadow: 0 4px 15px rgba(240, 147, 251, 0.25);
 }
 
 .summary-icon {
