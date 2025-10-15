@@ -43,6 +43,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useCategories } from '@/composables/useCategories'
+import { useTransactions } from '@/composables/useTransactions'
 import { supabase } from '@/lib/supabase'
 import LandingPage from '@/components/landing/LandingPage.vue'
 import AuthModal from '@/components/auth/AuthModal.vue'
@@ -168,8 +169,47 @@ watch(
   },
 )
 
+// Setup global realtime subscriptions
+const setupGlobalRealtime = () => {
+  console.log('Setting up global realtime subscriptions...')
+  const { setupRealtime: setupTransactionsRealtime } = useTransactions()
+  const { setupRealtime: setupCategoriesRealtime } = useCategories()
+
+  // Setup realtime for all data sources
+  setupTransactionsRealtime()
+  setupCategoriesRealtime()
+
+  console.log('Global realtime subscriptions active')
+}
+
+// Cleanup global realtime subscriptions
+const cleanupGlobalRealtime = () => {
+  console.log('Cleaning up global realtime subscriptions...')
+  const { cleanupRealtime: cleanupTransactions } = useTransactions()
+  const { cleanupRealtime: cleanupCategories } = useCategories()
+
+  cleanupTransactions()
+  cleanupCategories()
+}
+
 onMounted(() => {
   initializeApp()
+
+  // Setup global realtime when user is authenticated
+  watch(
+    () => authStore.isAuthenticated,
+    (isAuth) => {
+      if (isAuth) {
+        // Setup realtime after short delay to ensure user data is loaded
+        setTimeout(() => {
+          setupGlobalRealtime()
+        }, 1000)
+      } else {
+        cleanupGlobalRealtime()
+      }
+    },
+    { immediate: true },
+  )
 
   // Network status listeners
   const onOffline = () => showToast('Koneksi internet terputus', 'warning')

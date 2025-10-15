@@ -1,35 +1,51 @@
--- Function to create default categories for new users
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-    -- Insert profile
-    INSERT INTO public.profiles (id, email, full_name)
-    VALUES (NEW.id, NEW.email, NEW.raw_user_meta_data->>'full_name');
-    
-    -- Insert default income categories
-    INSERT INTO public.categories (user_id, name, type, color, icon, is_default) VALUES
-    (NEW.id, 'Salary', 'income', '#28a745', 'bi-cash-coin', true),
-    (NEW.id, 'Freelance', 'income', '#17a2b8', 'bi-laptop', true),
-    (NEW.id, 'Business', 'income', '#6f42c1', 'bi-briefcase', true),
-    (NEW.id, 'Investment', 'income', '#fd7e14', 'bi-graph-up', true),
-    (NEW.id, 'Other Income', 'income', '#6c757d', 'bi-plus-circle', true);
-    
-    -- Insert default expense categories
-    INSERT INTO public.categories (user_id, name, type, color, icon, is_default) VALUES
-    (NEW.id, 'Food & Dining', 'expense', '#dc3545', 'bi-cart3', true),
-    (NEW.id, 'Transportation', 'expense', '#ffc107', 'bi-fuel-pump', true),
-    (NEW.id, 'Shopping', 'expense', '#e83e8c', 'bi-bag', true),
-    (NEW.id, 'Entertainment', 'expense', '#6f42c1', 'bi-film', true),
-    (NEW.id, 'Bills & Utilities', 'expense', '#fd7e14', 'bi-receipt', true),
-    (NEW.id, 'Healthcare', 'expense', '#20c997', 'bi-heart-pulse', true),
-    (NEW.id, 'Education', 'expense', '#0dcaf0', 'bi-book', true),
-    (NEW.id, 'Other Expense', 'expense', '#6c757d', 'bi-circle', true);
-    
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+-- NOTE: column "type" in categories must be either 'income' or 'expense' (see CHECK constraint).
+-- Localize ONLY the category names, not the type values.
 
--- Trigger for new user registration
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+        -- Insert profile (ignore conflict if already exists)
+        INSERT INTO public.profiles (id, email, full_name)
+        VALUES (NEW.id, NEW.email, NEW.raw_user_meta_data->>'full_name')
+        ON CONFLICT (id) DO NOTHING;
+
+        -- Default income categories (use 'income')
+        INSERT INTO public.categories (user_id, name, type, color, icon, is_default)
+        SELECT NEW.id, c.name, 'income', c.color, c.icon, true
+        FROM (VALUES
+            ('Gajian', '#28a745', 'bi-cash-coin'),
+            ('Freelance', '#17a2b8', 'bi-laptop'),
+            ('Bisnis', '#6f42c1', 'bi-briefcase'),
+            ('Investasi', '#fd7e14', 'bi-graph-up'),
+            ('Pemasukan Lainnya', '#6c757d', 'bi-plus-circle')
+        ) AS c(name,color,icon)
+        ON CONFLICT (user_id, name, type) DO NOTHING;
+
+        -- Default expense categories (use 'expense')
+        INSERT INTO public.categories (user_id, name, type, color, icon, is_default)
+        SELECT NEW.id, c.name, 'expense', c.color, c.icon, true
+        FROM (VALUES
+            ('Belanja Makan', '#dc3545', 'bi-cart3'),
+            ('Transportasi', '#ffc107', 'bi-fuel-pump'),
+            ('Belanja Keinginan', '#e83e8c', 'bi-bag'),
+            ('Entertainment', '#6f42c1', 'bi-film'),
+            ('Biaya Bulanan', '#fd7e14', 'bi-receipt'),
+            ('Biaya Kesehatan', '#20c997', 'bi-heart-pulse'),
+            ('Biaya Pendidikan', '#0dcaf0', 'bi-book'),
+            ('Pengeluaran Lainnya', '#6c757d', 'bi-circle')
+        ) AS c(name,color,icon)
+        ON CONFLICT (user_id, name, type) DO NOTHING;
+
+        RETURN NEW;
+END;
+$$;
+
+-- Recreate trigger safely (drop if exists then create)
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
-    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+AFTER INSERT ON auth.users
+FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();

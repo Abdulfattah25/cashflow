@@ -41,6 +41,9 @@
         <div class="col-12 col-md-4">
           <div class="card net-card border-0">
             <div class="card-body p-3 text-center">
+              <div class="stats-icon mb-0 text-dark">
+                <i class="bi bi-wallet2"></i>
+              </div>
               <h5 class="card-title mb-1 smallFont text-muted">Jumlah Bersih</h5>
               <h5
                 class="smallFont mb-0"
@@ -54,6 +57,9 @@
         <div class="col-6 col-md-4 mt-0">
           <div class="card income-card border-0">
             <div class="card-body p-3 text-center">
+              <div class="stats-icon mb-2 text-dark">
+                <i class="bi bi-arrow-up-circle"></i>
+              </div>
               <h5 class="card-title text-white mb-1 smallFont text-muted">Pemasukan</h5>
               <h5 class="smallFont mb-0">{{ formatCurrency(filteredSummary.totalIncome) }}</h5>
             </div>
@@ -62,6 +68,9 @@
         <div class="col-6 col-md-4 mt-0">
           <div class="card expense-card border-0">
             <div class="card-body p-3 text-center">
+              <div class="stats-icon text-dark mb-2">
+                <i class="bi bi-arrow-down-circle"></i>
+              </div>
               <h5 class="card-title text-white mb-1 smallFont text-muted">Pengeluaran</h5>
               <h5 class="smallFont mb-0">
                 {{ formatCurrency(filteredSummary.totalExpenses) }}
@@ -172,7 +181,11 @@
             >
               <h6 class="card-title mb-0 fw-medium">Riwayat Transaksi</h6>
               <div class="d-flex gap-2">
-                <button class="btn btn-sm btn-outline-secondary d-md-inline-flex">
+                <button
+                  class="btn btn-sm btn-outline-secondary d-md-inline-flex"
+                  @click="exportToPDF"
+                  :disabled="filteredTransactions.length === 0"
+                >
                   <i class="bi bi-download me-1"></i>
                   Ekspor
                 </button>
@@ -186,20 +199,40 @@
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end">
                     <li>
-                      <a class="dropdown-item" href="#" @click="sortBy('date', 'desc')">Terbaru</a>
+                      <a class="dropdown-item" href="#" @click.prevent="sortBy('date', 'desc')">
+                        <i
+                          class="bi bi-check2"
+                          v-if="sortConfig.field === 'date' && sortConfig.order === 'desc'"
+                        ></i>
+                        Terbaru
+                      </a>
                     </li>
                     <li>
-                      <a class="dropdown-item" href="#" @click="sortBy('date', 'asc')">Terlama</a>
+                      <a class="dropdown-item" href="#" @click.prevent="sortBy('date', 'asc')">
+                        <i
+                          class="bi bi-check2"
+                          v-if="sortConfig.field === 'date' && sortConfig.order === 'asc'"
+                        ></i>
+                        Terlama
+                      </a>
                     </li>
                     <li>
-                      <a class="dropdown-item" href="#" @click="sortBy('amount', 'desc')"
-                        >Nominal Tertinggi</a
-                      >
+                      <a class="dropdown-item" href="#" @click.prevent="sortBy('amount', 'desc')">
+                        <i
+                          class="bi bi-check2"
+                          v-if="sortConfig.field === 'amount' && sortConfig.order === 'desc'"
+                        ></i>
+                        Nominal Tertinggi
+                      </a>
                     </li>
                     <li>
-                      <a class="dropdown-item" href="#" @click="sortBy('amount', 'asc')"
-                        >Nominal Terendah</a
-                      >
+                      <a class="dropdown-item" href="#" @click.prevent="sortBy('amount', 'asc')">
+                        <i
+                          class="bi bi-check2"
+                          v-if="sortConfig.field === 'amount' && sortConfig.order === 'asc'"
+                        ></i>
+                        Nominal Terendah
+                      </a>
                     </li>
                   </ul>
                 </div>
@@ -226,8 +259,11 @@
                         <i :class="transaction.icon"></i>
                       </div>
 
-                      <div class="flex-grow-1 min-w-0 me-2 transaction-description">
-                        <div class="fw-medium text-truncate" :title="transaction.description">
+                      <div class="transaction-description flex-grow-1 min-w-0 me-2">
+                        <div
+                          class="transaction-title fw-medium text-truncate"
+                          :title="transaction.description"
+                        >
                           {{ transaction.description }}
                         </div>
                         <div class="mt-1">
@@ -451,7 +487,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useTransactions } from '@/composables/useTransactions'
 import { useCategories } from '@/composables/useCategories'
 import AppLayout from '@/components/common/AppLayout.vue'
@@ -484,6 +520,12 @@ const filters = reactive({
   search: '',
   customStartDate: '',
   customEndDate: '',
+})
+
+// Sorting state
+const sortConfig = reactive({
+  field: 'date',
+  order: 'desc',
 })
 
 // Transaction form
@@ -583,7 +625,18 @@ const filteredTransactions = computed(() => {
     })
   }
 
-  return filtered.sort((a, b) => new Date(b.date) - new Date(a.date))
+  return filtered.sort((a, b) => {
+    // Apply sorting based on sortConfig
+    let comparison = 0
+
+    if (sortConfig.field === 'date') {
+      comparison = new Date(a.date) - new Date(b.date)
+    } else if (sortConfig.field === 'amount') {
+      comparison = Number(a.amount) - Number(b.amount)
+    }
+
+    return sortConfig.order === 'asc' ? comparison : -comparison
+  })
 })
 
 // Summary that respects current filters
@@ -700,8 +753,74 @@ const performDelete = async () => {
 }
 
 const sortBy = (field, order) => {
-  // This will be handled by the computed property
-  // You can add sorting state if needed
+  sortConfig.field = field
+  sortConfig.order = order
+}
+
+const exportToPDF = async () => {
+  try {
+    // Import jsPDF and autoTable
+    const { jsPDF } = await import('jspdf')
+    const autoTable = (await import('jspdf-autotable')).default
+
+    const doc = new jsPDF()
+
+    // Add title
+    doc.setFontSize(18)
+    doc.text('Riwayat Transaksi', 14, 20)
+
+    // Add date range info
+    doc.setFontSize(11)
+    const dateRangeText =
+      filters.dateRange === 'this-month'
+        ? 'Bulan Ini'
+        : filters.dateRange === 'last-month'
+          ? 'Bulan Lalu'
+          : filters.dateRange === 'this-year'
+            ? 'Tahun Ini'
+            : filters.dateRange === 'custom'
+              ? `${filters.customStartDate || ''} - ${filters.customEndDate || ''}`
+              : 'Semua'
+    doc.text(`Periode: ${dateRangeText}`, 14, 28)
+
+    // Add summary
+    doc.text(`Total Pemasukan: ${formatCurrency(filteredSummary.value.totalIncome)}`, 14, 34)
+    doc.text(`Total Pengeluaran: ${formatCurrency(filteredSummary.value.totalExpenses)}`, 14, 40)
+    doc.text(`Saldo Bersih: ${formatCurrency(filteredSummary.value.netAmount)}`, 14, 46)
+
+    // Prepare table data
+    const tableData = filteredTransactions.value.map((t) => [
+      formatDate(t.date),
+      t.description,
+      t.category,
+      t.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
+      formatCurrency(t.amount),
+    ])
+
+    // Add table using autoTable
+    autoTable(doc, {
+      startY: 52,
+      head: [['Tanggal', 'Deskripsi', 'Kategori', 'Jenis', 'Nominal']],
+      body: tableData,
+      styles: { fontSize: 9, cellPadding: 2 },
+      headStyles: { fillColor: [66, 139, 202], textColor: 255 },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+      columnStyles: {
+        0: { cellWidth: 25 },
+        1: { cellWidth: 50 },
+        2: { cellWidth: 30 },
+        3: { cellWidth: 30 },
+        4: { cellWidth: 35, halign: 'right' },
+      },
+    })
+
+    // Save PDF
+    const fileName = `Transaksi_${new Date().toISOString().split('T')[0]}.pdf`
+    doc.save(fileName)
+  } catch (err) {
+    console.error('Failed to export PDF:', err)
+    alert('Gagal mengekspor PDF. Silakan coba lagi.')
+  }
 }
 
 watch(
@@ -723,8 +842,16 @@ watch(
 )
 
 onMounted(async () => {
-  // Fetch data when component mounts
-  await Promise.all([fetchTransactions(), fetchCategories()])
+  // Simple fetch with cache - realtime handled globally
+  try {
+    await Promise.all([fetchTransactions(), fetchCategories()])
+  } catch (err) {
+    console.error('Error loading transaction data:', err)
+  }
+})
+
+onUnmounted(() => {
+  // No cleanup needed - realtime managed globally
 })
 </script>
 
@@ -866,40 +993,53 @@ onMounted(async () => {
     gap: 0.25rem;
   }
 
-  /* Ensure description text doesn't push buttons */
-  .transaction-item .flex-grow-1 {
-    max-width: calc(100% - 40px);
-  }
-
-  .transaction-item .text-truncate {
-    max-width: 100%;
-  }
-
   /* Better layout for mobile transaction items */
   .transaction-item .d-flex.justify-content-between {
     gap: 0.5rem;
+    flex-wrap: nowrap;
+  }
+
+  /* Left section (icon + description) - allow to shrink */
+  .transaction-item .transaction-left {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: calc(100% - 170px); /* Reserve space for amount+buttons */
+  }
+
+  /* Description container */
+  .transaction-item .transaction-description {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* Title with ellipsis */
+  .transaction-item .transaction-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+    max-width: 100%;
   }
 
   /* Ensure amount and date have enough space and don't get truncated */
   .transaction-item .transaction-amount-date {
+    flex: 0 0 96px;
     min-width: 96px;
-    max-width: 140px;
+    max-width: 96px;
+    white-space: nowrap;
   }
+
   .transaction-item .transaction-amount-date .transaction-amount {
     white-space: nowrap;
+    font-size: 0.85rem;
   }
 
   /* Action buttons fixed width */
   .action-buttons {
-    min-width: 60px;
-    max-width: 60px;
-  }
-
-  /* Give more space to description */
-  .transaction-description {
-    flex: 1;
-    min-width: 0;
-    max-width: none;
+    flex: 0 0 64px;
+    min-width: 64px;
+    max-width: 64px;
   }
 
   /* Compact amount and date section */
@@ -909,19 +1049,36 @@ onMounted(async () => {
 
   /* Responsive adjustments for very small screens */
   @media (max-width: 375px) {
-    .transaction-description {
-      flex: 1;
-      min-width: 0;
+    /* Left section gets even less space */
+    .transaction-item .transaction-left {
+      max-width: calc(100% - 150px); /* Tighter constraint */
     }
 
-    .transaction-amount-date {
-      min-width: 88px;
-      max-width: 120px;
+    /* Amount section more compact */
+    .transaction-item .transaction-amount-date {
+      flex: 0 0 80px;
+      min-width: 80px;
+      max-width: 80px;
     }
 
+    .transaction-item .transaction-amount-date .transaction-amount {
+      font-size: 0.75rem;
+    }
+
+    .transaction-item .transaction-amount-date small {
+      font-size: 0.65rem;
+    }
+
+    /* Buttons more compact */
     .action-buttons {
-      min-width: 50px;
-      max-width: 50px;
+      flex: 0 0 56px;
+      min-width: 56px;
+      max-width: 56px;
+      gap: 0.25rem !important;
+    }
+
+    .action-buttons .btn-sm {
+      padding: 0.2rem 0.35rem;
     }
   }
 
@@ -958,6 +1115,7 @@ onMounted(async () => {
     font-size: 0.65rem;
     padding: 0.25em 0.5em;
   }
+
   .smallFont {
     font-size: 0.95rem;
   }
@@ -990,59 +1148,6 @@ onMounted(async () => {
   transform: scale(1.05);
 }
 
-/* Tooltip and text truncation styles */
-.text-truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Ensure buttons don't shrink on mobile */
-.action-buttons {
-  flex-shrink: 0;
-}
-
-/* Better spacing for mobile transaction items */
-@media (max-width: 576px) {
-  .transaction-item .d-flex > div:first-child {
-    min-width: 0;
-    flex: 1;
-  }
-
-  .transaction-item .d-flex > div:last-child {
-    flex-shrink: 0;
-  }
-
-  /* Ensure proper spacing between elements */
-  .transaction-item .me-2 {
-    margin-right: 0.5rem !important;
-  }
-
-  /* Make buttons more compact on mobile */
-  .action-buttons .btn-sm {
-    padding: 0.2rem 0.4rem;
-    font-size: 0.7rem;
-  }
-
-  /* Force layout to prevent button displacement */
-  .transaction-item .d-flex.justify-content-between {
-    align-items: flex-start;
-    flex-wrap: nowrap;
-  }
-
-  /* Ensure description container doesn't expand too much */
-  .transaction-item .flex-grow-1.min-w-0 {
-    overflow: hidden;
-  }
-
-  /* Give more space to description on very small screens */
-  @media (max-width: 375px) {
-    .transaction-item .flex-grow-1 {
-      max-width: calc(100% - 100px);
-    }
-  }
-}
-
 /* Global transaction layout improvements */
 .transaction-item .d-flex {
   align-items: flex-start;
@@ -1055,6 +1160,27 @@ onMounted(async () => {
 .transaction-amount-date {
   text-align: right;
   white-space: nowrap;
+}
+
+/* Ensure buttons don't shrink */
+.action-buttons {
+  flex-shrink: 0;
+}
+
+/* Sort dropdown checkmark */
+.dropdown-item .bi-check2 {
+  margin-right: 0.5rem;
+  color: #198754;
+  font-weight: bold;
+}
+
+.dropdown-item {
+  cursor: pointer;
+}
+
+.dropdown-item:active {
+  background-color: #0d6efd;
+  color: white;
 }
 </style>
 <style>

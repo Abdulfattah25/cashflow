@@ -310,7 +310,7 @@
                 <div class="mb-3">
                   <label class="form-label small fw-medium">Kategori</label>
                   <select v-model="transactionForm.category" class="form-select" required>
-                    <option value="">Select Category</option>
+                    <option value="">Pilih Kategori</option>
                     <option
                       v-for="category in getCategoriesByType(transactionForm.type)"
                       :key="category.id"
@@ -347,7 +347,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, onUnmounted, reactive } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useTransactions } from '@/composables/useTransactions'
 import { useCategories } from '@/composables/useCategories'
@@ -490,8 +490,16 @@ const getDayGreeting = () => {
 }
 
 onMounted(async () => {
-  // Fetch data when component mounts
-  await Promise.all([fetchTransactions(), fetchCategories()])
+  // Simple fetch with cache - realtime handled globally
+  try {
+    await Promise.all([fetchTransactions(), fetchCategories()])
+  } catch (err) {
+    console.error('Error loading dashboard data:', err)
+  }
+})
+
+onUnmounted(() => {
+  // No cleanup needed - realtime managed globally
 })
 </script>
 

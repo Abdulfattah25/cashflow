@@ -2,27 +2,24 @@ import { ref } from 'vue'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/stores/auth'
 
-// Global cache for categories to prevent unnecessary refetches
+// Global cache for categories
 const categoriesCache = ref([])
-const lastFetchTime = ref(0)
-const cacheTimeout = 5 * 60 * 1000 // 5 minutes
+const cacheValid = ref(false)
 let fetchPromise = null
+let realtimeChannel = null
+let fetchController = null
+let safetyTimeout = null
 
 export function useCategories() {
   const loading = ref(false)
   const error = ref(null)
   const authStore = useAuthStore()
 
-  // Check if cache is valid
-  const isCacheValid = () => {
-    return categoriesCache.value.length > 0 && Date.now() - lastFetchTime.value < cacheTimeout
-  }
-
   // Fetch categories with caching
-  const fetchCategories = async (forceRefresh = false) => {
+  const fetchCategories = async ({ force = false } = {}) => {
     try {
       // Return cached data if valid and not forcing refresh
-      if (!forceRefresh && isCacheValid()) {
+      if (!force && cacheValid.value && categoriesCache.value.length > 0) {
         return categoriesCache.value
       }
 
@@ -37,19 +34,48 @@ export function useCategories() {
         return []
       }
 
+      // Cancel previous fetch if still running
+      if (fetchController) {
+        fetchController.abort()
+      }
+      fetchController = new AbortController()
+
+      // Clear any existing safety timeout
+      if (safetyTimeout) {
+        clearTimeout(safetyTimeout)
+      }
+
       loading.value = true
       error.value = null
 
+      // Safety timeout: force reset loading after 15s
+      safetyTimeout = setTimeout(() => {
+        console.warn('Safety timeout: force reset loading state (categories)')
+        loading.value = false
+      }, 15000)
+
       fetchPromise = _performFetch()
       const result = await fetchPromise
+
       return result
     } catch (err) {
+      // Ignore abort errors
+      if (err.name === 'AbortError') return categoriesCache.value
+
       error.value = err.message
       console.error('Error fetching categories:', err)
-      return categoriesCache.value // Return cached data on error
+
+      // Return cached data on error
+      return categoriesCache.value
     } finally {
+      // Clear safety timeout
+      if (safetyTimeout) {
+        clearTimeout(safetyTimeout)
+        safetyTimeout = null
+      }
       loading.value = false
       fetchPromise = null
+      fetchController = null
     }
   }
 
@@ -59,19 +85,81 @@ export function useCategories() {
       .select('*')
       .eq('user_id', authStore.user.id)
       .order('name')
+      .abortSignal(fetchController?.signal)
 
     if (fetchError) throw fetchError
 
     // Update cache
     categoriesCache.value = data || []
-    lastFetchTime.value = Date.now()
+    cacheValid.value = true
 
     return categoriesCache.value
   }
 
+  // Setup realtime subscription
+  const setupRealtime = () => {
+    if (!authStore.user?.id) return
+
+    // Cleanup existing channel first
+    if (realtimeChannel) {
+      cleanupRealtime()
+    }
+
+    realtimeChannel = supabase
+      .channel(`categories:${authStore.user.id}`, {
+        config: {
+          broadcast: { self: false },
+          presence: { key: authStore.user.id },
+        },
+      })
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'categories',
+          filter: `user_id=eq.${authStore.user.id}`,
+        },
+        async () => {
+          console.log('Categories changed, refreshing...')
+          invalidateCache()
+          await fetchCategories({ force: true })
+        },
+      )
+      .subscribe((status) => {
+        console.log('Categories realtime status:', status)
+
+        // Handle reconnection
+        if (status === 'CHANNEL_ERROR') {
+          console.warn('Categories channel error, attempting reconnect...')
+          setTimeout(() => {
+            cleanupRealtime()
+            setupRealtime()
+          }, 2000)
+        }
+      })
+  }
+
+  // Cleanup realtime subscription
+  const cleanupRealtime = () => {
+    if (realtimeChannel) {
+      try {
+        supabase.removeChannel(realtimeChannel)
+      } catch (err) {
+        console.warn('Error removing categories channel:', err)
+      }
+      realtimeChannel = null
+    }
+  }
+
+  // Invalidate cache
+  const invalidateCache = () => {
+    cacheValid.value = false
+  }
+
   // Get categories from cache or fetch if needed
   const getCategories = () => {
-    if (isCacheValid()) {
+    if (cacheValid.value && categoriesCache.value.length > 0) {
       return categoriesCache.value
     }
     // Trigger background fetch but return cached data immediately
@@ -106,8 +194,9 @@ export function useCategories() {
       const { error: insertError } = await supabase.from('categories').insert(payload)
       if (insertError) throw insertError
 
-      // Refresh cache
-      await fetchCategories(true)
+      // Invalidate and refresh cache
+      invalidateCache()
+      await fetchCategories({ force: true })
       return true
     } catch (err) {
       error.value = err.message
@@ -141,17 +230,9 @@ export function useCategories() {
 
       if (updateError) throw updateError
 
-      // Update cache locally for immediate UI update
-      const categoryIndex = categoriesCache.value.findIndex((cat) => cat.id === id)
-      if (categoryIndex !== -1) {
-        categoriesCache.value[categoryIndex] = {
-          ...categoriesCache.value[categoryIndex],
-          ...fields,
-        }
-      }
-
-      // Background refresh to ensure consistency
-      setTimeout(() => fetchCategories(true), 100)
+      // Invalidate and refresh cache
+      invalidateCache()
+      await fetchCategories({ force: true })
       return true
     } catch (err) {
       error.value = err.message
@@ -180,8 +261,9 @@ export function useCategories() {
 
       if (delError) throw delError
 
-      // Remove from cache immediately
+      // Optimistic update + invalidate cache
       categoriesCache.value = categoriesCache.value.filter((cat) => cat.id !== id)
+      invalidateCache()
 
       return true
     } catch (err) {
@@ -196,8 +278,9 @@ export function useCategories() {
   // Clear cache (useful for logout)
   const clearCache = () => {
     categoriesCache.value = []
-    lastFetchTime.value = 0
+    cacheValid.value = false
     fetchPromise = null
+    cleanupRealtime()
   }
 
   return {
@@ -211,6 +294,8 @@ export function useCategories() {
     updateCategory,
     deleteCategory,
     clearCache,
-    isCacheValid,
+    invalidateCache,
+    setupRealtime,
+    cleanupRealtime,
   }
 }

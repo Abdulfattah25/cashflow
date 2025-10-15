@@ -2,7 +2,6 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useBudgets } from '@/composables/useBudgets'
 import { useCategories } from '@/composables/useCategories'
-import { useExpenseTypes } from '@/composables/useExpenseTypes'
 import AppLayout from '@/components/common/AppLayout.vue'
 
 // Use composables
@@ -19,21 +18,7 @@ const {
 
 const { categories, fetchCategories, getCategoriesByType } = useCategories()
 
-const {
-  expenseTypes,
-  expenseItems,
-  loading: expenseTypesLoading,
-  error: expenseTypesError,
-  expenseTypesWithItems,
-  fetchExpenseTypes,
-  fetchExpenseItems,
-  addExpenseType,
-  updateExpenseType,
-  deleteExpenseType,
-  addExpenseItem,
-  updateExpenseItem,
-  deleteExpenseItem,
-} = useExpenseTypes()
+// Removed expense types feature
 
 // Budget filters
 const budgetFilters = reactive({
@@ -53,23 +38,10 @@ const budgetForm = reactive({
   notes: '',
 })
 
-// Expense Type form
-const expenseTypeForm = reactive({
-  name: '',
-  color: '#6c757d',
-  icon: 'bi-circle',
-})
-
-// Expense Item form
-const expenseItemForm = reactive({
-  expense_type_id: '',
-  name: '',
-})
+// Removed expense type & item forms
 
 const editingBudget = ref(null)
-const editingExpenseType = ref(null)
-const editingExpenseItem = ref(null)
-const selectedExpenseType = ref(null)
+// Removed editing refs for expense types/items
 
 // Computed properties
 const expenseCategories = computed(() => getCategoriesByType('expense'))
@@ -157,23 +129,7 @@ const resetBudgetForm = () => {
   editingBudget.value = null
 }
 
-const resetExpenseTypeForm = () => {
-  Object.assign(expenseTypeForm, {
-    name: '',
-    color: '#6c757d',
-    icon: 'bi-circle',
-  })
-  editingExpenseType.value = null
-}
-
-const resetExpenseItemForm = () => {
-  Object.assign(expenseItemForm, {
-    expense_type_id: '',
-    name: '',
-  })
-  editingExpenseItem.value = null
-  selectedExpenseType.value = null
-}
+// Removed reset functions for expense types/items
 
 const saveBudget = async () => {
   try {
@@ -194,43 +150,7 @@ const saveBudget = async () => {
   }
 }
 
-const saveExpenseType = async () => {
-  try {
-    if (editingExpenseType.value) {
-      await updateExpenseType(editingExpenseType.value.id, expenseTypeForm)
-    } else {
-      await addExpenseType(expenseTypeForm)
-    }
-
-    // Close modal and reset form
-    const modal = document.getElementById('expenseTypeModal')
-    const bsModal = bootstrap.Modal.getInstance(modal)
-    bsModal.hide()
-    resetExpenseTypeForm()
-  } catch (err) {
-    console.error('Gagal menyimpan jenis pengeluaran:', err)
-    alert('Gagal menyimpan jenis pengeluaran. Silakan coba lagi.')
-  }
-}
-
-const saveExpenseItem = async () => {
-  try {
-    if (editingExpenseItem.value) {
-      await updateExpenseItem(editingExpenseItem.value.id, expenseItemForm)
-    } else {
-      await addExpenseItem(expenseItemForm)
-    }
-
-    // Close modal and reset form
-    const modal = document.getElementById('expenseItemModal')
-    const bsModal = bootstrap.Modal.getInstance(modal)
-    bsModal.hide()
-    resetExpenseItemForm()
-  } catch (err) {
-    console.error('Gagal menyimpan item pengeluaran:', err)
-    alert('Gagal menyimpan item pengeluaran. Silakan coba lagi.')
-  }
-}
+// Removed save handlers for expense types/items
 
 const editBudget = (budget) => {
   editingBudget.value = budget
@@ -247,36 +167,7 @@ const editBudget = (budget) => {
   modal.show()
 }
 
-const editExpenseType = (expenseType) => {
-  editingExpenseType.value = expenseType
-  Object.assign(expenseTypeForm, {
-    name: expenseType.name,
-    color: expenseType.color,
-    icon: expenseType.icon,
-  })
-
-  const modal = new bootstrap.Modal(document.getElementById('expenseTypeModal'))
-  modal.show()
-}
-
-const editExpenseItem = (expenseItem) => {
-  editingExpenseItem.value = expenseItem
-  Object.assign(expenseItemForm, {
-    expense_type_id: expenseItem.expense_type_id,
-    name: expenseItem.name,
-  })
-
-  const modal = new bootstrap.Modal(document.getElementById('expenseItemModal'))
-  modal.show()
-}
-
-const openAddItemModal = (expenseType) => {
-  selectedExpenseType.value = expenseType
-  expenseItemForm.expense_type_id = expenseType.id
-
-  const modal = new bootstrap.Modal(document.getElementById('expenseItemModal'))
-  modal.show()
-}
+// Removed edit/open modal helpers for expense types/items
 
 const confirmDeleteBudget = async (id) => {
   if (confirm('Apakah Anda yakin ingin menghapus anggaran ini?')) {
@@ -289,74 +180,10 @@ const confirmDeleteBudget = async (id) => {
   }
 }
 
-const confirmDeleteExpenseType = async (id) => {
-  if (
-    confirm(
-      'Apakah Anda yakin ingin menghapus jenis pengeluaran ini? Semua item terkait juga akan dihapus.',
-    )
-  ) {
-    try {
-      await deleteExpenseType(id)
-    } catch (err) {
-      console.error('Gagal menghapus jenis pengeluaran:', err)
-      alert('Gagal menghapus jenis pengeluaran. Silakan coba lagi.')
-    }
-  }
-}
-
-const confirmDeleteExpenseItem = async (id) => {
-  if (confirm('Apakah Anda yakin ingin menghapus item pengeluaran ini?')) {
-    try {
-      await deleteExpenseItem(id)
-    } catch (err) {
-      console.error('Gagal menghapus item pengeluaran:', err)
-      alert('Gagal menghapus item pengeluaran. Silakan coba lagi.')
-    }
-  }
-}
+// Removed delete confirmations for expense types/items
 
 onMounted(async () => {
-  await Promise.all([fetchBudgets(), fetchCategories(), fetchExpenseTypes(), fetchExpenseItems()])
-
-  // Initialize dropdown positioning for expense items
-  const dropdowns = document.querySelectorAll('.expense-item-dropdown')
-  dropdowns.forEach((dropdown) => {
-    dropdown.addEventListener('show.bs.dropdown', function (e) {
-      const button = e.target.querySelector('[data-bs-toggle="dropdown"]')
-      const rect = button.getBoundingClientRect()
-      const dropdownMenu = this.querySelector('.dropdown-menu')
-
-      // Calculate position to ensure dropdown is visible
-      let left = rect.left - dropdownMenu.offsetWidth + button.offsetWidth
-      let top = rect.bottom + 5
-
-      // Ensure dropdown doesn't go off-screen
-      if (left < 10) {
-        left = 10
-      }
-      if (left + dropdownMenu.offsetWidth > window.innerWidth - 10) {
-        left = window.innerWidth - dropdownMenu.offsetWidth - 10
-      }
-      if (top + dropdownMenu.offsetHeight > window.innerHeight - 10) {
-        top = rect.top - dropdownMenu.offsetHeight - 5
-      }
-
-      // Position dropdown outside the container
-      dropdownMenu.style.position = 'fixed'
-      dropdownMenu.style.top = top + 'px'
-      dropdownMenu.style.left = left + 'px'
-      dropdownMenu.style.zIndex = '9999'
-      dropdownMenu.style.display = 'block'
-
-      // Add body class to prevent overflow issues
-      document.body.classList.add('dropdown-open')
-    })
-
-    dropdown.addEventListener('hidden.bs.dropdown', function (e) {
-      // Remove body class when dropdown is closed
-      document.body.classList.remove('dropdown-open')
-    })
-  })
+  await Promise.all([fetchBudgets(), fetchCategories()])
 })
 </script>
 
@@ -612,160 +439,7 @@ onMounted(async () => {
         </div>
       </div>
 
-      <!-- NEW SECTION: Expense Types Management -->
-      <div class="row">
-        <div class="col-12">
-          <!-- Section Header -->
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-              <h5 class="mb-1">Jenis Pengeluaran</h5>
-              <p class="text-muted mb-0 small">Kelola kategori pengeluaran dan itemnya</p>
-            </div>
-          </div>
-
-          <!-- Loading State for Expense Types -->
-          <div v-if="expenseTypesLoading" class="text-center py-3">
-            <div class="spinner-border spinner-border-sm" role="status">
-              <span class="visually-hidden">Memuat...</span>
-            </div>
-          </div>
-
-          <!-- Error State for Expense Types -->
-          <div v-if="expenseTypesError" class="alert alert-danger" role="alert">
-            {{ expenseTypesError }}
-          </div>
-
-          <!-- Expense Types Cards -->
-          <div class="row g-2">
-            <div
-              v-for="expenseType in expenseTypesWithItems"
-              :key="expenseType.id"
-              class="col-12 col-md-6 col-lg-4"
-            >
-              <div class="card expense-type-card border-0 h-100">
-                <div class="card-header bg-transparent border-0 pb-2">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center flex-grow-1 min-w-0">
-                      <i
-                        :class="expenseType.icon"
-                        :style="{ color: expenseType.color }"
-                        class="me-2 expense-type-icon flex-shrink-0"
-                      ></i>
-                      <h6 class="card-title mb-0 expense-type-title">{{ expenseType.name }}</h6>
-                    </div>
-                    <div class="dropdown flex-shrink-0">
-                      <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
-                        <i class="bi bi-three-dots"></i>
-                      </button>
-                      <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                          <a class="dropdown-item" href="#" @click="editExpenseType(expenseType)">
-                            <i class="bi bi-pencil me-2"></i>Edit Category
-                          </a>
-                        </li>
-                        <li>
-                          <a class="dropdown-item" href="#" @click="openAddItemModal(expenseType)">
-                            <i class="bi bi-plus me-2"></i>Tambah Item
-                          </a>
-                        </li>
-                        <li><hr class="dropdown-divider" /></li>
-                        <li>
-                          <a
-                            class="dropdown-item text-danger"
-                            href="#"
-                            @click="confirmDeleteExpenseType(expenseType.id)"
-                          >
-                            <i class="bi bi-trash me-2"></i>Delete Category
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-                <div class="card-body pt-0">
-                  <!-- Items List -->
-                  <div v-if="expenseType.items.length > 0" class="expense-items-list">
-                    <div
-                      v-for="item in expenseType.items"
-                      :key="item.id"
-                      class="d-flex justify-content-between align-items-center expense-item py-1"
-                    >
-                      <span class="expense-item-name flex-grow-1">{{ item.name }}</span>
-                      <div class="dropdown flex-shrink-0">
-                        <button
-                          class="btn btn-sm btn-link text-muted p-0"
-                          data-bs-toggle="dropdown"
-                          data-bs-boundary="viewport"
-                          data-bs-popper="static"
-                        >
-                          <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end expense-item-dropdown">
-                          <li>
-                            <a class="dropdown-item" href="#" @click="editExpenseItem(item)">
-                              <i class="bi bi-pencil me-2"></i>Edit
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              class="dropdown-item text-danger"
-                              href="#"
-                              @click="confirmDeleteExpenseItem(item.id)"
-                            >
-                              <i class="bi bi-trash me-2"></i>Delete
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Empty State for Items -->
-                  <div v-else class="text-center py-3">
-                    <i class="bi bi-inbox text-muted" style="font-size: 2rem"></i>
-                    <p class="text-muted small mb-2">No items yet</p>
-                    <button
-                      class="btn btn-sm btn-outline-primary"
-                      @click="openAddItemModal(expenseType)"
-                    >
-                      <i class="bi bi-plus me-1"></i>Tambah Item Pertama
-                    </button>
-                  </div>
-
-                  <!-- Tombol Tambah Item -->
-                  <div v-if="expenseType.items.length > 0" class="mt-2 pt-2 border-top">
-                    <button
-                      class="btn btn-sm btn-outline-primary w-100"
-                      @click="openAddItemModal(expenseType)"
-                    >
-                      <i class="bi bi-plus me-1"></i>Tambah Item
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Empty State for Expense Types -->
-          <div v-if="expenseTypesWithItems.length === 0 && !expenseTypesLoading" class="col-12">
-            <div class="empty-state py-0">
-              <i class="bi bi-tags text-muted"></i>
-              <h6 class="text-muted mt-3">Belum ada kategori pengeluaran</h6>
-              <p class="text-muted small">
-                Buat kategori pengeluaran pertama untuk mengelola item pengeluaran.
-              </p>
-              <button
-                class="btn btn-primary btn-sm"
-                data-bs-toggle="modal"
-                data-bs-target="#expenseTypeModal"
-              >
-                <i class="bi bi-plus-circle me-2 fs-6 text-light"></i>
-                Buat Kategori
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- Expense Types Management removed -->
 
       <!-- Budget Modal -->
       <div class="modal fade" id="budgetModal" tabindex="-1">
@@ -787,7 +461,7 @@ onMounted(async () => {
                 <div class="mb-3">
                   <label class="form-label small fw-medium">Category</label>
                   <select v-model="budgetForm.category" class="form-select" required>
-                    <option value="">Select Category</option>
+                    <option value="">Pilih Kategori</option>
                     <option
                       v-for="category in expenseCategories"
                       :key="category.id"
@@ -861,208 +535,7 @@ onMounted(async () => {
         </div>
       </div>
 
-      <!-- Expense Type Modal -->
-      <div class="modal fade" id="expenseTypeModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h6 class="modal-title">
-                {{
-                  editingExpenseType
-                    ? 'Ubah Kategori Pengeluaran'
-                    : 'Buat Kategori Pengeluaran Baru'
-                }}
-              </h6>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                @click="resetExpenseTypeForm"
-              ></button>
-            </div>
-            <div class="modal-body">
-              <form @submit.prevent="saveExpenseType">
-                <div class="mb-3">
-                  <label class="form-label small fw-medium">Category Name</label>
-                  <input
-                    v-model="expenseTypeForm.name"
-                    type="text"
-                    class="form-control"
-                    placeholder="e.g., Food, Transportation, Healthcare"
-                    required
-                  />
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label small fw-medium">Color</label>
-                  <div class="d-flex align-items-center">
-                    <input
-                      v-model="expenseTypeForm.color"
-                      type="color"
-                      class="form-control form-control-color me-2"
-                      style="width: 50px; height: 38px"
-                    />
-                    <input
-                      v-model="expenseTypeForm.color"
-                      type="text"
-                      class="form-control"
-                      placeholder="#6c757d"
-                    />
-                  </div>
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label small fw-medium">Icon</label>
-                  <div class="row g-2">
-                    <div class="col-12">
-                      <input
-                        v-model="expenseTypeForm.icon"
-                        type="text"
-                        class="form-control"
-                        placeholder="bi-circle"
-                      />
-                      <small class="form-text text-muted">
-                        Use Bootstrap Icons class (e.g., bi-house, bi-car-front, bi-heart-pulse)
-                      </small>
-                    </div>
-                  </div>
-
-                  <!-- Icon Preview -->
-                  <div class="mt-2 p-2 bg-light rounded text-center">
-                    <i
-                      :class="expenseTypeForm.icon"
-                      :style="{ color: expenseTypeForm.color, fontSize: '1.5rem' }"
-                    ></i>
-                    <small class="d-block text-muted mt-1">Preview</small>
-                  </div>
-
-                  <!-- Common Icons -->
-                  <div class="mt-2">
-                    <small class="text-muted d-block mb-1">Quick select:</small>
-                    <div class="d-flex flex-wrap gap-1">
-                      <button
-                        v-for="icon in [
-                          'bi-house',
-                          'bi-car-front',
-                          'bi-heart-pulse',
-                          'bi-bag',
-                          'bi-cup-hot',
-                          'bi-phone',
-                          'bi-book',
-                          'bi-controller',
-                        ]"
-                        :key="icon"
-                        type="button"
-                        class="btn btn-sm btn-outline-secondary"
-                        @click="expenseTypeForm.icon = icon"
-                      >
-                        <i :class="icon"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-                @click="resetExpenseTypeForm"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click="saveExpenseType"
-                :disabled="expenseTypesLoading"
-              >
-                <span
-                  v-if="expenseTypesLoading"
-                  class="spinner-border spinner-border-sm me-2"
-                ></span>
-                {{ editingExpenseType ? 'Perbarui' : 'Buat' }} Kategori
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Expense Item Modal -->
-      <div class="modal fade" id="expenseItemModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h6 class="modal-title">
-                {{ editingExpenseItem ? 'Ubah Item Pengeluaran' : 'Tambah Item Pengeluaran Baru' }}
-                <span v-if="selectedExpenseType" class="text-muted small">
-                  to {{ selectedExpenseType.name }}
-                </span>
-              </h6>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                @click="resetExpenseItemForm"
-              ></button>
-            </div>
-            <div class="modal-body">
-              <form @submit.prevent="saveExpenseItem">
-                <div class="mb-3" v-if="!selectedExpenseType">
-                  <label class="form-label small fw-medium">Category</label>
-                  <select v-model="expenseItemForm.expense_type_id" class="form-select" required>
-                    <option value="">Select Category</option>
-                    <option
-                      v-for="expenseType in expenseTypes"
-                      :key="expenseType.id"
-                      :value="expenseType.id"
-                    >
-                      {{ expenseType.name }}
-                    </option>
-                  </select>
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label small fw-medium">Item Name</label>
-                  <input
-                    v-model="expenseItemForm.name"
-                    type="text"
-                    class="form-control"
-                    placeholder="e.g., Rice, Gasoline, Medicine"
-                    required
-                  />
-                  <small class="form-text text-muted">
-                    Enter specific items that belong to this category
-                  </small>
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-                @click="resetExpenseItemForm"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click="saveExpenseItem"
-                :disabled="expenseTypesLoading"
-              >
-                <span
-                  v-if="expenseTypesLoading"
-                  class="spinner-border spinner-border-sm me-2"
-                ></span>
-                {{ editingExpenseItem ? 'Perbarui' : 'Tambah' }} Item
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- Expense Type & Item Modals removed -->
     </div>
   </AppLayout>
 </template>
@@ -1116,37 +589,7 @@ onMounted(async () => {
   font-size: 1.2rem;
 }
 
-/* Expense Type Cards */
-.expense-type-card {
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-}
-
-.expense-type-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.expense-type-icon {
-  font-size: 1.2rem;
-}
-
-.expense-items-list {
-  max-height: 200px;
-  overflow-y: auto;
-  position: relative;
-}
-
-.expense-item {
-  border-radius: 6px;
-  transition: background-color 0.2s ease;
-}
-
-.expense-item:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
+/* Removed expense type related styles */
 
 .progress {
   border-radius: 4px;
@@ -1212,8 +655,7 @@ onMounted(async () => {
     font-size: 1.2rem;
   }
 
-  .budget-card .card-body,
-  .expense-type-card .card-body {
+  .budget-card .card-body {
     padding: 0.75rem !important;
   }
 
@@ -1260,56 +702,7 @@ onMounted(async () => {
     max-width: 120px;
   }
 
-  .expense-items-list {
-    max-height: 150px;
-  }
-
-  /* Mobile dropdown positioning */
-  .expense-item-dropdown {
-    position: fixed !important;
-    z-index: 9999 !important;
-    max-width: 200px;
-  }
-
-  .expense-item-dropdown .dropdown-menu {
-    position: fixed !important;
-    z-index: 9999 !important;
-    max-width: 180px;
-    font-size: 0.85rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
-    border: 1px solid rgba(0, 0, 0, 0.1) !important;
-  }
-
-  /* Ensure dropdown is always on top */
-  .expense-item-dropdown .dropdown-menu.show {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-
-  /* Force dropdown to be visible */
-  .expense-item-dropdown .dropdown-menu {
-    display: none;
-  }
-
-  .expense-item-dropdown .dropdown-menu.show {
-    display: block !important;
-  }
-
-  /* Mobile specific dropdown positioning */
-  .expense-item-dropdown .dropdown-menu {
-    position: fixed !important;
-    z-index: 9999 !important;
-    max-width: 180px;
-    min-width: 120px;
-    font-size: 0.85rem;
-    padding: 0.25rem 0;
-  }
-
-  .expense-item-dropdown .dropdown-item {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.85rem;
-  }
+  /* Removed mobile expense item dropdown styles */
   .modal-dialog {
     margin: 0.5rem;
     max-width: none;
@@ -1329,8 +722,7 @@ onMounted(async () => {
 
 /* Tablet styles */
 @media (min-width: 577px) and (max-width: 768px) {
-  .budget-card .card-body,
-  .expense-type-card .card-body {
+  .budget-card .card-body {
     padding: 1rem !important;
   }
 
@@ -1341,8 +733,7 @@ onMounted(async () => {
 
 /* Medium screens - 2 columns for budget cards */
 @media (min-width: 768px) and (max-width: 991px) {
-  .budget-card,
-  .expense-type-card {
+  .budget-card {
     margin-bottom: 1rem;
   }
 }
@@ -1356,8 +747,7 @@ onMounted(async () => {
   transform: translateY(-1px);
 }
 
-.budget-card .btn-sm:hover,
-.expense-type-card .btn-sm:hover {
+.budget-card .btn-sm:hover {
   transform: scale(1.05);
 }
 
@@ -1413,8 +803,7 @@ onMounted(async () => {
   cursor: not-allowed;
 }
 
-.card:hover .budget-icon,
-.card:hover .expense-type-icon {
+.card:hover .budget-icon {
   transform: scale(1.1);
   transition: transform 0.2s ease;
 }
@@ -1471,22 +860,7 @@ onMounted(async () => {
 }
 
 /* Expense items scrollbar */
-.expense-items-list::-webkit-scrollbar {
-  width: 4px;
-}
-
-.expense-items-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.expense-items-list::-webkit-scrollbar-thumb {
-  background: #dee2e6;
-  border-radius: 2px;
-}
-
-.expense-items-list::-webkit-scrollbar-thumb:hover {
-  background: #adb5bd;
-}
+/* Removed expense items scrollbar */
 
 /* Dropdown improvements */
 .dropdown-menu {
@@ -1495,177 +869,7 @@ onMounted(async () => {
   border: none;
 }
 
-/* Expense item dropdown specific styles */
-.expense-item-dropdown {
-  z-index: 9999 !important;
-  position: fixed !important;
-  transform: none !important;
-  margin: 0 !important;
-}
-
-.expense-item-dropdown.show {
-  display: block !important;
-}
-
-/* Override Bootstrap's default dropdown behavior */
-.expense-item-dropdown .dropdown-menu {
-  position: fixed !important;
-  z-index: 9999 !important;
-  transform: none !important;
-  margin: 0 !important;
-  display: none;
-}
-
-.expense-item-dropdown .dropdown-menu.show {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-/* Ensure dropdown appears outside container */
-.expense-items-list .dropdown {
-  position: static;
-}
-
-.expense-items-list .dropdown-menu {
-  position: absolute !important;
-  z-index: 9999 !important;
-}
-
-/* Override any parent overflow settings */
-.expense-type-card,
-.expense-type-card .card-body,
-.expense-items-list,
-.expense-items-list * {
-  overflow: visible !important;
-}
-
-/* Ensure dropdown is rendered in body */
-.expense-item-dropdown {
-  position: static !important;
-}
-
-.expense-item-dropdown .dropdown-menu {
-  position: fixed !important;
-  z-index: 9999 !important;
-}
-
-/* Prevent dropdown from being clipped */
-.expense-items-list {
-  overflow: visible !important;
-}
-
-.expense-items-list .dropdown-menu {
-  overflow: visible !important;
-  clip: auto !important;
-}
-
-/* Ensure dropdown is always visible */
-.expense-item-dropdown .dropdown-menu {
-  position: fixed !important;
-  z-index: 9999 !important;
-  max-height: none !important;
-  overflow: visible !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
-  border: 1px solid rgba(0, 0, 0, 0.1) !important;
-  background: white !important;
-  border-radius: 8px !important;
-  padding: 0.5rem 0 !important;
-}
-
-/* Ensure dropdown is always on top of everything */
-.expense-item-dropdown .dropdown-menu {
-  z-index: 99999 !important;
-  position: fixed !important;
-  transform: none !important;
-  margin: 0 !important;
-  display: none;
-}
-
-.expense-item-dropdown .dropdown-menu.show {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-/* Desktop dropdown improvements */
-@media (min-width: 768px) {
-  .expense-item-dropdown .dropdown-menu {
-    min-width: 150px;
-    font-size: 0.9rem;
-    padding: 0.5rem 0;
-  }
-
-  .expense-item-dropdown .dropdown-item {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-  }
-}
-
-/* Tablet dropdown improvements */
-@media (min-width: 577px) and (max-width: 767px) {
-  .expense-item-dropdown .dropdown-menu {
-    min-width: 140px;
-    font-size: 0.85rem;
-    padding: 0.375rem 0;
-  }
-
-  .expense-item-dropdown .dropdown-item {
-    padding: 0.5rem 0.875rem;
-    font-size: 0.85rem;
-  }
-}
-
-/* Override Bootstrap's overflow hidden on body when dropdown is open */
-body.dropdown-open {
-  overflow: visible !important;
-}
-
-/* Ensure dropdown container doesn't clip */
-.expense-type-card {
-  overflow: visible !important;
-}
-
-.expense-type-card .card-body {
-  overflow: visible !important;
-}
-
-/* Ensure all parent containers don't clip dropdown */
-.expense-type-card,
-.expense-type-card .card-body,
-.expense-items-list,
-.expense-items-list *,
-.card,
-.card-body {
-  overflow: visible !important;
-}
-
-/* Force dropdown to be rendered in body */
-.expense-item-dropdown .dropdown-menu {
-  position: fixed !important;
-  z-index: 99999 !important;
-  transform: none !important;
-  margin: 0 !important;
-  display: none;
-}
-
-.expense-item-dropdown .dropdown-menu.show {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-/* Override any Bootstrap or other CSS that might hide dropdown */
-.expense-item-dropdown .dropdown-menu {
-  display: none !important;
-}
-
-.expense-item-dropdown .dropdown-menu.show {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-}
+/* Removed expense item dropdown complex overrides */
 
 .dropdown-item {
   border-radius: 4px;
@@ -1723,15 +927,6 @@ body.dropdown-open {
   background-color: transparent !important;
 }
 
-/* Expense type specific styles */
-.expense-type-card .card-header {
-  padding: 0.75rem 1rem 0.5rem 1rem;
-}
-
-.expense-type-card .card-body {
-  padding: 0.5rem 1rem 1rem 1rem;
-}
-
 /* Border improvements */
 .border-top {
   border-top: 1px solid #e9ecef !important;
@@ -1749,19 +944,10 @@ body.dropdown-open {
   }
 }
 
-.expense-item {
-  animation: fadeInUp 0.3s ease;
-}
+/* Removed expense item animation */
 
 /* Hover effects for expense items */
-.expense-item:hover .btn-link {
-  opacity: 1;
-}
-
-.expense-item .btn-link {
-  opacity: 0.6;
-  transition: opacity 0.2s ease;
-}
+/* Removed expense item hover link styles */
 
 /* Loading spinner improvements */
 .spinner-border-sm {
@@ -1778,21 +964,7 @@ body.dropdown-open {
 
 /* Responsive improvements for expense type cards */
 @media (max-width: 576px) {
-  .expense-type-card .card-header {
-    padding: 0.5rem 0.75rem 0.25rem 0.75rem;
-  }
-
-  .expense-type-card .card-body {
-    padding: 0.25rem 0.75rem 0.75rem 0.75rem;
-  }
-
-  .expense-type-icon {
-    font-size: 1rem;
-  }
-
-  .expense-item {
-    font-size: 0.85rem;
-  }
+  /* Removed mobile expense type card adjustments */
 }
 
 /* Focus improvements */

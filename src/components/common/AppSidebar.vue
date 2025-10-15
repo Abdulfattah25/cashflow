@@ -4,7 +4,7 @@
       <!-- Logo -->
       <div class="navbar-brand d-flex align-items-center mb-4">
         <i class="bi bi-wallet2 me-2 fs-3"></i>
-        <span class="fs-4 fw-bold">CashFlow App</span>
+        <span class="fs-4 fw-bold">CashflowKu</span>
       </div>
 
       <!-- Navigation Menu -->
@@ -48,7 +48,7 @@
             class="nav-link text-white"
             :class="{ 'active bg-light text-primary': $route.name === 'budget' }"
           >
-            <i class="bi bi-piggy-bank me-2"></i>
+            <i class="bi bi-wallet2 me-2"></i>
             Budget
           </router-link>
         </li>

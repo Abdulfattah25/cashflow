@@ -173,8 +173,8 @@ const saveGoal = async () => {
     bsModal.hide()
     resetForm()
   } catch (err) {
-    console.error('Failed to save goal:', err)
-    alert('Failed to save goal. Please try again.')
+    console.error('Gagal menyimpan target:', err)
+    alert(err?.message || 'Gagal menyimpan target. Coba lagi.')
   }
 }
 
@@ -197,12 +197,12 @@ const editGoal = (goal) => {
 }
 
 const confirmDeleteGoal = async (id) => {
-  if (confirm('Are you sure you want to delete this goal?')) {
+  if (confirm('Yakin ingin menghapus target ini?')) {
     try {
       await deleteGoal(id)
     } catch (err) {
-      console.error('Failed to delete goal:', err)
-      alert('Failed to delete goal. Please try again.')
+      console.error('Gagal menghapus target:', err)
+      alert(err?.message || 'Gagal menghapus target. Coba lagi.')
     }
   }
 }
@@ -211,7 +211,7 @@ const openProgressModal = async (goal) => {
   try {
     // Pastikan goal valid
     if (!goal?.id) {
-      throw new Error('Invalid goal data')
+      throw new Error('Data target tidak valid')
     }
 
     // Set selectedGoal pertama
@@ -228,7 +228,7 @@ const openProgressModal = async (goal) => {
     // Dapatkan modal element
     const modalElement = document.getElementById('progressModal')
     if (!modalElement) {
-      throw new Error('Modal element not found')
+      throw new Error('Elemen modal tidak ditemukan')
     }
 
     // Inisialisasi modal
@@ -241,7 +241,7 @@ const openProgressModal = async (goal) => {
     modal.show()
   } catch (err) {
     console.error('Error opening progress modal:', err)
-    alert(err.message || 'Failed to open progress form')
+    alert(err.message || 'Gagal membuka formulir progres')
   }
 }
 
@@ -252,12 +252,12 @@ const saveProgress = async () => {
 
     // Validasi lebih ketat
     if (!selectedGoal.value?.id) {
-      throw new Error('Please select a goal first')
+      throw new Error('Pilih target terlebih dahulu')
     }
 
     const amount = Number(progressForm.amount)
     if (isNaN(amount) || amount <= 0) {
-      throw new Error('Please enter a valid amount (must be greater than 0)')
+      throw new Error('Masukkan jumlah valid (> 0)')
     }
 
     // Pastikan data yang dikirim lengkap
@@ -281,7 +281,7 @@ const saveProgress = async () => {
     resetProgressForm()
   } catch (err) {
     console.error('Save progress error:', err)
-    alert(err.message || 'Failed to save progress')
+    alert(err.message || 'Gagal menyimpan progres')
   }
 }
 
@@ -350,7 +350,7 @@ onMounted(async () => {
         <div class="col-6 col-md-3">
           <div class="card summary-card total-target border-0 text-center">
             <div class="card-body p-3">
-              <i class="bi bi-piggy-bank summary-icon mb-2"></i>
+              <i class="bi bi-cash-stack summary-icon mb-2"></i>
               <h6 class="card-title text-muted mb-1 small">Total Target</h6>
               <h5 class="mb-0">{{ formatCurrency(goalSummary.totalTarget) }}</h5>
             </div>
@@ -429,7 +429,7 @@ onMounted(async () => {
                         v-model="goalFilters.search"
                         type="text"
                         class="form-control"
-                        placeholder="Search goals..."
+                        placeholder="Cari target..."
                       />
                     </div>
                   </div>
@@ -473,7 +473,7 @@ onMounted(async () => {
                         <ul class="dropdown-menu dropdown-menu-end">
                           <li>
                             <a class="dropdown-item" href="#" @click="openProgressModal(goal)">
-                              <i class="bi bi-plus-circle me-2"></i>Add Progress
+                              <i class="bi bi-plus-circle me-2"></i>Tambah Progres
                             </a>
                           </li>
                           <li>
@@ -551,7 +551,7 @@ onMounted(async () => {
                   <!-- Remaining Amount -->
                   <div class="remaining-section mb-3">
                     <div class="d-flex justify-content-between align-items-center">
-                      <span class="text-muted small">Remaining</span>
+                      <span class="text-muted small">Sisa</span>
                       <span class="fw-bold text-primary">{{
                         formatCurrency(goal.remainingAmount)
                       }}</span>
@@ -565,7 +565,7 @@ onMounted(async () => {
                     </span>
                     <button class="btn btn-sm btn-primary" @click="openProgressModal(goal)">
                       <i class="bi bi-plus-circle me-1"></i>
-                      <span class="d-none d-sm-inline">Add Progress</span>
+                      <span class="d-none d-sm-inline">Tambah Progres</span>
                       <span class="d-sm-none">Add</span>
                     </button>
                   </div>
@@ -611,25 +611,25 @@ onMounted(async () => {
                 <div class="row">
                   <div class="col-12 col-md-6">
                     <div class="mb-3">
-                      <label class="form-label small fw-medium">Goal Title</label>
+                      <label class="form-label small fw-medium">Nama Target</label>
                       <input
                         v-model="goalForm.title"
                         type="text"
                         class="form-control"
-                        placeholder="e.g., Emergency Fund"
+                        placeholder="e.g., Dana Darurat"
                         required
                       />
                     </div>
                   </div>
                   <div class="col-12 col-md-6">
                     <div class="mb-3">
-                      <label class="form-label small fw-medium">Goal Type</label>
+                      <label class="form-label small fw-medium">Tipe Target</label>
                       <select v-model="goalForm.type" class="form-select" required>
-                        <option value="">Select Type</option>
-                        <option value="savings">Savings</option>
-                        <option value="debt">Debt Payoff</option>
-                        <option value="investment">Investment</option>
-                        <option value="purchase">Purchase</option>
+                        <option value="">Pilih Tipe</option>
+                        <option value="savings">Tabungan</option>
+                        <option value="debt">Pelunasan Utang</option>
+                        <option value="investment">Investasi</option>
+                        <option value="purchase">Pembelian</option>
                       </select>
                     </div>
                   </div>
@@ -648,7 +648,7 @@ onMounted(async () => {
                 <div class="row">
                   <div class="col-12 col-md-6">
                     <div class="mb-3">
-                      <label class="form-label small fw-medium">Target Amount</label>
+                      <label class="form-label small fw-medium">Target Uang</label>
                       <div class="input-group">
                         <span class="input-group-text">Rp</span>
                         <input
@@ -664,7 +664,7 @@ onMounted(async () => {
                   </div>
                   <div class="col-12 col-md-6">
                     <div class="mb-3">
-                      <label class="form-label small fw-medium">Current Amount</label>
+                      <label class="form-label small fw-medium">Jumlah Saat Ini</label>
                       <div class="input-group">
                         <span class="input-group-text">Rp</span>
                         <input
@@ -682,7 +682,7 @@ onMounted(async () => {
                 <div class="row">
                   <div class="col-12 col-md-6">
                     <div class="mb-3">
-                      <label class="form-label small fw-medium">Target Date</label>
+                      <label class="form-label small fw-medium">Tanggal Target</label>
                       <input
                         v-model="goalForm.targetDate"
                         type="date"
@@ -693,11 +693,11 @@ onMounted(async () => {
                   </div>
                   <div class="col-12 col-md-6">
                     <div class="mb-3">
-                      <label class="form-label small fw-medium">Priority</label>
+                      <label class="form-label small fw-medium">Prioritas</label>
                       <select v-model="goalForm.priority" class="form-select" required>
-                        <option value="high">High</option>
-                        <option value="medium">Medium</option>
-                        <option value="low">Low</option>
+                        <option value="high">Tinggi</option>
+                        <option value="medium">Sedang</option>
+                        <option value="low">Rendah</option>
                       </select>
                     </div>
                   </div>
@@ -744,7 +744,7 @@ onMounted(async () => {
                   <h6 class="mb-1">{{ selectedGoal.title }}</h6>
                   <div class="d-flex justify-content-between align-items-center">
                     <small class="text-muted">
-                      Current: {{ formatCurrency(selectedGoal.currentAmount) }}
+                      Saat ini: {{ formatCurrency(selectedGoal.currentAmount) }}
                     </small>
                     <small class="text-muted">
                       Target: {{ formatCurrency(selectedGoal.targetAmount) }}
@@ -1440,5 +1440,14 @@ onMounted(async () => {
     box-shadow: none;
     border: 1px solid #dee2e6;
   }
+}
+
+/* Ensure modals appear above bottom navigation on mobile */
+:deep(.modal) {
+  z-index: 2100 !important; /* Higher than potential bottom nav custom z-index */
+}
+
+:deep(.modal-backdrop) {
+  z-index: 2050 !important; /* Keep backdrop below modal but above nav */
 }
 </style>

@@ -15,7 +15,7 @@
     </router-link>
 
     <router-link to="/budget" class="nav-item" :class="{ active: $route.name === 'budget' }">
-      <i class="bi bi-piggy-bank"></i>
+      <i class="bi bi-wallet2"></i>
       <span>Budget</span>
     </router-link>
 

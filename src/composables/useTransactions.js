@@ -8,40 +8,156 @@ export function useTransactions() {
   const error = ref(null)
   const authStore = useAuthStore()
 
+  // Cache management
+  const cacheValid = ref(false)
+  let realtimeChannel = null
+  let fetchController = null
+  let safetyTimeout = null
+
   // Fetch transactions from database
-  const fetchTransactions = async () => {
+  const fetchTransactions = async ({ force = false } = {}) => {
+    // Use cache if valid and not forced
+    if (!force && cacheValid.value && transactions.value.length > 0) {
+      return
+    }
+
+    // Cancel previous fetch if still running
+    if (fetchController) {
+      fetchController.abort()
+    }
+    fetchController = new AbortController()
+
+    // Clear any existing safety timeout
+    if (safetyTimeout) {
+      clearTimeout(safetyTimeout)
+    }
+
     try {
       loading.value = true
       error.value = null
 
+      // Safety timeout: force reset loading after 15s
+      safetyTimeout = setTimeout(() => {
+        console.warn('Safety timeout: force reset loading state')
+        loading.value = false
+      }, 15000)
+
       const { data, error: fetchError } = await supabase
         .from('transactions')
-        .select(`
+        .select(
+          `
           *,
           categories (
             name,
             color,
             icon
           )
-        `)
+        `,
+        )
         .eq('user_id', authStore.user.id)
         .order('date', { ascending: false })
+        .abortSignal(fetchController.signal)
 
       if (fetchError) throw fetchError
 
-      transactions.value = data.map(transaction => ({
+      transactions.value = data.map((transaction) => ({
         ...transaction,
         category: transaction.categories?.name || 'Unknown',
         color: transaction.categories?.color || '#6c757d',
-        icon: transaction.categories?.icon || 'bi-circle'
+        icon: transaction.categories?.icon || 'bi-circle',
       }))
 
+      cacheValid.value = true
     } catch (err) {
+      // Ignore abort errors
+      if (err.name === 'AbortError') return
+
       error.value = err.message
       console.error('Error fetching transactions:', err)
+
+      // Keep cache valid if we have data (fallback to stale data)
+      if (transactions.value.length > 0) {
+        cacheValid.value = true
+      }
     } finally {
+      // Clear safety timeout
+      if (safetyTimeout) {
+        clearTimeout(safetyTimeout)
+        safetyTimeout = null
+      }
       loading.value = false
+      fetchController = null
     }
+  }
+
+  // Setup realtime subscription
+  const setupRealtime = () => {
+    if (!authStore.user?.id) return
+
+    // Cleanup existing channel first
+    if (realtimeChannel) {
+      cleanupRealtime()
+    }
+
+    realtimeChannel = supabase
+      .channel(`transactions:${authStore.user.id}`, {
+        config: {
+          broadcast: { self: false },
+          presence: { key: authStore.user.id },
+        },
+      })
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions',
+          filter: `user_id=eq.${authStore.user.id}`,
+        },
+        async (payload) => {
+          console.log('Realtime event:', payload.eventType)
+
+          if (payload.eventType === 'INSERT') {
+            invalidateCache()
+            await fetchTransactions({ force: true })
+          } else if (payload.eventType === 'UPDATE') {
+            invalidateCache()
+            await fetchTransactions({ force: true })
+          } else if (payload.eventType === 'DELETE') {
+            transactions.value = transactions.value.filter((t) => t.id !== payload.old.id)
+            invalidateCache()
+          }
+        },
+      )
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status)
+
+        // Handle reconnection
+        if (status === 'CHANNEL_ERROR') {
+          console.warn('Realtime channel error, attempting reconnect...')
+          setTimeout(() => {
+            cleanupRealtime()
+            setupRealtime()
+          }, 2000)
+        }
+      })
+  }
+
+  // Cleanup realtime subscription
+  const cleanupRealtime = () => {
+    if (realtimeChannel) {
+      try {
+        supabase.removeChannel(realtimeChannel)
+      } catch (err) {
+        console.warn('Error removing channel:', err)
+      }
+      realtimeChannel = null
+    }
+  }
+
+  // Invalidate cache
+  const invalidateCache = () => {
+    cacheValid.value = false
   }
 
   // Add new transaction
@@ -69,16 +185,17 @@ export function useTransactions() {
             description: transactionData.description,
             notes: transactionData.notes,
             type: transactionData.type,
-            date: transactionData.date
-          }
+            date: transactionData.date,
+          },
         ])
         .select()
 
       if (insertError) throw insertError
 
-      // Refresh transactions
-      await fetchTransactions()
-      
+      // Invalidate cache and refresh
+      invalidateCache()
+      await fetchTransactions({ force: true })
+
       return data[0]
     } catch (err) {
       error.value = err.message
@@ -112,7 +229,7 @@ export function useTransactions() {
           description: transactionData.description,
           notes: transactionData.notes,
           type: transactionData.type,
-          date: transactionData.date
+          date: transactionData.date,
         })
         .eq('id', id)
         .eq('user_id', authStore.user.id)
@@ -120,9 +237,10 @@ export function useTransactions() {
 
       if (updateError) throw updateError
 
-      // Refresh transactions
-      await fetchTransactions()
-      
+      // Invalidate cache and refresh
+      invalidateCache()
+      await fetchTransactions({ force: true })
+
       return data[0]
     } catch (err) {
       error.value = err.message
@@ -147,9 +265,9 @@ export function useTransactions() {
 
       if (deleteError) throw deleteError
 
-      // Remove from local state
-      transactions.value = transactions.value.filter(t => t.id !== id)
-      
+      // Optimistic update + invalidate cache
+      transactions.value = transactions.value.filter((t) => t.id !== id)
+      invalidateCache()
     } catch (err) {
       error.value = err.message
       console.error('Error deleting transaction:', err)
@@ -162,17 +280,17 @@ export function useTransactions() {
   // Computed properties
   const summary = computed(() => {
     const totalIncome = transactions.value
-      .filter(t => t.type === 'income')
+      .filter((t) => t.type === 'income')
       .reduce((sum, t) => sum + parseFloat(t.amount), 0)
 
     const totalExpenses = transactions.value
-      .filter(t => t.type === 'expense')
+      .filter((t) => t.type === 'expense')
       .reduce((sum, t) => sum + parseFloat(t.amount), 0)
 
     return {
       totalIncome,
       totalExpenses,
-      netAmount: totalIncome - totalExpenses
+      netAmount: totalIncome - totalExpenses,
     }
   })
 
@@ -189,6 +307,9 @@ export function useTransactions() {
     fetchTransactions,
     addTransaction,
     updateTransaction,
-    deleteTransaction
+    deleteTransaction,
+    invalidateCache,
+    setupRealtime,
+    cleanupRealtime,
   }
 }

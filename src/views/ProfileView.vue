@@ -265,7 +265,7 @@
                                   <td>
                                     <span
                                       :class="c.type === 'income' ? 'text-success' : 'text-danger'"
-                                      >{{ c.type }}</span
+                                      >{{ typeLabel(c.type) }}</span
                                     >
                                   </td>
                                   <td>
@@ -421,6 +421,7 @@ import { useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabase'
 import AppLayout from '@/components/common/AppLayout.vue'
 import { useCategories } from '@/composables/useCategories'
+import { typeLabel } from '@/utils/typeLabels'
 
 const authStore = useAuthStore()
 const router = useRouter()

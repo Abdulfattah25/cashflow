@@ -12,7 +12,7 @@
               Pantau Cashflow, Budgeting, dan Capai Target Finansial
             </h1>
             <p class="lead text-light mt-3">
-              CashFlow membantu Anda mengelola keuangan pribadi dengan mudah. Catat transaksi, atur
+              CashFlow membantu Kamu mengelola keuangan pribadi dengan mudah. Catat transaksi, atur
               budget, dan pantau laporan keuangan dalam satu aplikasi yang simpel.
             </p>
 
@@ -32,9 +32,9 @@
 
     <section id="fitur" class="container-fluid px-5 mt-4 mb-6">
       <div class="text-center mb-4">
-        <h2 class="fw-bold">Fitur Lengkap untuk Keuangan Anda</h2>
-        <p class="text-muted">
-          Dirancang simpel dan mudah digunakan untuk membantu mencapai kebebasan finansial.
+        <h2 class="fw-bold text-white">Fitur Lengkap untuk Keuangan Kamu</h2>
+        <p class="text-light">
+          "Dirancang simpel dan mudah digunakan untuk membantu Kamu mencatat keuangan dengan lebih efisien.
         </p>
       </div>
 
@@ -97,7 +97,7 @@ const features = ref([
   {
     id: 3,
     title: 'Laporan Visual',
-    description: 'Grafik dan chart yang memudahkan analisis pola keuangan Anda.',
+    description: 'Grafik dan chart yang memudahkan analisis pola keuangan Kamu.',
     icon: 'bi bi-bar-chart-fill',
     iconClass: 'text-info bg-info-subtle',
   },
