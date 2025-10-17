@@ -20,7 +20,7 @@
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <h4 class="mb-1">Transaksi</h4>
-              <p class="text-muted mb-0 small">Kelola pemasukan dan pengeluaran Anda</p>
+              <p class="text-muted mb-0 small">Kelola pemasukan dan pengeluaran Kamu</p>
             </div>
             <button
               class="btn btn-primary btn-sm"
@@ -487,7 +487,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, onBeforeUnmount, watch } from 'vue'
 import { useTransactions } from '@/composables/useTransactions'
 import { useCategories } from '@/composables/useCategories'
 import AppLayout from '@/components/common/AppLayout.vue'
@@ -502,6 +502,7 @@ const {
   addTransaction,
   updateTransaction,
   deleteTransaction,
+  resetLoadingState: resetTransactionsLoading,
 } = useTransactions()
 
 const {
@@ -510,6 +511,7 @@ const {
   error: categoriesError,
   fetchCategories,
   getCategoriesByType,
+  resetLoadingState: resetCategoriesLoading,
 } = useCategories()
 
 // Filters
@@ -848,6 +850,12 @@ onMounted(async () => {
   } catch (err) {
     console.error('Error loading transaction data:', err)
   }
+})
+
+onBeforeUnmount(() => {
+  // Reset loading state saat component akan di-destroy
+  resetTransactionsLoading()
+  resetCategoriesLoading()
 })
 
 onUnmounted(() => {

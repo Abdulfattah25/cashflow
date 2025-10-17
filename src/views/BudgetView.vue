@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useBudgets } from '@/composables/useBudgets'
 import { useCategories } from '@/composables/useCategories'
 import AppLayout from '@/components/common/AppLayout.vue'
@@ -14,9 +14,15 @@ const {
   addBudget,
   updateBudget,
   deleteBudget,
+  resetLoadingState: resetBudgetsLoading,
 } = useBudgets()
 
-const { categories, fetchCategories, getCategoriesByType } = useCategories()
+const {
+  categories,
+  fetchCategories,
+  getCategoriesByType,
+  resetLoadingState: resetCategoriesLoading,
+} = useCategories()
 
 // Removed expense types feature
 
@@ -185,6 +191,12 @@ const confirmDeleteBudget = async (id) => {
 onMounted(async () => {
   await Promise.all([fetchBudgets(), fetchCategories()])
 })
+
+onBeforeUnmount(() => {
+  // Reset loading state saat component akan di-destroy
+  resetBudgetsLoading()
+  resetCategoriesLoading()
+})
 </script>
 
 <template>
@@ -209,7 +221,7 @@ onMounted(async () => {
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <h4 class="mb-1">Manajemen Anggaran</h4>
-              <p class="text-muted mb-0 small">Atur dan pantau batas pengeluaran Anda</p>
+              <p class="text-muted mb-0 small">Atur dan pantau batas pengeluaran Kamu</p>
             </div>
             <button
               class="btn btn-primary btn-sm"

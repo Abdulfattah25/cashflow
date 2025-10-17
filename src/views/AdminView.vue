@@ -44,9 +44,18 @@
       <div class="row">
         <div class="col-12 mb-4">
           <div class="card dashboard-card card-accent card-accent--primary">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div
+              class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2"
+            >
               <h5 class="mb-0">👥 Manajemen Pengguna</h5>
-              <button class="btn btn-sm btn-outline-primary" @click="loadUsers">🔄 Refresh</button>
+              <button
+                class="btn btn-outline-primary refresh-btn"
+                @click="loadUsers"
+                title="Refresh Data"
+              >
+                <i class="bi bi-arrow-clockwise"></i>
+                <span class="refresh-text ms-1">Refresh</span>
+              </button>
             </div>
             <div class="card-body">
               <div v-if="loading" class="text-center py-4">
@@ -661,7 +670,51 @@ const showToast = (message, variant = 'primary', delay = 3000) => {
   border: 1px solid rgba(0, 0, 0, 0.125);
 }
 
+/* Refresh Button Styling */
+.refresh-btn {
+  transition: all 0.3s ease;
+  font-weight: 500;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.refresh-btn:hover {
+  transform: rotate(180deg);
+}
+
+.refresh-btn i {
+  font-size: 1.1rem;
+  transition: transform 0.3s ease;
+}
+
 @media (max-width: 768px) {
+  .card-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .card-header h5 {
+    font-size: 1rem;
+  }
+
+  /* Mobile-optimized refresh button */
+  .refresh-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    border-width: 2px;
+  }
+
+  .refresh-btn .refresh-text {
+    display: none;
+  }
+
+  .refresh-btn i {
+    font-size: 1.25rem;
+    margin: 0 !important;
+  }
+
   .table-responsive {
     display: block;
     width: 100%;
@@ -683,6 +736,17 @@ const showToast = (message, variant = 'primary', delay = 3000) => {
 
   .license-table {
     min-width: 800px;
+  }
+}
+
+/* Desktop: show text */
+@media (min-width: 769px) {
+  .refresh-btn {
+    padding: 0.375rem 1rem;
+  }
+
+  .refresh-btn:hover i {
+    transform: rotate(180deg);
   }
 }
 

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useGoals } from '@/composables/useGoals'
 import AppLayout from '@/components/common/AppLayout.vue'
 
@@ -14,6 +14,7 @@ const {
   updateGoal,
   deleteGoal,
   addProgress,
+  resetLoadingState,
 } = useGoals()
 
 // Goal filters
@@ -288,6 +289,11 @@ const saveProgress = async () => {
 onMounted(async () => {
   await fetchGoals()
 })
+
+onBeforeUnmount(() => {
+  // Reset loading state saat component akan di-destroy
+  resetLoadingState()
+})
 </script>
 
 <template>
@@ -312,7 +318,7 @@ onMounted(async () => {
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <h4 class="mb-1">Target Keuangan</h4>
-              <p class="text-muted mb-0 small">Tetapkan dan pantau target keuangan Anda</p>
+              <p class="text-muted mb-0 small">Tetapkan dan pantau target keuangan Kamu</p>
             </div>
             <button
               class="btn btn-primary btn-sm"

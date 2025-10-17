@@ -14,6 +14,25 @@ export function useTransactions() {
   let fetchController = null
   let safetyTimeout = null
 
+  // Reset loading state (untuk navigation cleanup)
+  const resetLoadingState = () => {
+    // IMPORTANT: Clear safety timeout FIRST!
+    if (safetyTimeout) {
+      clearTimeout(safetyTimeout)
+      safetyTimeout = null
+    }
+
+    // Then cancel any ongoing fetch
+    if (fetchController) {
+      fetchController.abort()
+      fetchController = null
+    }
+
+    // Reset loading state
+    loading.value = false
+    error.value = null
+  }
+
   // Fetch transactions from database
   const fetchTransactions = async ({ force = false } = {}) => {
     // Use cache if valid and not forced
@@ -25,22 +44,26 @@ export function useTransactions() {
     if (fetchController) {
       fetchController.abort()
     }
-    fetchController = new AbortController()
 
-    // Clear any existing safety timeout
+    // Clear any existing safety timeout BEFORE creating new one
     if (safetyTimeout) {
       clearTimeout(safetyTimeout)
+      safetyTimeout = null
     }
+
+    fetchController = new AbortController()
 
     try {
       loading.value = true
       error.value = null
 
-      // Safety timeout: force reset loading after 15s
+      // Safety timeout: force reset loading after 10s
       safetyTimeout = setTimeout(() => {
         console.warn('Safety timeout: force reset loading state')
         loading.value = false
-      }, 15000)
+        fetchController = null
+        safetyTimeout = null // Clear reference
+      }, 10000)
 
       const { data, error: fetchError } = await supabase
         .from('transactions')
@@ -70,7 +93,10 @@ export function useTransactions() {
       cacheValid.value = true
     } catch (err) {
       // Ignore abort errors
-      if (err.name === 'AbortError') return
+      if (err.name === 'AbortError') {
+        console.log('Fetch aborted (navigation or new request)')
+        return
+      }
 
       error.value = err.message
       console.error('Error fetching transactions:', err)
@@ -311,5 +337,6 @@ export function useTransactions() {
     invalidateCache,
     setupRealtime,
     cleanupRealtime,
+    resetLoadingState,
   }
 }

@@ -8,6 +8,12 @@ export function useGoals() {
   const error = ref(null)
   const authStore = useAuthStore()
 
+  // Reset loading state
+  const resetLoadingState = () => {
+    loading.value = false
+    error.value = null
+  }
+
   // Fetch goals from database
   const fetchGoals = async () => {
     if (!isSupabaseConfigured || !authStore.user?.id) {
@@ -284,5 +290,6 @@ export function useGoals() {
     updateGoal,
     deleteGoal,
     addProgress,
+    resetLoadingState,
   }
 }

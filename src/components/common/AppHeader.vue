@@ -2,7 +2,7 @@
   <header class="app-header">
     <div class="header-content">
   <!-- Brand text instead of hamburger on mobile -->
-  <div class="brand d-lg-none me-2 fw-bold text-gradient fs-2">CashFlow App</div>
+  <div class="brand d-lg-none me-2 fw-bold text-gradient fs-2">CashflowKu</div>
   <!-- Page Title (desktop) -->
   <div class="header-title d-none d-lg-block"></div>
 

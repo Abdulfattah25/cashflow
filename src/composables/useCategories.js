@@ -15,6 +15,28 @@ export function useCategories() {
   const error = ref(null)
   const authStore = useAuthStore()
 
+  // Reset loading state (untuk navigation cleanup)
+  const resetLoadingState = () => {
+    // IMPORTANT: Clear safety timeout FIRST!
+    if (safetyTimeout) {
+      clearTimeout(safetyTimeout)
+      safetyTimeout = null
+    }
+
+    // Cancel any ongoing fetch
+    if (fetchController) {
+      fetchController.abort()
+      fetchController = null
+    }
+
+    // Clear fetch promise
+    fetchPromise = null
+
+    // Reset loading state
+    loading.value = false
+    error.value = null
+  }
+
   // Fetch categories with caching
   const fetchCategories = async ({ force = false } = {}) => {
     try {
@@ -40,19 +62,23 @@ export function useCategories() {
       }
       fetchController = new AbortController()
 
-      // Clear any existing safety timeout
+      // Clear any existing safety timeout BEFORE creating new one
       if (safetyTimeout) {
         clearTimeout(safetyTimeout)
+        safetyTimeout = null
       }
 
       loading.value = true
       error.value = null
 
-      // Safety timeout: force reset loading after 15s
+      // Safety timeout: force reset loading after 10s
       safetyTimeout = setTimeout(() => {
         console.warn('Safety timeout: force reset loading state (categories)')
         loading.value = false
-      }, 15000)
+        fetchController = null
+        fetchPromise = null
+        safetyTimeout = null // Clear reference
+      }, 10000)
 
       fetchPromise = _performFetch()
       const result = await fetchPromise
@@ -60,7 +86,10 @@ export function useCategories() {
       return result
     } catch (err) {
       // Ignore abort errors
-      if (err.name === 'AbortError') return categoriesCache.value
+      if (err.name === 'AbortError') {
+        console.log('Fetch aborted (categories)')
+        return categoriesCache.value
+      }
 
       error.value = err.message
       console.error('Error fetching categories:', err)
@@ -297,5 +326,6 @@ export function useCategories() {
     invalidateCache,
     setupRealtime,
     cleanupRealtime,
+    resetLoadingState,
   }
 }

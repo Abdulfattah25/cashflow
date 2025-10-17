@@ -348,7 +348,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, reactive } from 'vue'
+import { ref, computed, onMounted, onUnmounted, onBeforeUnmount, reactive } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useTransactions } from '@/composables/useTransactions'
 import { useCategories } from '@/composables/useCategories'
@@ -365,6 +365,7 @@ const {
   recentTransactions,
   fetchTransactions,
   addTransaction,
+  resetLoadingState: resetTransactionsLoading,
 } = useTransactions()
 
 const {
@@ -373,6 +374,7 @@ const {
   error: categoriesError,
   fetchCategories,
   getCategoriesByType,
+  resetLoadingState: resetCategoriesLoading,
 } = useCategories()
 
 // Form data
@@ -497,6 +499,12 @@ onMounted(async () => {
   } catch (err) {
     console.error('Error loading dashboard data:', err)
   }
+})
+
+onBeforeUnmount(() => {
+  // Reset loading state saat component akan di-destroy
+  resetTransactionsLoading()
+  resetCategoriesLoading()
 })
 
 onUnmounted(() => {

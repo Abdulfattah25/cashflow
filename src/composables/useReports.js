@@ -8,6 +8,12 @@ export function useReports() {
   const error = ref(null)
   const authStore = useAuthStore()
 
+  // Reset loading state
+  const resetLoadingState = () => {
+    loading.value = false
+    error.value = null
+  }
+
   // Fetch transactions for reports
   const fetchReportData = async (period = 'this-month', startDate = null, endDate = null) => {
     try {
@@ -16,14 +22,16 @@ export function useReports() {
 
       let query = supabase
         .from('transactions')
-        .select(`
+        .select(
+          `
           *,
           categories (
             name,
             color,
             icon
           )
-        `)
+        `,
+        )
         .eq('user_id', authStore.user.id)
         .order('date', { ascending: false })
 
@@ -39,13 +47,12 @@ export function useReports() {
 
       if (fetchError) throw fetchError
 
-      transactions.value = data.map(transaction => ({
+      transactions.value = data.map((transaction) => ({
         ...transaction,
         category: transaction.categories?.name || 'Unknown',
         color: transaction.categories?.color || '#6c757d',
-        icon: transaction.categories?.icon || 'bi-circle'
+        icon: transaction.categories?.icon || 'bi-circle',
       }))
-
     } catch (err) {
       error.value = err.message
       console.error('Error fetching report data:', err)
@@ -93,18 +100,18 @@ export function useReports() {
 
     return {
       start: start.toISOString().split('T')[0],
-      end: end.toISOString().split('T')[0]
+      end: end.toISOString().split('T')[0],
     }
   }
 
   // Computed properties for reports
   const reportSummary = computed(() => {
     const totalIncome = transactions.value
-      .filter(t => t.type === 'income')
+      .filter((t) => t.type === 'income')
       .reduce((sum, t) => sum + parseFloat(t.amount), 0)
 
     const totalExpenses = transactions.value
-      .filter(t => t.type === 'expense')
+      .filter((t) => t.type === 'expense')
       .reduce((sum, t) => sum + parseFloat(t.amount), 0)
 
     const netSavings = totalIncome - totalExpenses
@@ -114,78 +121,78 @@ export function useReports() {
       totalIncome,
       totalExpenses,
       netSavings,
-      savingsRate
+      savingsRate,
     }
   })
 
   const incomeCategories = computed(() => {
     const categoryTotals = {}
-    const incomeTransactions = transactions.value.filter(t => t.type === 'income')
+    const incomeTransactions = transactions.value.filter((t) => t.type === 'income')
     const totalIncome = reportSummary.value.totalIncome
 
-    incomeTransactions.forEach(transaction => {
+    incomeTransactions.forEach((transaction) => {
       if (!categoryTotals[transaction.category]) {
         categoryTotals[transaction.category] = {
           name: transaction.category,
           amount: 0,
           icon: transaction.icon,
-          color: transaction.color
+          color: transaction.color,
         }
       }
       categoryTotals[transaction.category].amount += parseFloat(transaction.amount)
     })
 
     return Object.values(categoryTotals)
-      .map(category => ({
+      .map((category) => ({
         ...category,
-        percentage: totalIncome > 0 ? Math.round((category.amount / totalIncome) * 100) : 0
+        percentage: totalIncome > 0 ? Math.round((category.amount / totalIncome) * 100) : 0,
       }))
       .sort((a, b) => b.amount - a.amount)
   })
 
   const expenseCategories = computed(() => {
     const categoryTotals = {}
-    const expenseTransactions = transactions.value.filter(t => t.type === 'expense')
+    const expenseTransactions = transactions.value.filter((t) => t.type === 'expense')
     const totalExpenses = reportSummary.value.totalExpenses
 
-    expenseTransactions.forEach(transaction => {
+    expenseTransactions.forEach((transaction) => {
       if (!categoryTotals[transaction.category]) {
         categoryTotals[transaction.category] = {
           name: transaction.category,
           amount: 0,
           icon: transaction.icon,
-          color: transaction.color
+          color: transaction.color,
         }
       }
       categoryTotals[transaction.category].amount += parseFloat(transaction.amount)
     })
 
     return Object.values(categoryTotals)
-      .map(category => ({
+      .map((category) => ({
         ...category,
-        percentage: totalExpenses > 0 ? Math.round((category.amount / totalExpenses) * 100) : 0
+        percentage: totalExpenses > 0 ? Math.round((category.amount / totalExpenses) * 100) : 0,
       }))
       .sort((a, b) => b.amount - a.amount)
   })
 
   const monthlyData = computed(() => {
     const monthlyTotals = {}
-    
-    transactions.value.forEach(transaction => {
+
+    transactions.value.forEach((transaction) => {
       const date = new Date(transaction.date)
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
       const monthName = date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
-      
+
       if (!monthlyTotals[monthKey]) {
         monthlyTotals[monthKey] = {
           month: monthName,
           income: 0,
           expenses: 0,
           net: 0,
-          savingsRate: 0
+          savingsRate: 0,
         }
       }
-      
+
       if (transaction.type === 'income') {
         monthlyTotals[monthKey].income += parseFloat(transaction.amount)
       } else {
@@ -194,7 +201,7 @@ export function useReports() {
     })
 
     // Calculate net and savings rate
-    Object.values(monthlyTotals).forEach(month => {
+    Object.values(monthlyTotals).forEach((month) => {
       month.net = month.income - month.expenses
       month.savingsRate = month.income > 0 ? Math.round((month.net / month.income) * 100) : 0
     })
@@ -207,16 +214,16 @@ export function useReports() {
   // Chart data
   const barChartData = computed(() => {
     const data = monthlyData.value.slice().reverse()
-    
+
     return {
-      labels: data.map(item => {
+      labels: data.map((item) => {
         const [month, year] = item.month.split(' ')
         return `${month.substring(0, 3)} ${year}`
       }),
       datasets: [
         {
           label: 'Income',
-          data: data.map(item => item.income),
+          data: data.map((item) => item.income),
           backgroundColor: 'rgba(40, 167, 69, 0.8)',
           borderColor: 'rgba(40, 167, 69, 1)',
           borderWidth: 2,
@@ -225,32 +232,32 @@ export function useReports() {
         },
         {
           label: 'Expenses',
-          data: data.map(item => item.expenses),
+          data: data.map((item) => item.expenses),
           backgroundColor: 'rgba(220, 53, 69, 0.8)',
           borderColor: 'rgba(220, 53, 69, 1)',
           borderWidth: 2,
           borderRadius: 4,
           borderSkipped: false,
-        }
-      ]
+        },
+      ],
     }
   })
 
   const pieChartData = computed(() => {
     const categories = expenseCategories.value.slice(0, 5) // Top 5 categories
-    
+
     return {
-      labels: categories.map(cat => cat.name),
+      labels: categories.map((cat) => cat.name),
       datasets: [
         {
-          data: categories.map(cat => cat.amount),
-          backgroundColor: categories.map(cat => cat.color),
+          data: categories.map((cat) => cat.amount),
+          backgroundColor: categories.map((cat) => cat.color),
           borderColor: '#ffffff',
           borderWidth: 2,
           hoverBorderWidth: 3,
-          hoverBorderColor: '#ffffff'
-        }
-      ]
+          hoverBorderColor: '#ffffff',
+        },
+      ],
     }
   })
 
@@ -264,6 +271,7 @@ export function useReports() {
     monthlyData,
     barChartData,
     pieChartData,
-    fetchReportData
+    fetchReportData,
+    resetLoadingState,
   }
 }

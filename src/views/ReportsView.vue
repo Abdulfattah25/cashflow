@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useReports } from '@/composables/useReports'
 import AppLayout from '@/components/common/AppLayout.vue'
 import BarChart from '@/components/charts/BarChart.vue'
@@ -19,6 +19,7 @@ const {
   barChartData,
   pieChartData,
   fetchReportData,
+  resetLoadingState,
 } = useReports()
 
 // Report filters
@@ -276,6 +277,11 @@ onMounted(async () => {
     showFilter.value = window.innerWidth >= 768
   })
 })
+
+onBeforeUnmount(() => {
+  // Reset loading state saat component akan di-destroy
+  resetLoadingState()
+})
 </script>
 
 <template>
@@ -300,7 +306,7 @@ onMounted(async () => {
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <h4 class="mb-1">Laporan</h4>
-              <p class="text-muted mb-0 small">Analisis data dan tren keuangan Anda</p>
+              <p class="text-muted mb-0 small">Analisis data dan tren keuangan Kamu</p>
             </div>
             <div class="d-flex gap-1">
               <button class="btn btn-primary btn-sm d-sm-inline-flex p-2" @click="exportReport">

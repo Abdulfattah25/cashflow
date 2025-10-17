@@ -8,6 +8,12 @@ export function useBudgets() {
   const error = ref(null)
   const authStore = useAuthStore()
 
+  // Reset loading state
+  const resetLoadingState = () => {
+    loading.value = false
+    error.value = null
+  }
+
   // Fetch budgets from database
   const fetchBudgets = async () => {
     try {
@@ -16,14 +22,16 @@ export function useBudgets() {
 
       const { data, error: fetchError } = await supabase
         .from('budgets')
-        .select(`
+        .select(
+          `
           *,
           categories (
             name,
             color,
             icon
           )
-        `)
+        `,
+        )
         .eq('user_id', authStore.user.id)
         .eq('is_active', true)
         .order('created_at', { ascending: false })
@@ -47,7 +55,9 @@ export function useBudgets() {
           const spent = transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0)
           const percentage = Math.round((spent / budget.amount) * 100)
           const remaining = budget.amount - spent
-          const daysLeft = Math.ceil((new Date(budget.end_date) - new Date()) / (1000 * 60 * 60 * 24))
+          const daysLeft = Math.ceil(
+            (new Date(budget.end_date) - new Date()) / (1000 * 60 * 60 * 24),
+          )
 
           return {
             ...budget,
@@ -58,13 +68,12 @@ export function useBudgets() {
             percentage,
             remaining,
             daysLeft: Math.max(0, daysLeft),
-            limit: budget.amount // alias for compatibility
+            limit: budget.amount, // alias for compatibility
           }
-        })
+        }),
       )
 
       budgets.value = budgetsWithSpent
-
     } catch (err) {
       error.value = err.message
       console.error('Error fetching budgets:', err)
@@ -95,7 +104,7 @@ export function useBudgets() {
       // Calculate end date based on period
       const startDate = new Date(budgetData.startDate)
       const endDate = new Date(startDate)
-      
+
       switch (budgetData.period) {
         case 'weekly':
           endDate.setDate(endDate.getDate() + 7)
@@ -119,8 +128,8 @@ export function useBudgets() {
             period: budgetData.period,
             start_date: budgetData.startDate,
             end_date: endDate.toISOString().split('T')[0],
-            is_active: true
-          }
+            is_active: true,
+          },
         ])
         .select()
 
@@ -128,7 +137,7 @@ export function useBudgets() {
 
       // Refresh budgets
       await fetchBudgets()
-      
+
       return data[0]
     } catch (err) {
       error.value = err.message
@@ -161,7 +170,7 @@ export function useBudgets() {
       // Calculate end date
       const startDate = new Date(budgetData.startDate)
       const endDate = new Date(startDate)
-      
+
       switch (budgetData.period) {
         case 'weekly':
           endDate.setDate(endDate.getDate() + 7)
@@ -182,7 +191,7 @@ export function useBudgets() {
           amount: budgetData.limit,
           period: budgetData.period,
           start_date: budgetData.startDate,
-          end_date: endDate.toISOString().split('T')[0]
+          end_date: endDate.toISOString().split('T')[0],
         })
         .eq('id', id)
         .eq('user_id', authStore.user.id)
@@ -192,7 +201,7 @@ export function useBudgets() {
 
       // Refresh budgets
       await fetchBudgets()
-      
+
       return data[0]
     } catch (err) {
       error.value = err.message
@@ -218,8 +227,7 @@ export function useBudgets() {
       if (deleteError) throw deleteError
 
       // Remove from local state
-      budgets.value = budgets.value.filter(b => b.id !== id)
-      
+      budgets.value = budgets.value.filter((b) => b.id !== id)
     } catch (err) {
       error.value = err.message
       console.error('Error deleting budget:', err)
@@ -240,7 +248,7 @@ export function useBudgets() {
       totalBudget,
       totalSpent,
       remaining,
-      usageRate
+      usageRate,
     }
   })
 
@@ -252,6 +260,7 @@ export function useBudgets() {
     fetchBudgets,
     addBudget,
     updateBudget,
-    deleteBudget
+    deleteBudget,
+    resetLoadingState,
   }
 }

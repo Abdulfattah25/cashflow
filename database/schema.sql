@@ -96,14 +96,26 @@ ALTER TABLE public.goals ENABLE ROW LEVEL SECURITY;
 -- (Removed RLS enable for deprecated tables)
 
 -- Create RLS Policies
--- Profiles policies
-CREATE POLICY "Users can view own profile" ON public.profiles
-    FOR SELECT USING (auth.uid() = id);
+-- Profiles policies (Combined policies for users and admins)
 
-CREATE POLICY "Users can update own profile" ON public.profiles
-    FOR UPDATE USING (auth.uid() = id);
+-- Policy 1: SELECT - Allow users to view own profile OR admin to view all
+CREATE POLICY "profiles_select_policy" ON public.profiles
+    FOR SELECT USING (
+        auth.uid() = id 
+        OR 
+        public.is_current_user_admin()
+    );
 
-CREATE POLICY "Users can insert own profile" ON public.profiles
+-- Policy 2: UPDATE - Allow users to update own profile OR admin to update all
+CREATE POLICY "profiles_update_policy" ON public.profiles
+    FOR UPDATE USING (
+        auth.uid() = id 
+        OR 
+        public.is_current_user_admin()
+    );
+
+-- Policy 3: INSERT - Allow users to insert own profile only
+CREATE POLICY "profiles_insert_policy" ON public.profiles
     FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- Categories policies

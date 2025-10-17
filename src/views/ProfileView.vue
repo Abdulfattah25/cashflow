@@ -28,7 +28,7 @@
             <!-- Logout Button -->
             <div class="row mx-2">
               <div class="col-12 text-start">
-                <button class="btn btn-danger" @click="logout" :disabled="loggingOut">
+                <button class="btn btn-danger btn-logout" @click="logout" :disabled="loggingOut">
                   <i class="bi bi-box-arrow-right me-2"></i>
                   {{ loggingOut ? 'Keluar...' : 'Logout' }}
                 </button>
@@ -68,7 +68,7 @@
                     <span class="btn-text">Ganti Password</span>
                   </button>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-3 d-none">
                   <button
                     class="btn btn-outline-primary w-100 setting-btn"
                     @click="toggleSection('theme')"
@@ -910,7 +910,7 @@ const confirmRemoveCategory = async () => {
     padding: 0.5rem;
   }
 
-  .setting-btn {
+  .setting-btn, .btn-logout {
     height: 2.8rem;
     font-size: 0.8rem;
     padding: 0.4rem 0.6rem;
