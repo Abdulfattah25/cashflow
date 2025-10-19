@@ -31,7 +31,13 @@
           <div class="col-lg-7">
             <div class="modal-header border-0 pb-0">
               <h5 class="modal-title">
-                {{ authMode === 'login' ? 'Masuk ke Akun' : 'Buat Akun Baru' }}
+                {{
+                  authMode === 'login'
+                    ? 'Masuk ke Akun'
+                    : authMode === 'register'
+                      ? 'Buat Akun Baru'
+                      : 'Reset Password'
+                }}
               </h5>
               <button type="button" class="btn-close" @click="closeModal"></button>
             </div>
@@ -42,14 +48,23 @@
                 :auth-loading="authLoading"
                 @login="handleLogin"
                 @switch-mode="switchAuthMode"
+                @forgot-password="authMode = 'reset'"
               />
 
               <SignupForm
-                v-else
+                v-else-if="authMode === 'register'"
                 :auth-error="authError"
                 :auth-loading="authLoading"
                 @register="handleRegister"
                 @switch-mode="switchAuthMode"
+              />
+
+              <ResetPasswordForm
+                v-else-if="authMode === 'reset'"
+                :auth-error="authError"
+                :auth-loading="authLoading"
+                @reset-password="handleResetPassword"
+                @back-to-login="authMode = 'login'"
               />
             </div>
           </div>
@@ -64,6 +79,7 @@ import { ref } from 'vue'
 import { supabase } from '@/lib/supabase'
 import LoginForm from './LoginForm.vue'
 import SignupForm from './SignupForm.vue'
+import ResetPasswordForm from './ResetPasswordForm.vue'
 
 const authMode = ref('login')
 const authLoading = ref(false)
@@ -216,6 +232,23 @@ const isGatewayTimeout = (err) => {
 
 const sleep = (ms) => {
   return new Promise((res) => setTimeout(res, ms))
+}
+
+const handleResetPassword = async (email) => {
+  authError.value = ''
+  authLoading.value = true
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    if (error) throw error
+    showToast('Link reset password telah dikirim ke email Anda', 'success')
+  } catch (err) {
+    authError.value = err.message
+    showToast(err.message, 'danger')
+  } finally {
+    authLoading.value = false
+  }
 }
 
 const switchAuthMode = () => {

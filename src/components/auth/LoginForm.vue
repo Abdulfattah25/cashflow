@@ -32,7 +32,13 @@
       </button>
     </div>
 
-    <button type="submit" class="btn btn-gradient w-100 py-2 mb-2" :disabled="authLoading">
+    <div class="text-end mb-2">
+      <a href="#" @click.prevent="$emit('forgot-password')" class="small text-primary">
+        Lupa Password?
+      </a>
+    </div>
+
+    <button type="submit" class="btn btn-gradient-auth w-100 py-2 mb-2" :disabled="authLoading">
       <span v-if="!authLoading">Masuk</span>
       <span v-else>Memproses...</span>
     </button>
@@ -52,7 +58,7 @@ defineProps({
   authLoading: Boolean,
 })
 
-const emit = defineEmits(['login', 'switch-mode'])
+const emit = defineEmits(['login', 'switch-mode', 'forgot-password'])
 
 const showPassword = ref(false)
 const form = reactive({

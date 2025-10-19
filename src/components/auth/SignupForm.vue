@@ -75,7 +75,7 @@
       </button>
     </div>
 
-    <button type="submit" class="btn btn-gradient w-100 py-2 mb-2" :disabled="authLoading">
+    <button type="submit" class="btn btn-gradient-auth w-100 py-2 mb-2" :disabled="authLoading">
       <span v-if="!authLoading">Daftar Sekarang</span>
       <span v-else>Memproses...</span>
     </button>

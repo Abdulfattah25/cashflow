@@ -48,7 +48,7 @@
             <div class="card-body">
               <!-- Settings Buttons -->
               <div class="row g-3 mb-4">
-                <div class="col-6 col-md-3">
+                <div class="col-12 col-md-3">
                   <button
                     class="btn btn-outline-primary w-100 setting-btn"
                     @click="toggleSection('name')"
@@ -58,7 +58,7 @@
                     <span class="btn-text">Ganti Nama</span>
                   </button>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-12 col-md-3">
                   <button
                     class="btn btn-outline-primary w-100 setting-btn"
                     @click="toggleSection('password')"
@@ -68,7 +68,7 @@
                     <span class="btn-text">Ganti Password</span>
                   </button>
                 </div>
-                <div class="col-6 col-md-3 d-none">
+                <div class="col-12 col-md-3 d-none">
                   <button
                     class="btn btn-outline-primary w-100 setting-btn"
                     @click="toggleSection('theme')"
@@ -78,7 +78,7 @@
                     <span class="btn-text">Pilih Tema</span>
                   </button>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-12 col-md-3">
                   <button
                     class="btn btn-outline-primary w-100 setting-btn"
                     @click="toggleSection('categories')"
@@ -88,7 +88,7 @@
                     <span class="btn-text">Kelola Kategori</span>
                   </button>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-3 d-none">
                   <button
                     class="btn btn-danger w-100 setting-btn"
                     @click="toggleSection('delete')"

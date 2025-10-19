@@ -10,25 +10,19 @@ const router = createRouter({
   routes: [
     {
       path: '/',
+      name: 'landing',
+      component: () => import('@/views/LandingView.vue'),
+      meta: { requiresGuest: true },
+    },
+    {
+      path: '/dashboard',
       name: 'dashboard',
       component: () => import('@/views/DashboardView.vue'),
       meta: { requiresAuth: true },
     },
     {
       path: '/home',
-      redirect: '/',
-    },
-    {
-      path: '/login',
-      name: 'login',
-      component: () => import('@/views/auth/LoginView2.vue'),
-      meta: { requiresGuest: true },
-    },
-    {
-      path: '/register',
-      name: 'register',
-      component: () => import('@/views/auth/RegisterView.vue'),
-      meta: { requiresGuest: true },
+      redirect: '/dashboard',
     },
     {
       path: '/transactions',
@@ -98,14 +92,14 @@ router.beforeEach(async (to, from, next) => {
 
   // Handle authentication requirements
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    // For auth-required routes, redirect to login
-    next('/login')
+    // For auth-required routes, redirect to landing page
+    next('/')
     return
   }
 
-  // Handle guest-only routes (redirect authenticated users)
+  // Handle guest-only routes (redirect authenticated users to dashboard)
   if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    next('/')
+    next('/dashboard')
     return
   }
 
@@ -118,7 +112,7 @@ router.beforeEach(async (to, from, next) => {
       } else {
         console.warn('Admin access required')
       }
-      next('/')
+      next('/dashboard')
       return
     }
   }
