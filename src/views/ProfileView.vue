@@ -666,10 +666,11 @@ const logout = async () => {
   try {
     loggingOut.value = true
     await authStore.signOut()
-    router.push('/')
+    // Redirect will be handled by App.vue onAuthStateChange
   } catch (error) {
     console.error('Logout error:', error)
-    router.push('/')
+  } finally {
+    loggingOut.value = false
   }
 }
 
@@ -910,7 +911,8 @@ const confirmRemoveCategory = async () => {
     padding: 0.5rem;
   }
 
-  .setting-btn, .btn-logout {
+  .setting-btn,
+  .btn-logout {
     height: 2.8rem;
     font-size: 0.8rem;
     padding: 0.4rem 0.6rem;

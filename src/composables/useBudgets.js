@@ -2,28 +2,72 @@ import { ref, computed } from 'vue'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/stores/auth'
 
+const budgetsCache = ref([])
+const cacheValid = ref(false)
+let fetchPromise = null
+let fetchController = null
+
 export function useBudgets() {
-  const budgets = ref([])
   const loading = ref(false)
   const error = ref(null)
   const authStore = useAuthStore()
 
-  // Reset loading state
+  const budgets = computed(() => budgetsCache.value)
+
   const resetLoadingState = () => {
+    if (fetchController) {
+      fetchController.abort()
+      fetchController = null
+    }
     loading.value = false
     error.value = null
   }
 
-  // Fetch budgets from database
-  const fetchBudgets = async () => {
+  const fetchBudgets = async ({ force = false } = {}) => {
     try {
+      if (!force && cacheValid.value && budgetsCache.value.length > 0) {
+        return budgetsCache.value
+      }
+
+      if (fetchPromise) {
+        return await fetchPromise
+      }
+
+      if (!authStore.user?.id) {
+        return []
+      }
+
+      if (fetchController) {
+        fetchController.abort()
+      }
+      fetchController = new AbortController()
+
       loading.value = true
       error.value = null
 
-      const { data, error: fetchError } = await supabase
-        .from('budgets')
-        .select(
-          `
+      fetchPromise = _performFetch()
+      const result = await fetchPromise
+
+      return result
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        return budgetsCache.value
+      }
+      error.value = err.message
+      console.error('Error fetching budgets:', err)
+      return budgetsCache.value
+    } finally {
+      loading.value = false
+      fetchController = null
+      fetchPromise = null
+    }
+  }
+
+  const _performFetch = async () => {
+    const { data, error: fetchError } = await supabase
+      .from('budgets')
+      .select(
+        `
           *,
           categories (
             name,
@@ -31,55 +75,70 @@ export function useBudgets() {
             icon
           )
         `,
-        )
-        .eq('user_id', authStore.user.id)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-
-      if (fetchError) throw fetchError
-
-      // Calculate spent amount for each budget
-      const budgetsWithSpent = await Promise.all(
-        data.map(async (budget) => {
-          const { data: transactions, error: transError } = await supabase
-            .from('transactions')
-            .select('amount')
-            .eq('user_id', authStore.user.id)
-            .eq('category_id', budget.category_id)
-            .eq('type', 'expense')
-            .gte('date', budget.start_date)
-            .lte('date', budget.end_date)
-
-          if (transError) throw transError
-
-          const spent = transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0)
-          const percentage = Math.round((spent / budget.amount) * 100)
-          const remaining = budget.amount - spent
-          const daysLeft = Math.ceil(
-            (new Date(budget.end_date) - new Date()) / (1000 * 60 * 60 * 24),
-          )
-
-          return {
-            ...budget,
-            category: budget.categories?.name || 'Unknown',
-            icon: budget.categories?.icon || 'bi-circle',
-            color: budget.categories?.color || '#6c757d',
-            spent,
-            percentage,
-            remaining,
-            daysLeft: Math.max(0, daysLeft),
-            limit: budget.amount, // alias for compatibility
-          }
-        }),
       )
+      .eq('user_id', authStore.user.id)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .abortSignal(fetchController?.signal)
 
-      budgets.value = budgetsWithSpent
-    } catch (err) {
-      error.value = err.message
-      console.error('Error fetching budgets:', err)
-    } finally {
-      loading.value = false
+    if (fetchError) throw fetchError
+
+    // Calculate spent amount for each budget
+    const budgetsWithSpent = await Promise.all(
+      data.map(async (budget) => {
+        const { data: transactions, error: transError } = await supabase
+          .from('transactions')
+          .select('amount')
+          .eq('user_id', authStore.user.id)
+          .eq('category_id', budget.category_id)
+          .eq('type', 'expense')
+          .gte('date', budget.start_date)
+          .lte('date', budget.end_date)
+
+        if (transError) throw transError
+
+        const spent = transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0)
+        const percentage = Math.round((spent / budget.amount) * 100)
+        const remaining = budget.amount - spent
+        const daysLeft = Math.ceil((new Date(budget.end_date) - new Date()) / (1000 * 60 * 60 * 24))
+
+        return {
+          ...budget,
+          category: budget.categories?.name || 'Unknown',
+          icon: budget.categories?.icon || 'bi-circle',
+          color: budget.categories?.color || '#6c757d',
+          spent,
+          percentage,
+          remaining,
+          daysLeft: Math.max(0, daysLeft),
+          limit: budget.amount,
+        }
+      }),
+    )
+
+    budgetsCache.value = budgetsWithSpent
+    cacheValid.value = true
+    return budgetsCache.value
+  }
+
+  // ✅ NEW: Get budgets from cache instantly
+  const getBudgets = () => {
+    if (cacheValid.value && budgetsCache.value.length > 0) {
+      return budgetsCache.value
     }
+    fetchBudgets() // Background refresh
+    return budgetsCache.value
+  }
+
+  // Invalidate cache
+  const invalidateCache = () => {
+    cacheValid.value = false
+  }
+
+  // Clear cache
+  const clearCache = () => {
+    budgetsCache.value = []
+    cacheValid.value = false
   }
 
   // Add new budget
@@ -199,8 +258,9 @@ export function useBudgets() {
 
       if (updateError) throw updateError
 
-      // Refresh budgets
-      await fetchBudgets()
+      // Invalidate cache and refresh budgets
+      invalidateCache()
+      await fetchBudgets({ force: true })
 
       return data[0]
     } catch (err) {
@@ -226,8 +286,9 @@ export function useBudgets() {
 
       if (deleteError) throw deleteError
 
-      // Remove from local state
-      budgets.value = budgets.value.filter((b) => b.id !== id)
+      // Remove from cache immediately (optimistic update)
+      budgetsCache.value = budgetsCache.value.filter((b) => b.id !== id)
+      invalidateCache()
     } catch (err) {
       error.value = err.message
       console.error('Error deleting budget:', err)
@@ -239,8 +300,8 @@ export function useBudgets() {
 
   // Computed properties
   const budgetSummary = computed(() => {
-    const totalBudget = budgets.value.reduce((sum, b) => sum + parseFloat(b.amount), 0)
-    const totalSpent = budgets.value.reduce((sum, b) => sum + b.spent, 0)
+    const totalBudget = budgetsCache.value.reduce((sum, b) => sum + parseFloat(b.amount), 0)
+    const totalSpent = budgetsCache.value.reduce((sum, b) => sum + b.spent, 0)
     const remaining = totalBudget - totalSpent
     const usageRate = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0
 
@@ -252,15 +313,23 @@ export function useBudgets() {
     }
   })
 
+  const exceededBudgets = computed(() => {
+    return budgetsCache.value.filter((budget) => budget.percentage >= 100)
+  })
+
   return {
     budgets,
     loading,
     error,
     budgetSummary,
+    exceededBudgets,
     fetchBudgets,
+    getBudgets, // ✅ NEW: Instant cache access
     addBudget,
     updateBudget,
     deleteBudget,
+    invalidateCache,
+    clearCache,
     resetLoadingState,
   }
 }

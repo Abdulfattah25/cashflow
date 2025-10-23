@@ -21,7 +21,7 @@
 
     <router-link to="/goals" class="nav-item" :class="{ active: $route.name === 'goals' }">
       <i class="bi bi-bullseye"></i>
-      <span>Goal</span>
+      <span>Target</span>
     </router-link>
 
     <router-link to="/reports" class="nav-item" :class="{ active: $route.name === 'reports' }">

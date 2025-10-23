@@ -18,7 +18,7 @@
 
             <div class="d-flex justify-content-center justify-content-lg-start my-4">
               <button class="btn btn-gradient btn-lg px-4 shadow-lg" @click="$emit('show-auth')">
-                Mulai Sekarang
+                Coba Sekarang
               </button>
             </div>
           </div>
@@ -50,12 +50,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <div class="text-center mb-2 d-none d-md-flex justify-content-center">
-        <button class="btn btn-gradient btn-lg px-4 shadow" @click="$emit('show-auth')">
-          Login Sekarang
-        </button>
       </div>
     </section>
   </div>

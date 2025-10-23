@@ -1,71 +1,74 @@
 <template>
-  <div
-    class="modal fade show"
-    style="display: block; z-index: 1055"
-    tabindex="-1"
-    @click.self="closeModal"
-    @keydown.esc="closeModal"
-  >
-    <div class="modal-backdrop fade show" style="z-index: 1050" @click="closeModal"></div>
-    <div class="modal-dialog modal-dialog-centered modal-lg auth-modal" style="z-index: 1060">
-      <div class="modal-content auth-modal-content overflow-hidden">
-        <div class="row g-0">
-          <div class="col-lg-5 d-none d-lg-flex align-items-stretch">
-            <div class="auth-visual w-100 p-4 d-flex flex-column justify-content-end">
-              <div class="mb-auto">
-                <div class="badge bg-white text-primary rounded-pill mb-3 shadow-sm">
-                  <i class="bi bi-currency-dollar me-1"></i> Selamat Datang
+  <div>
+    <div class="modal-backdrop fade show" @click="closeModal"></div>
+    <div
+      class="modal fade show d-block"
+      tabindex="-1"
+      role="dialog"
+      aria-modal="true"
+      @click.self="closeModal"
+      @keydown.esc="closeModal"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg auth-modal">
+        <div class="modal-content auth-modal-content overflow-hidden">
+          <div class="row g-0">
+            <div class="col-lg-5 d-none d-lg-flex align-items-stretch">
+              <div class="auth-visual w-100 p-4 d-flex flex-column justify-content-end">
+                <div class="mb-auto">
+                  <div class="badge bg-white text-primary rounded-pill mb-3 shadow-sm">
+                    <i class="bi bi-currency-dollar me-1"></i> Selamat Datang
+                  </div>
+                  <h4 class="text-white fw-bold mb-2">Kelola keuangan dengan lebih mudah</h4>
+                  <p class="text-white-75 mb-0">
+                    Masuk atau daftar untuk mulai mencatat transaksi dan mengatur budget Anda.
+                  </p>
                 </div>
-                <h4 class="text-white fw-bold mb-2">Kelola keuangan dengan lebih mudah</h4>
-                <p class="text-white-75 mb-0">
-                  Masuk atau daftar untuk mulai mencatat transaksi dan mengatur budget Anda.
-                </p>
+                <ul class="list-unstyled mt-4 text-white-75 small">
+                  <li class="mb-2"><i class="bi bi-check2-circle me-2"></i>Dashboard lengkap</li>
+                  <li class="mb-2"><i class="bi bi-check2-circle me-2"></i>Laporan real-time</li>
+                </ul>
               </div>
-              <ul class="list-unstyled mt-4 text-white-75 small">
-                <li class="mb-2"><i class="bi bi-check2-circle me-2"></i>Dashboard lengkap</li>
-                <li class="mb-2"><i class="bi bi-check2-circle me-2"></i>Laporan real-time</li>
-              </ul>
             </div>
-          </div>
 
-          <div class="col-lg-7">
-            <div class="modal-header border-0 pb-0">
-              <h5 class="modal-title">
-                {{
-                  authMode === 'login'
-                    ? 'Masuk ke Akun'
-                    : authMode === 'register'
-                      ? 'Buat Akun Baru'
-                      : 'Reset Password'
-                }}
-              </h5>
-              <button type="button" class="btn-close" @click="closeModal"></button>
-            </div>
-            <div class="modal-body pt-2">
-              <LoginForm
-                v-if="authMode === 'login'"
-                :auth-error="authError"
-                :auth-loading="authLoading"
-                @login="handleLogin"
-                @switch-mode="switchAuthMode"
-                @forgot-password="authMode = 'reset'"
-              />
+            <div class="col-lg-7">
+              <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title">
+                  {{
+                    authMode === 'login'
+                      ? 'Masuk ke Akun'
+                      : authMode === 'register'
+                        ? 'Buat Akun Baru'
+                        : 'Reset Password'
+                  }}
+                </h5>
+                <button type="button" class="btn-close" @click="closeModal"></button>
+              </div>
+              <div class="modal-body pt-2">
+                <LoginForm
+                  v-if="authMode === 'login'"
+                  :auth-error="authError"
+                  :auth-loading="authLoading"
+                  @login="handleLogin"
+                  @switch-mode="switchAuthMode"
+                  @forgot-password="authMode = 'reset'"
+                />
 
-              <SignupForm
-                v-else-if="authMode === 'register'"
-                :auth-error="authError"
-                :auth-loading="authLoading"
-                @register="handleRegister"
-                @switch-mode="switchAuthMode"
-              />
+                <SignupForm
+                  v-else-if="authMode === 'register'"
+                  :auth-error="authError"
+                  :auth-loading="authLoading"
+                  @register="handleRegister"
+                  @switch-mode="switchAuthMode"
+                />
 
-              <ResetPasswordForm
-                v-else-if="authMode === 'reset'"
-                :auth-error="authError"
-                :auth-loading="authLoading"
-                @reset-password="handleResetPassword"
-                @back-to-login="authMode = 'login'"
-              />
+                <ResetPasswordForm
+                  v-else-if="authMode === 'reset'"
+                  :auth-error="authError"
+                  :auth-loading="authLoading"
+                  @reset-password="handleResetPassword"
+                  @back-to-login="authMode = 'login'"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -75,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { supabase } from '@/lib/supabase'
 import LoginForm from './LoginForm.vue'
 import SignupForm from './SignupForm.vue'
@@ -86,6 +89,25 @@ const authLoading = ref(false)
 const authError = ref('')
 
 const emit = defineEmits(['auth-success', 'close-modal'])
+
+onMounted(() => {
+  document.body.classList.add('modal-open')
+  document.body.style.overflow = 'hidden'
+  document.body.style.paddingRight = '0px'
+})
+
+onBeforeUnmount(() => {
+  cleanupModal()
+})
+
+const cleanupModal = () => {
+  document.body.classList.remove('modal-open')
+  document.body.style.overflow = ''
+  document.body.style.paddingRight = ''
+
+  const backdrops = document.querySelectorAll('.modal-backdrop')
+  backdrops.forEach((backdrop) => backdrop.remove())
+}
 
 const handleLogin = async (credentials) => {
   authError.value = ''
@@ -238,8 +260,13 @@ const handleResetPassword = async (email) => {
   authError.value = ''
   authLoading.value = true
   try {
+    // Use environment-aware redirect URL
+    const redirectUrl = import.meta.env.DEV
+      ? 'http://localhost:3000/reset-password' // Development
+      : `${window.location.origin}/reset-password` // Production
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: redirectUrl,
     })
     if (error) throw error
     showToast('Link reset password telah dikirim ke email Anda', 'success')
@@ -257,6 +284,7 @@ const switchAuthMode = () => {
 }
 
 const closeModal = () => {
+  cleanupModal()
   emit('close-modal')
 }
 
@@ -281,3 +309,68 @@ const showToast = (message, variant = 'primary', delay = 3000) => {
   } catch (_) {}
 }
 </script>
+
+<style scoped>
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1050;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1055;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  outline: 0;
+}
+
+.modal-dialog {
+  position: relative;
+  width: auto;
+  margin: 0.5rem;
+  pointer-events: none;
+}
+
+.modal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  pointer-events: auto;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 0.5rem;
+  outline: 0;
+}
+
+@media (min-width: 576px) {
+  .modal-dialog {
+    max-width: 500px;
+    margin: 1.75rem auto;
+  }
+}
+
+@media (min-width: 992px) {
+  .modal-lg {
+    max-width: 800px;
+  }
+}
+
+.text-white-75 {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.auth-modal-content {
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+</style>

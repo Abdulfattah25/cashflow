@@ -248,9 +248,6 @@ const openProgressModal = async (goal) => {
 
 const saveProgress = async () => {
   try {
-    // Debugging: Log selectedGoal sebelum validasi
-    console.log('Selected goal:', selectedGoal.value)
-
     // Validasi lebih ketat
     if (!selectedGoal.value?.id) {
       throw new Error('Pilih target terlebih dahulu')
@@ -268,8 +265,6 @@ const saveProgress = async () => {
       notes: progressForm.notes || '',
     }
 
-    console.log('Sending progress data:', progressData)
-
     await addProgress(selectedGoal.value.id, progressData)
 
     // Tutup modal hanya setelah operasi berhasil
@@ -286,8 +281,10 @@ const saveProgress = async () => {
   }
 }
 
-onMounted(async () => {
-  await fetchGoals()
+// ✅ OPTIMIZED: Non-blocking mount - instant render with cache
+onMounted(() => {
+  // Fetch in background, no await - instant render with cached data
+  fetchGoals()
 })
 
 onBeforeUnmount(() => {

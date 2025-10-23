@@ -1,15 +1,15 @@
 <template>
   <header class="app-header">
     <div class="header-content">
-  <!-- Brand text instead of hamburger on mobile -->
-  <div class="brand d-lg-none me-2 fw-bold text-gradient fs-2">CashflowKu</div>
-  <!-- Page Title (desktop) -->
-  <div class="header-title d-none d-lg-block"></div>
+      <!-- Brand text instead of hamburger on mobile -->
+      <div class="brand d-lg-none me-2 fw-bold text-gradient fs-2">CashflowKu</div>
+      <!-- Page Title (desktop) -->
+      <div class="header-title d-none d-lg-block"></div>
 
       <!-- Header Actions -->
       <div class="header-actions">
         <!-- User Menu -->
-        <div class="dropdown">
+        <div class="dropdown d-none d-lg-block">
           <div class="user-menu" data-bs-toggle="dropdown" aria-expanded="false">
             <div class="user-avatar">
               {{ userInitials }}
@@ -36,10 +36,17 @@
             </li>
           </ul>
         </div>
+
+        <!-- User Avatar Only (Mobile) -->
+        <div class="d-lg-none">
+          <div class="user-avatar-mobile">
+            {{ userInitials }}
+          </div>
+        </div>
       </div>
     </div>
 
-  <!-- Profile Modal - Sekarang akan di-teleport ke body -->
+    <!-- Profile Modal - Sekarang akan di-teleport ke body -->
     <UserProfileModal />
   </header>
 </template>
@@ -90,9 +97,7 @@ const pageDescription = computed(() => {
 })
 
 const displayName = computed(() => {
-  return authStore.user?.user_metadata?.full_name || 
-         authStore.user?.email?.split('@')[0] || 
-         'User'
+  return authStore.user?.user_metadata?.full_name || authStore.user?.email?.split('@')[0] || 'User'
 })
 
 const userInitials = computed(() => {
@@ -108,7 +113,7 @@ const userInitials = computed(() => {
 const logout = async () => {
   try {
     await authStore.signOut()
-    router.push('/login')
+    // Redirect will be handled by App.vue onAuthStateChange
   } catch (error) {
     console.error('Logout error:', error)
   }
@@ -121,7 +126,7 @@ const logout = async () => {
   top: 0;
   z-index: 1040;
   background: #fff;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   height: var(--header-height);
 }
 
@@ -178,7 +183,7 @@ const logout = async () => {
 
 .user-menu:focus,
 .user-menu:focus-visible {
-  outline: 2px solid rgba(99,102,241,0.25);
+  outline: 2px solid rgba(99, 102, 241, 0.25);
   outline-offset: 2px;
 }
 
@@ -240,41 +245,25 @@ const logout = async () => {
   margin: 0.5rem 0;
 }
 
-@media (max-width: 768px) {
-  .user-info {
-    display: none !important;
-  }
-  
-  .user-menu {
+/* User Avatar Mobile - Static display without dropdown */
+.user-avatar-mobile {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
   display: flex;
   align-items: center;
-  padding: 0;
-  border-radius: 999px;
-  background: transparent;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  }
- 
-  
-  .user-avatar {
-    margin-right: 0.5rem;
-    width: 36px;
-    height: 36px;
-    font-size: 0.95rem;
-  }
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
 
-  /* Hide chevron on mobile to save space */
-  .user-menu > i.bi-chevron-down {
-    display: none;
-  }
-
-  /* Mobile-friendly dropdown sizing */
-  .dropdown-menu {
-    width: calc(100vw - 1.25rem);
-    max-width: 50px;
-    border-radius: 12px;
-    box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+@media (max-width: 991.98px) {
+  /* Remove old mobile dropdown styles - no longer needed */
+  .header-actions {
+    padding-right: 0;
   }
 }
 </style>
-

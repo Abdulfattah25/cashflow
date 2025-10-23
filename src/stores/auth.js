@@ -77,14 +77,6 @@ export const useAuthStore = defineStore('auth', () => {
         ...authUser,
         ...profile,
       }
-
-      // Debug: Log user role for admin access troubleshooting
-      console.log('👤 User Profile Loaded:', {
-        email: user.value.email,
-        role: user.value.role,
-        isActive: user.value.is_active,
-        isAdmin: user.value.role === 'admin',
-      })
     } catch (err) {
       console.error('Error fetching user profile:', err)
       user.value = authUser

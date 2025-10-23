@@ -2,106 +2,64 @@ import { ref } from 'vue'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/stores/auth'
 
-// Global cache for categories
 const categoriesCache = ref([])
 const cacheValid = ref(false)
 let fetchPromise = null
 let realtimeChannel = null
 let fetchController = null
-let safetyTimeout = null
 
 export function useCategories() {
   const loading = ref(false)
   const error = ref(null)
   const authStore = useAuthStore()
 
-  // Reset loading state (untuk navigation cleanup)
   const resetLoadingState = () => {
-    // IMPORTANT: Clear safety timeout FIRST!
-    if (safetyTimeout) {
-      clearTimeout(safetyTimeout)
-      safetyTimeout = null
-    }
-
-    // Cancel any ongoing fetch
     if (fetchController) {
       fetchController.abort()
       fetchController = null
     }
 
-    // Clear fetch promise
     fetchPromise = null
-
-    // Reset loading state
     loading.value = false
     error.value = null
   }
 
-  // Fetch categories with caching
   const fetchCategories = async ({ force = false } = {}) => {
     try {
-      // Return cached data if valid and not forcing refresh
       if (!force && cacheValid.value && categoriesCache.value.length > 0) {
         return categoriesCache.value
       }
 
-      // If already fetching, return existing promise
       if (fetchPromise) {
         return await fetchPromise
       }
 
-      // Ensure user is authenticated
       if (!authStore.user?.id) {
-        console.warn('Cannot fetch categories: user not authenticated')
         return []
       }
 
-      // Cancel previous fetch if still running
       if (fetchController) {
         fetchController.abort()
       }
       fetchController = new AbortController()
 
-      // Clear any existing safety timeout BEFORE creating new one
-      if (safetyTimeout) {
-        clearTimeout(safetyTimeout)
-        safetyTimeout = null
-      }
-
       loading.value = true
       error.value = null
-
-      // Safety timeout: force reset loading after 10s
-      safetyTimeout = setTimeout(() => {
-        console.warn('Safety timeout: force reset loading state (categories)')
-        loading.value = false
-        fetchController = null
-        fetchPromise = null
-        safetyTimeout = null // Clear reference
-      }, 10000)
 
       fetchPromise = _performFetch()
       const result = await fetchPromise
 
       return result
     } catch (err) {
-      // Ignore abort errors
       if (err.name === 'AbortError') {
-        console.log('Fetch aborted (categories)')
         return categoriesCache.value
       }
 
       error.value = err.message
       console.error('Error fetching categories:', err)
 
-      // Return cached data on error
       return categoriesCache.value
     } finally {
-      // Clear safety timeout
-      if (safetyTimeout) {
-        clearTimeout(safetyTimeout)
-        safetyTimeout = null
-      }
       loading.value = false
       fetchPromise = null
       fetchController = null
@@ -118,14 +76,12 @@ export function useCategories() {
 
     if (fetchError) throw fetchError
 
-    // Update cache
     categoriesCache.value = data || []
     cacheValid.value = true
 
     return categoriesCache.value
   }
 
-  // Setup realtime subscription
   const setupRealtime = () => {
     if (!authStore.user?.id) return
 
@@ -150,14 +106,11 @@ export function useCategories() {
           filter: `user_id=eq.${authStore.user.id}`,
         },
         async () => {
-          console.log('Categories changed, refreshing...')
           invalidateCache()
           await fetchCategories({ force: true })
         },
       )
       .subscribe((status) => {
-        console.log('Categories realtime status:', status)
-
         // Handle reconnection
         if (status === 'CHANNEL_ERROR') {
           console.warn('Categories channel error, attempting reconnect...')

@@ -1,9 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { useTransactions } from '@/composables/useTransactions'
-import { useCategories } from '@/composables/useCategories'
-import { useBudgets } from '@/composables/useBudgets'
-import { useGoals } from '@/composables/useGoals'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -11,8 +7,14 @@ const router = createRouter({
     {
       path: '/',
       name: 'landing',
-      component: () => import('@/views/LandingView.vue'),
+      component: { template: '<div></div>' },
       meta: { requiresGuest: true },
+    },
+    {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: () => import('@/views/ResetPasswordView.vue'),
+      meta: { public: true }, // Public route, accessible without auth
     },
     {
       path: '/dashboard',
@@ -66,19 +68,6 @@ const router = createRouter({
 // Navigation guard
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-
-  // Reset loading state saat navigasi untuk mencegah spinner stuck
-  if (from.name && to.name !== from.name) {
-    const { resetLoadingState: resetTransactions } = useTransactions()
-    const { resetLoadingState: resetCategories } = useCategories()
-    const { resetLoadingState: resetBudgets } = useBudgets()
-    const { resetLoadingState: resetGoals } = useGoals()
-
-    resetTransactions()
-    resetCategories()
-    resetBudgets()
-    resetGoals()
-  }
 
   // Initialize auth if not already done
   if (!authStore.initialized) {

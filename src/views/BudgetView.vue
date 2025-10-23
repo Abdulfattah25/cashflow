@@ -4,7 +4,6 @@ import { useBudgets } from '@/composables/useBudgets'
 import { useCategories } from '@/composables/useCategories'
 import AppLayout from '@/components/common/AppLayout.vue'
 
-// Use composables
 const {
   budgets,
   loading,
@@ -24,9 +23,6 @@ const {
   resetLoadingState: resetCategoriesLoading,
 } = useCategories()
 
-// Removed expense types feature
-
-// Budget filters
 const budgetFilters = reactive({
   period: 'current',
   category: '',
@@ -34,7 +30,6 @@ const budgetFilters = reactive({
   search: '',
 })
 
-// Budget form
 const budgetForm = reactive({
   category: '',
   limit: null,
@@ -44,12 +39,8 @@ const budgetForm = reactive({
   notes: '',
 })
 
-// Removed expense type & item forms
-
 const editingBudget = ref(null)
-// Removed editing refs for expense types/items
 
-// Computed properties
 const expenseCategories = computed(() => getCategoriesByType('expense'))
 
 const statusSlug = (label) => {
@@ -68,14 +59,12 @@ const statusSlug = (label) => {
 const filteredBudgets = computed(() => {
   let filtered = [...budgets.value]
 
-  // Filter by category
   if (budgetFilters.category) {
     filtered = filtered.filter((b) =>
       b.category.toLowerCase().includes(budgetFilters.category.toLowerCase()),
     )
   }
 
-  // Filter by status
   if (budgetFilters.status) {
     filtered = filtered.filter((b) => {
       const status = statusSlug(getBudgetStatus(b.percentage))
@@ -83,7 +72,6 @@ const filteredBudgets = computed(() => {
     })
   }
 
-  // Filter by search
   if (budgetFilters.search) {
     const searchLower = budgetFilters.search.toLowerCase()
     filtered = filtered.filter(
@@ -96,7 +84,6 @@ const filteredBudgets = computed(() => {
   return filtered
 })
 
-// Methods
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
@@ -135,7 +122,6 @@ const resetBudgetForm = () => {
   editingBudget.value = null
 }
 
-// Removed reset functions for expense types/items
 
 const saveBudget = async () => {
   try {
@@ -145,7 +131,6 @@ const saveBudget = async () => {
       await addBudget(budgetForm)
     }
 
-    // Close modal and reset form
     const modal = document.getElementById('budgetModal')
     const bsModal = bootstrap.Modal.getInstance(modal)
     bsModal.hide()
@@ -156,7 +141,6 @@ const saveBudget = async () => {
   }
 }
 
-// Removed save handlers for expense types/items
 
 const editBudget = (budget) => {
   editingBudget.value = budget
@@ -173,7 +157,6 @@ const editBudget = (budget) => {
   modal.show()
 }
 
-// Removed edit/open modal helpers for expense types/items
 
 const confirmDeleteBudget = async (id) => {
   if (confirm('Apakah Anda yakin ingin menghapus anggaran ini?')) {
@@ -186,14 +169,12 @@ const confirmDeleteBudget = async (id) => {
   }
 }
 
-// Removed delete confirmations for expense types/items
-
-onMounted(async () => {
-  await Promise.all([fetchBudgets(), fetchCategories()])
+onMounted(() => {
+  fetchBudgets()
+  fetchCategories()
 })
 
 onBeforeUnmount(() => {
-  // Reset loading state saat component akan di-destroy
   resetBudgetsLoading()
   resetCategoriesLoading()
 })
@@ -201,21 +182,17 @@ onBeforeUnmount(() => {
 
 <template>
   <AppLayout>
-    <!-- Loading State -->
     <div v-if="loading" class="text-center py-5">
       <div class="spinner-border" role="status">
         <span class="visually-hidden">Memuat...</span>
       </div>
     </div>
 
-    <!-- Error State -->
     <div v-if="error" class="alert alert-danger mx-2" role="alert">
       {{ error }}
     </div>
 
-    <!-- Content -->
     <div v-else>
-      <!-- Header -->
       <div class="row mb-3">
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center">
@@ -236,7 +213,6 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <!-- Summary Cards -->
       <div class="row mb-3 g-2">
         <div class="col-6 col-md-4 col-lg-3">
           <div class="card summary-card total-budget border-0">
@@ -278,7 +254,6 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <!-- Filters - Mobile Optimized -->
       <div class="row mb-0">
         <div class="col-12">
           <div class="card border-0">
@@ -350,7 +325,6 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <!-- Budget Cards -->
       <div class="row mb-4">
         <div class="col-12">
           <div class="row g-2">
@@ -430,7 +404,6 @@ onBeforeUnmount(() => {
             </div>
           </div>
 
-          <!-- Empty State for Budgets -->
           <div v-if="filteredBudgets.length === 0" class="col-12">
             <div class="empty-state py-0">
               <i class="bi bi-wallet text-muted"></i>
@@ -451,9 +424,6 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <!-- Expense Types Management removed -->
-
-      <!-- Budget Modal -->
       <div class="modal fade" id="budgetModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
@@ -547,13 +517,11 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <!-- Expense Type & Item Modals removed -->
     </div>
   </AppLayout>
 </template>
 
 <style scoped>
-/* Summary Cards */
 .summary-card {
   transition: all 0.3s ease;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
@@ -589,7 +557,6 @@ onBeforeUnmount(() => {
   opacity: 0.9;
 }
 
-/* Budget Cards */
 .budget-card {
   transition: all 0.3s ease;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
@@ -605,7 +572,6 @@ onBeforeUnmount(() => {
   font-size: 1.2rem;
 }
 
-/* Removed expense type related styles */
 
 .progress {
   border-radius: 4px;
@@ -622,7 +588,6 @@ onBeforeUnmount(() => {
   padding: 0.35em 0.65em;
 }
 
-/* Empty State */
 .empty-state {
   text-align: center;
   padding: 1rem 1rem;
@@ -633,7 +598,6 @@ onBeforeUnmount(() => {
   margin-bottom: 1rem;
 }
 
-/* General Styles */
 .card {
   border-radius: 12px;
 }
@@ -654,14 +618,12 @@ onBeforeUnmount(() => {
   width: 100%;
 }
 
-/* Collapsible filters for mobile */
 @media (max-width: 767px) {
   #filtersCollapse:not(.show) {
     display: none !important;
   }
 }
 
-/* Mobile specific styles */
 @media (max-width: 576px) {
   .summary-card .card-body {
     padding: 0.75rem !important;
@@ -718,7 +680,6 @@ onBeforeUnmount(() => {
     max-width: 120px;
   }
 
-  /* Removed mobile expense item dropdown styles */
   .modal-dialog {
     margin: 0.5rem;
     max-width: none;
@@ -736,7 +697,6 @@ onBeforeUnmount(() => {
   }
 }
 
-/* Tablet styles */
 @media (min-width: 577px) and (max-width: 768px) {
   .budget-card .card-body {
     padding: 1rem !important;
@@ -747,14 +707,12 @@ onBeforeUnmount(() => {
   }
 }
 
-/* Medium screens - 2 columns for budget cards */
 @media (min-width: 768px) and (max-width: 991px) {
   .budget-card {
     margin-bottom: 1rem;
   }
 }
 
-/* Smooth transitions */
 .collapse {
   transition: all 0.3s ease;
 }
@@ -767,7 +725,6 @@ onBeforeUnmount(() => {
   transform: scale(1.05);
 }
 
-/* Progress bar animations */
 @keyframes progressAnimation {
   0% {
     width: 0%;
@@ -781,7 +738,6 @@ onBeforeUnmount(() => {
   animation: progressAnimation 1s ease-in-out;
 }
 
-/* Status badge colors */
 .bg-success {
   background: linear-gradient(135deg, #28a745, #20c997) !important;
 }
@@ -794,7 +750,6 @@ onBeforeUnmount(() => {
   background: linear-gradient(135deg, #dc3545, #e83e8c) !important;
 }
 
-/* Responsive font sizes */
 @media (max-width: 576px) {
   h4 {
     font-size: 1.1rem;
@@ -813,7 +768,6 @@ onBeforeUnmount(() => {
   }
 }
 
-/* Loading and hover states */
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -824,7 +778,6 @@ onBeforeUnmount(() => {
   transition: transform 0.2s ease;
 }
 
-/* Custom scrollbar for mobile */
 @media (max-width: 576px) {
   .modal-body {
     max-height: 70vh;
@@ -854,7 +807,6 @@ onBeforeUnmount(() => {
   }
 }
 
-/* Color picker styles */
 .form-control-color {
   border-radius: 6px;
   border: 1px solid #ced4da;
@@ -865,27 +817,19 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
-/* Icon preview styles */
 .bg-light {
   background-color: #f8f9fa !important;
 }
 
-/* Quick select icons */
 .gap-1 {
   gap: 0.25rem;
 }
-
-/* Expense items scrollbar */
-/* Removed expense items scrollbar */
-
-/* Dropdown improvements */
 .dropdown-menu {
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border: none;
 }
 
-/* Removed expense item dropdown complex overrides */
 
 .dropdown-item {
   border-radius: 4px;
@@ -903,14 +847,12 @@ onBeforeUnmount(() => {
   color: #721c24 !important;
 }
 
-/* Form improvements */
 .form-control:focus,
 .form-select:focus {
   border-color: #86b7fe;
   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
-/* Modal improvements */
 .modal-content {
   border-radius: 12px;
   border: none;
@@ -927,7 +869,6 @@ onBeforeUnmount(() => {
   border-radius: 0 0 12px 12px;
 }
 
-/* Button improvements */
 .btn-outline-primary:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3);
@@ -938,17 +879,14 @@ onBeforeUnmount(() => {
   box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
 }
 
-/* Card header improvements */
 .card-header.bg-transparent {
   background-color: transparent !important;
 }
 
-/* Border improvements */
 .border-top {
   border-top: 1px solid #e9ecef !important;
 }
 
-/* Animation for new items */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -960,42 +898,30 @@ onBeforeUnmount(() => {
   }
 }
 
-/* Removed expense item animation */
-
-/* Hover effects for expense items */
-/* Removed expense item hover link styles */
-
-/* Loading spinner improvements */
 .spinner-border-sm {
   width: 1rem;
   height: 1rem;
 }
 
-/* Text truncation improvements */
 .text-truncate {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* Responsive improvements for expense type cards */
 @media (max-width: 576px) {
-  /* Removed mobile expense type card adjustments */
 }
 
-/* Focus improvements */
 .btn:focus,
 .form-control:focus,
 .form-select:focus {
   outline: none;
 }
 
-/* Accessibility improvements */
 .btn[aria-expanded='true'] {
   background-color: rgba(0, 0, 0, 0.1);
 }
 
-/* Print styles */
 @media print {
   .btn,
   .dropdown,

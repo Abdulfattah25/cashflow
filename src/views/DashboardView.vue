@@ -1,20 +1,16 @@
 <template>
   <AppLayout>
-    <!-- Loading State -->
     <div v-if="loading" class="text-center py-1">
       <div class="spinner-border" role="status">
         <span class="visually-hidden">Memuat...</span>
       </div>
     </div>
 
-    <!-- Error State -->
     <div v-if="error" class="alert alert-danger mx-2" role="alert">
       {{ error }}
     </div>
 
-    <!-- Content -->
     <div v-else>
-      <!-- Welcome Card -->
       <div class="row">
         <div class="col-12">
           <div class="welcome-card card border-0">
@@ -35,9 +31,7 @@
         </div>
       </div>
 
-      <!-- Stats Cards -->
       <div class="row mb-3 g-2">
-        <!-- Net Balance -->
         <div class="col-12 col-md-4 mb-1">
           <div class="stats-card card net border-0">
             <div class="card-body p-3 text-center">
@@ -52,7 +46,6 @@
           </div>
         </div>
 
-        <!-- Income -->
         <div class="col-6 col-md-4 mb-1">
           <div class="stats-card card income border-0">
             <div class="card-body p-3 text-center">
@@ -67,7 +60,6 @@
           </div>
         </div>
 
-        <!-- Expenses -->
         <div class="col-6 col-md-4 mb-1">
           <div class="stats-card card expense border-0">
             <div class="card-body p-3 text-center">
@@ -83,7 +75,6 @@
         </div>
       </div>
 
-      <!-- Quick Actions -->
       <div class="row my-2">
         <div class="col-12">
           <div class="card border-0">
@@ -138,9 +129,7 @@
         </div>
       </div>
 
-      <!-- Recent Transactions & Category Breakdown -->
       <div class="row g-2">
-        <!-- Recent Transactions -->
         <div class="col-12 mb-2">
           <div class="card border-0">
             <div
@@ -152,7 +141,6 @@
               </router-link>
             </div>
             <div class="card-body p-0">
-              <!-- Mobile Transaction List -->
               <div class="d-block">
                 <div
                   v-for="transaction in recentTransactions"
@@ -160,7 +148,6 @@
                   class="transaction-item p-3 border-bottom"
                 >
                   <div class="d-flex align-items-center gap-2">
-                    <!-- Icon -->
                     <div
                       class="transaction-icon flex-shrink-0"
                       :style="{
@@ -171,7 +158,6 @@
                       <i :class="transaction.icon"></i>
                     </div>
 
-                    <!-- Description + Date (flex-grow with min-width-0) -->
                     <div class="transaction-info flex-grow-1 min-w-0">
                       <div class="transaction-description text-truncate fw-medium">
                         {{ transaction.description }}
@@ -179,7 +165,6 @@
                       <small class="text-muted d-block">{{ formatDate(transaction.date) }}</small>
                     </div>
 
-                    <!-- Amount (fixed width, no shrink) -->
                     <div class="transaction-amount-box flex-shrink-0 text-end">
                       <span
                         class="fw-bold d-block"
@@ -197,7 +182,6 @@
                 </div>
               </div>
 
-              <!-- Empty State -->
               <div v-if="recentTransactions.length === 0" class="empty-state py-4">
                 <i class="bi bi-inbox"></i>
                 <h6>Belum ada transaksi</h6>
@@ -215,7 +199,6 @@
           </div>
         </div>
 
-        <!-- Category Breakdown -->
         <div class="col-12 mb-0">
           <div class="card border-0">
             <div class="card-header bg-transparent border-0 pb-2">
@@ -244,7 +227,13 @@
         </div>
       </div>
 
-      <!-- Transaction Modal -->
+      <BudgetAlertModal
+        v-if="showBudgetAlert"
+        :exceeded-budgets="exceededBudgets"
+        :hours-until-next="hoursUntilNextAlert"
+        @close="closeBudgetAlert"
+      />
+
       <div class="modal fade" id="transactionModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
@@ -352,7 +341,9 @@ import { ref, computed, onMounted, onUnmounted, onBeforeUnmount, reactive } from
 import { useAuthStore } from '@/stores/auth'
 import { useTransactions } from '@/composables/useTransactions'
 import { useCategories } from '@/composables/useCategories'
+import { useBudgets } from '@/composables/useBudgets'
 import AppLayout from '@/components/common/AppLayout.vue'
+import BudgetAlertModal from '@/components/common/BudgetAlertModal.vue'
 
 const authStore = useAuthStore()
 
@@ -377,6 +368,12 @@ const {
   resetLoadingState: resetCategoriesLoading,
 } = useCategories()
 
+const { exceededBudgets, fetchBudgets, resetLoadingState: resetBudgetsLoading } = useBudgets()
+
+// Budget alert modal state
+const showBudgetAlert = ref(false)
+const hoursUntilNextAlert = ref(0)
+
 // Form data
 const transactionForm = reactive({
   type: 'expense',
@@ -391,14 +388,11 @@ const transactionForm = reactive({
 const loading = computed(() => transactionsLoading.value || categoriesLoading.value)
 const error = computed(() => transactionsError.value || categoriesError.value)
 
-// Updated userName computation
 const displayUserName = computed(() => {
   const fullName = authStore.user?.user_metadata?.full_name
   if (fullName) {
-    // Return first name only for greeting
     return fullName.split(' ')[0]
   }
-  // Fallback to email username if no full name
   const email = authStore.user?.email
   if (email) {
     return email.split('@')[0]
@@ -406,7 +400,6 @@ const displayUserName = computed(() => {
   return 'User'
 })
 
-// Keep the old userName for backward compatibility if needed elsewhere
 const userName = computed(() => displayUserName.value)
 
 const topCategories = computed(() => {
@@ -435,7 +428,6 @@ const topCategories = computed(() => {
     .slice(0, 5)
 })
 
-// Methods (rest of the methods remain the same)
 const openTransactionModal = (type) => {
   transactionForm.type = type
   transactionForm.category = ''
@@ -445,7 +437,6 @@ const saveTransaction = async () => {
   try {
     await addTransaction(transactionForm)
 
-    // Reset form
     Object.assign(transactionForm, {
       type: 'expense',
       amount: null,
@@ -455,16 +446,11 @@ const saveTransaction = async () => {
       notes: '',
     })
 
-    // Close modal
     const modal = document.getElementById('transactionModal')
     const bsModal = bootstrap.Modal.getInstance(modal)
     bsModal.hide()
-
-    // Show success message (optional)
-    // You can add a toast notification here
   } catch (err) {
     console.error('Failed to save transaction:', err)
-    // Show error message to user
   }
 }
 
@@ -492,40 +478,59 @@ const getDayGreeting = () => {
   return 'Selamat Malam'
 }
 
-onMounted(async () => {
-  // Simple fetch with cache - realtime handled globally
-  try {
-    await Promise.all([fetchTransactions(), fetchCategories()])
-  } catch (err) {
-    console.error('Error loading dashboard data:', err)
+const checkAndShowBudgetAlert = () => {
+  if (exceededBudgets.value.length === 0) {
+    hoursUntilNextAlert.value = 0
+    return
   }
+
+  const now = Date.now()
+  const lastShown = parseInt(sessionStorage.getItem('budgetAlertTimestamp') || '0')
+
+  const hoursElapsed = (now - lastShown) / (1000 * 60 * 60)
+
+  if (lastShown === 0 || hoursElapsed >= 12) {
+    showBudgetAlert.value = true
+    sessionStorage.setItem('budgetAlertTimestamp', now.toString())
+    hoursUntilNextAlert.value = 12
+  } else {
+    const remaining = Math.max(0, 12 - hoursElapsed)
+    hoursUntilNextAlert.value = Math.ceil(remaining)
+  }
+}
+
+onMounted(() => {
+  fetchTransactions()
+  fetchCategories()
+  fetchBudgets().then(() => {
+    checkAndShowBudgetAlert()
+  })
 })
 
 onBeforeUnmount(() => {
-  // Reset loading state saat component akan di-destroy
   resetTransactionsLoading()
   resetCategoriesLoading()
+  resetBudgetsLoading()
 })
 
-onUnmounted(() => {
-  // No cleanup needed - realtime managed globally
-})
+const closeBudgetAlert = () => {
+  showBudgetAlert.value = false
+}
+
+onUnmounted(() => {})
 </script>
 
 <style scoped>
-/* Pastikan tidak ada elemen dashboard yang overlap */
 :deep(.app-layout) {
-  position: static !important; /* Ubah dari relative ke static */
+  position: static !important;
   z-index: auto !important;
 }
 
-/* Reset z-index untuk semua card */
 .card {
   position: relative;
   z-index: 1 !important;
 }
 
-/* Pastikan card lainnya juga tidak mengintervensi */
 .card {
   position: relative;
   z-index: 1;
@@ -664,7 +669,6 @@ onUnmounted(() => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Quick Action Buttons - Light Style */
 .quick-action-btn {
   border: 2px solid transparent;
   background: #f8f9fa;
@@ -785,7 +789,6 @@ onUnmounted(() => {
     font-size: 0.85rem;
   }
 
-  /* Critical fix for text truncation in recent transactions */
   .transaction-item .d-flex {
     gap: 0.5rem !important;
   }

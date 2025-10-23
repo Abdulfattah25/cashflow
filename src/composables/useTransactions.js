@@ -2,69 +2,51 @@ import { ref, computed } from 'vue'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/stores/auth'
 
+const transactionsCache = ref([])
+const cacheValid = ref(false)
+let realtimeChannel = null
+let fetchController = null
+let fetchPromise = null
+
 export function useTransactions() {
-  const transactions = ref([])
   const loading = ref(false)
   const error = ref(null)
   const authStore = useAuthStore()
 
-  // Cache management
-  const cacheValid = ref(false)
-  let realtimeChannel = null
-  let fetchController = null
-  let safetyTimeout = null
-
-  // Reset loading state (untuk navigation cleanup)
   const resetLoadingState = () => {
-    // IMPORTANT: Clear safety timeout FIRST!
-    if (safetyTimeout) {
-      clearTimeout(safetyTimeout)
-      safetyTimeout = null
-    }
-
-    // Then cancel any ongoing fetch
     if (fetchController) {
       fetchController.abort()
       fetchController = null
     }
-
-    // Reset loading state
     loading.value = false
     error.value = null
   }
 
-  // Fetch transactions from database
   const fetchTransactions = async ({ force = false } = {}) => {
-    // Use cache if valid and not forced
-    if (!force && cacheValid.value && transactions.value.length > 0) {
-      return
+    if (!force && cacheValid.value && transactionsCache.value.length > 0) {
+      return transactionsCache.value
     }
 
-    // Cancel previous fetch if still running
+    if (fetchPromise) {
+      return await fetchPromise
+    }
+
     if (fetchController) {
       fetchController.abort()
     }
-
-    // Clear any existing safety timeout BEFORE creating new one
-    if (safetyTimeout) {
-      clearTimeout(safetyTimeout)
-      safetyTimeout = null
-    }
-
     fetchController = new AbortController()
 
+    loading.value = true
+    error.value = null
+
+    fetchPromise = _performFetch()
+    const result = await fetchPromise
+
+    return result
+  }
+
+  const _performFetch = async () => {
     try {
-      loading.value = true
-      error.value = null
-
-      // Safety timeout: force reset loading after 10s
-      safetyTimeout = setTimeout(() => {
-        console.warn('Safety timeout: force reset loading state')
-        loading.value = false
-        fetchController = null
-        safetyTimeout = null // Clear reference
-      }, 10000)
-
       const { data, error: fetchError } = await supabase
         .from('transactions')
         .select(
@@ -79,11 +61,11 @@ export function useTransactions() {
         )
         .eq('user_id', authStore.user.id)
         .order('date', { ascending: false })
-        .abortSignal(fetchController.signal)
+        .abortSignal(fetchController?.signal)
 
       if (fetchError) throw fetchError
 
-      transactions.value = data.map((transaction) => ({
+      transactionsCache.value = data.map((transaction) => ({
         ...transaction,
         category: transaction.categories?.name || 'Unknown',
         color: transaction.categories?.color || '#6c757d',
@@ -91,32 +73,35 @@ export function useTransactions() {
       }))
 
       cacheValid.value = true
+      return transactionsCache.value
     } catch (err) {
       // Ignore abort errors
       if (err.name === 'AbortError') {
-        console.log('Fetch aborted (navigation or new request)')
-        return
+        return transactionsCache.value
       }
 
       error.value = err.message
       console.error('Error fetching transactions:', err)
 
-      // Keep cache valid if we have data (fallback to stale data)
-      if (transactions.value.length > 0) {
-        cacheValid.value = true
-      }
+      return transactionsCache.value
     } finally {
-      // Clear safety timeout
-      if (safetyTimeout) {
-        clearTimeout(safetyTimeout)
-        safetyTimeout = null
-      }
       loading.value = false
       fetchController = null
+      fetchPromise = null
     }
   }
 
-  // Setup realtime subscription
+  const getTransactions = () => {
+    if (cacheValid.value && transactionsCache.value.length > 0) {
+      return transactionsCache.value
+    }
+    fetchTransactions()
+    fetchTransactions()
+    return transactionsCache.value
+  }
+
+  const transactions = computed(() => transactionsCache.value)
+
   const setupRealtime = () => {
     if (!authStore.user?.id) return
 
@@ -141,24 +126,17 @@ export function useTransactions() {
           filter: `user_id=eq.${authStore.user.id}`,
         },
         async (payload) => {
-          console.log('Realtime event:', payload.eventType)
-
-          if (payload.eventType === 'INSERT') {
-            invalidateCache()
-            await fetchTransactions({ force: true })
-          } else if (payload.eventType === 'UPDATE') {
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             invalidateCache()
             await fetchTransactions({ force: true })
           } else if (payload.eventType === 'DELETE') {
-            transactions.value = transactions.value.filter((t) => t.id !== payload.old.id)
+            // Optimistic update: remove from cache immediately
+            transactionsCache.value = transactionsCache.value.filter((t) => t.id !== payload.old.id)
             invalidateCache()
           }
         },
       )
       .subscribe((status) => {
-        console.log('Realtime subscription status:', status)
-
-        // Handle reconnection
         if (status === 'CHANNEL_ERROR') {
           console.warn('Realtime channel error, attempting reconnect...')
           setTimeout(() => {
@@ -169,7 +147,6 @@ export function useTransactions() {
       })
   }
 
-  // Cleanup realtime subscription
   const cleanupRealtime = () => {
     if (realtimeChannel) {
       try {
@@ -181,12 +158,16 @@ export function useTransactions() {
     }
   }
 
-  // Invalidate cache
   const invalidateCache = () => {
     cacheValid.value = false
   }
 
-  // Add new transaction
+  const clearCache = () => {
+    transactionsCache.value = []
+    cacheValid.value = false
+    cleanupRealtime()
+  }
+
   const addTransaction = async (transactionData) => {
     try {
       loading.value = true
@@ -291,9 +272,11 @@ export function useTransactions() {
 
       if (deleteError) throw deleteError
 
-      // Optimistic update + invalidate cache
-      transactions.value = transactions.value.filter((t) => t.id !== id)
+      // Optimistic update: remove from cache immediately
+      transactionsCache.value = transactionsCache.value.filter((t) => t.id !== id)
       invalidateCache()
+
+      return true
     } catch (err) {
       error.value = err.message
       console.error('Error deleting transaction:', err)
@@ -305,11 +288,11 @@ export function useTransactions() {
 
   // Computed properties
   const summary = computed(() => {
-    const totalIncome = transactions.value
+    const totalIncome = transactionsCache.value
       .filter((t) => t.type === 'income')
       .reduce((sum, t) => sum + parseFloat(t.amount), 0)
 
-    const totalExpenses = transactions.value
+    const totalExpenses = transactionsCache.value
       .filter((t) => t.type === 'expense')
       .reduce((sum, t) => sum + parseFloat(t.amount), 0)
 
@@ -321,7 +304,7 @@ export function useTransactions() {
   })
 
   const recentTransactions = computed(() => {
-    return transactions.value.slice(0, 5)
+    return transactionsCache.value.slice(0, 5)
   })
 
   return {
@@ -331,9 +314,11 @@ export function useTransactions() {
     summary,
     recentTransactions,
     fetchTransactions,
+    getTransactions, // ✅ NEW: Instant cache access
     addTransaction,
     updateTransaction,
     deleteTransaction,
+    clearCache,
     invalidateCache,
     setupRealtime,
     cleanupRealtime,

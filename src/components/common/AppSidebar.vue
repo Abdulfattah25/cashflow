@@ -60,7 +60,7 @@
             :class="{ 'active bg-light text-primary': $route.name === 'goals' }"
           >
             <i class="bi bi-bullseye me-2"></i>
-            Goals
+            Target Financial
           </router-link>
         </li>
 

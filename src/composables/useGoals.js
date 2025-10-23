@@ -2,65 +2,123 @@ import { ref, computed } from 'vue'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import { useAuthStore } from '@/stores/auth'
 
+const goalsCache = ref([])
+const cacheValid = ref(false)
+let fetchPromise = null
+let fetchController = null
+
 export function useGoals() {
-  const goals = ref([])
   const loading = ref(false)
   const error = ref(null)
   const authStore = useAuthStore()
 
-  // Reset loading state
+  const goals = computed(() => goalsCache.value)
+
   const resetLoadingState = () => {
+    if (fetchController) {
+      fetchController.abort()
+      fetchController = null
+    }
     loading.value = false
     error.value = null
   }
 
-  // Fetch goals from database
-  const fetchGoals = async () => {
+  const fetchGoals = async ({ force = false } = {}) => {
     if (!isSupabaseConfigured || !authStore.user?.id) {
-      goals.value = []
-      return
+      goalsCache.value = []
+      return []
     }
+
     try {
+      if (!force && cacheValid.value && goalsCache.value.length > 0) {
+        return goalsCache.value
+      }
+
+      if (fetchPromise) {
+        return await fetchPromise
+      }
+
+      if (fetchController) {
+        fetchController.abort()
+      }
+      fetchController = new AbortController()
+
       loading.value = true
       error.value = null
 
-      const { data, error: fetchError } = await supabase
-        .from('goals')
-        .select('*')
-        .eq('user_id', authStore.user.id)
-        .order('created_at', { ascending: false })
+      fetchPromise = _performFetch()
+      const result = await fetchPromise
 
-      if (fetchError) throw fetchError
-
-      // Add calculated fields
-      goals.value = data.map((goal) => ({
-        ...goal,
-        percentage:
-          goal.target_amount > 0
-            ? Math.min(
-                100,
-                Math.round((Number(goal.current_amount || 0) / Number(goal.target_amount)) * 100),
-              )
-            : 0,
-        remainingAmount: goal.target_amount - goal.current_amount,
-        daysLeft: getDaysLeft(goal.target_date),
-        status: goal.is_completed ? 'completed' : 'active',
-        targetAmount: goal.target_amount,
-        currentAmount: goal.current_amount,
-        targetDate: goal.target_date,
-        title: goal.name,
-        description: goal.description || '',
-        type: goal.type || getGoalType(goal.name), // Gunakan type dari DB jika ada
-        priority: goal.priority || 'medium', // Gunakan priority dari DB jika ada
-        icon: getGoalIcon(goal.type || getGoalType(goal.name)),
-        color: getGoalColor(goal.type || getGoalType(goal.name)),
-      }))
+      return result
     } catch (err) {
+      if (err.name === 'AbortError') {
+        return goalsCache.value
+      }
       error.value = err.message
       console.error('Error fetching goals:', err)
+      return goalsCache.value
     } finally {
       loading.value = false
+      fetchController = null
+      fetchPromise = null
     }
+  }
+
+  const _performFetch = async () => {
+    const { data, error: fetchError } = await supabase
+      .from('goals')
+      .select('*')
+      .eq('user_id', authStore.user.id)
+      .order('created_at', { ascending: false })
+      .abortSignal(fetchController?.signal)
+
+    if (fetchError) throw fetchError
+
+    goalsCache.value = data.map((goal) => ({
+      ...goal,
+      percentage:
+        goal.target_amount > 0
+          ? Math.min(
+              100,
+              Math.round((Number(goal.current_amount || 0) / Number(goal.target_amount)) * 100),
+            )
+          : 0,
+      remainingAmount: goal.target_amount - goal.current_amount,
+      daysLeft: getDaysLeft(goal.target_date),
+      status: goal.is_completed ? 'completed' : 'active',
+      targetAmount: goal.target_amount,
+      currentAmount: goal.current_amount,
+      targetDate: goal.target_date,
+      title: goal.name,
+      description: goal.description || '',
+      type: goal.type || getGoalType(goal.name),
+      priority: goal.priority || 'medium',
+      icon: getGoalIcon(goal.type || getGoalType(goal.name)),
+      color: getGoalColor(goal.type || getGoalType(goal.name)),
+    }))
+
+    cacheValid.value = true
+    return goalsCache.value
+  }
+
+  // ✅ NEW: Get goals from cache instantly
+  const getGoals = () => {
+    if (cacheValid.value && goalsCache.value.length > 0) {
+      return goalsCache.value
+    }
+    fetchGoals() // Background refresh
+    return goalsCache.value
+  }
+
+  // Invalidate cache
+  const invalidateCache = () => {
+    cacheValid.value = false
+  }
+
+  // Clear cache
+  const clearCache = () => {
+    goalsCache.value = []
+    cacheValid.value = false
   }
 
   // Add new goal
@@ -93,7 +151,8 @@ export function useGoals() {
 
       if (insertError) throw insertError
 
-      await fetchGoals()
+      invalidateCache()
+      await fetchGoals({ force: true })
       return data && data[0]
     } catch (err) {
       error.value = err.message || 'Gagal menambah target'
@@ -214,7 +273,8 @@ export function useGoals() {
         notes: progressData.notes || '',
       })
 
-      await fetchGoals()
+      invalidateCache()
+      await fetchGoals({ force: true })
       return data[0]
     } catch (err) {
       error.value = err.message || 'Gagal menambah progres'
@@ -267,10 +327,10 @@ export function useGoals() {
 
   // Computed properties
   const goalSummary = computed(() => {
-    const totalGoals = goals.value.length
-    const completedGoals = goals.value.filter((g) => g.is_completed).length
-    const totalTarget = goals.value.reduce((sum, g) => sum + parseFloat(g.target_amount), 0)
-    const totalSaved = goals.value.reduce((sum, g) => sum + parseFloat(g.current_amount), 0)
+    const totalGoals = goalsCache.value.length
+    const completedGoals = goalsCache.value.filter((g) => g.is_completed).length
+    const totalTarget = goalsCache.value.reduce((sum, g) => sum + parseFloat(g.target_amount), 0)
+    const totalSaved = goalsCache.value.reduce((sum, g) => sum + parseFloat(g.current_amount), 0)
 
     return {
       totalGoals,
@@ -286,10 +346,13 @@ export function useGoals() {
     error,
     goalSummary,
     fetchGoals,
+    getGoals, // ✅ NEW: Instant cache access
     addGoal,
     updateGoal,
     deleteGoal,
     addProgress,
+    invalidateCache,
+    clearCache,
     resetLoadingState,
   }
 }

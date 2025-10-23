@@ -14,7 +14,11 @@
     </div>
 
     <div v-else>
-      <div v-if="!authStore.isAuthenticated" class="landing-container">
+      <!-- Public routes (landing, reset-password) - No layout -->
+      <router-view v-if="isPublicRoute" />
+
+      <!-- Guest routes (not authenticated) - Landing with auth modal -->
+      <div v-else-if="!authStore.isAuthenticated" class="landing-container">
         <LandingPage @show-auth="showAuthModal" />
         <AuthModal
           v-if="showAuth"
@@ -23,7 +27,8 @@
         />
       </div>
 
-      <AppLayout v-else-if="authStore.isAuthenticated">
+      <!-- Authenticated routes - App layout with sidebar/header -->
+      <AppLayout v-else>
         <router-view />
       </AppLayout>
 
@@ -39,8 +44,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useCategories } from '@/composables/useCategories'
 import { useTransactions } from '@/composables/useTransactions'
@@ -50,25 +55,56 @@ import AuthModal from '@/components/auth/AuthModal.vue'
 import AppLayout from '@/components/common/AppLayout.vue'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 const loading = ref(true)
 const showAuth = ref(false)
+const authHandled = ref(false) // Flag to prevent duplicate auth handling
+
+// Check if current route is public (should render without layout)
+const isPublicRoute = computed(() => {
+  // Direct path check for immediate detection (prevents landing page flash)
+  const publicPaths = ['/reset-password']
+  if (publicPaths.includes(route.path)) return true
+
+  // Also check meta for other public routes
+  return route.meta?.public === true
+})
 
 const showAuthModal = () => {
   showAuth.value = true
 }
 
 const handleAuthSuccess = () => {
+  authHandled.value = true
   showAuth.value = false
-  router.push('/')
+
+  document.body.classList.remove('modal-open')
+  document.body.style.overflow = ''
+  document.body.style.paddingRight = ''
+
+  const backdrops = document.querySelectorAll('.modal-backdrop')
+  backdrops.forEach((backdrop) => backdrop.remove())
+
+  if (router.currentRoute.value.path === '/') {
+    router.push('/dashboard')
+  }
   setTimeout(() => {
     showToast('Login berhasil', 'success')
-  }, 100)
+    authHandled.value = false
+  }, 500)
 }
 
 const handleCloseModal = () => {
   showAuth.value = false
+
+  document.body.classList.remove('modal-open')
+  document.body.style.overflow = ''
+  document.body.style.paddingRight = ''
+
+  const backdrops = document.querySelectorAll('.modal-backdrop')
+  backdrops.forEach((backdrop) => backdrop.remove())
 }
 
 const initializeApp = async () => {
@@ -81,19 +117,36 @@ const initializeApp = async () => {
       if (event === 'SIGNED_IN' && session?.user) {
         await authStore.fetchUserProfile(session.user)
         showAuth.value = false
-        // Only redirect if not already on an auth-required page
-        if (!router.currentRoute.value.meta.requiresAuth) {
-          router.push('/')
+
+        // Only handle redirect if not already handled by handleAuthSuccess
+        if (!authHandled.value) {
+          // Redirect to dashboard after profile is loaded
+          if (
+            router.currentRoute.value.path === '/' ||
+            router.currentRoute.value.meta.requiresGuest
+          ) {
+            router.push('/dashboard')
+          }
+          setTimeout(() => showToast('Login berhasil', 'success'), 500)
         }
-        setTimeout(() => showToast('Login berhasil', 'success'), 500)
       }
 
       if (event === 'SIGNED_OUT') {
-        // Clear categories cache on logout
-        const { clearCache } = useCategories()
-        clearCache()
+        const { clearCache: clearCategoriesCache } = useCategories()
+        const { clearCache: clearTransactionsCache } = useTransactions()
 
-        // Only redirect if currently on an auth-required page
+        clearCategoriesCache()
+        clearTransactionsCache()
+
+        showAuth.value = false
+
+        document.body.classList.remove('modal-open')
+        document.body.style.overflow = ''
+        document.body.style.paddingRight = ''
+
+        const backdrops = document.querySelectorAll('.modal-backdrop')
+        backdrops.forEach((backdrop) => backdrop.remove())
+
         if (router.currentRoute.value.meta.requiresAuth) {
           router.push('/')
         }
@@ -171,20 +224,16 @@ watch(
 
 // Setup global realtime subscriptions
 const setupGlobalRealtime = () => {
-  console.log('Setting up global realtime subscriptions...')
   const { setupRealtime: setupTransactionsRealtime } = useTransactions()
   const { setupRealtime: setupCategoriesRealtime } = useCategories()
 
   // Setup realtime for all data sources
   setupTransactionsRealtime()
   setupCategoriesRealtime()
-
-  console.log('Global realtime subscriptions active')
 }
 
 // Cleanup global realtime subscriptions
 const cleanupGlobalRealtime = () => {
-  console.log('Cleaning up global realtime subscriptions...')
   const { cleanupRealtime: cleanupTransactions } = useTransactions()
   const { cleanupRealtime: cleanupCategories } = useCategories()
 

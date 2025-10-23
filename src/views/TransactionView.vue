@@ -773,16 +773,46 @@ const exportToPDF = async () => {
 
     // Add date range info
     doc.setFontSize(11)
-    const dateRangeText =
-      filters.dateRange === 'this-month'
-        ? 'Bulan Ini'
-        : filters.dateRange === 'last-month'
-          ? 'Bulan Lalu'
-          : filters.dateRange === 'this-year'
-            ? 'Tahun Ini'
-            : filters.dateRange === 'custom'
-              ? `${filters.customStartDate || ''} - ${filters.customEndDate || ''}`
-              : 'Semua'
+
+    // Helper function untuk mendapatkan nama periode yang jelas
+    const getPeriodName = () => {
+      const now = new Date()
+      const monthNames = [
+        'Januari',
+        'Februari',
+        'Maret',
+        'April',
+        'Mei',
+        'Juni',
+        'Juli',
+        'Agustus',
+        'September',
+        'Oktober',
+        'November',
+        'Desember',
+      ]
+
+      if (filters.dateRange === 'this-month') {
+        return `Bulan ${monthNames[now.getMonth()]} ${now.getFullYear()}`
+      } else if (filters.dateRange === 'last-month') {
+        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+        return `Bulan ${monthNames[lastMonth.getMonth()]} ${lastMonth.getFullYear()}`
+      } else if (filters.dateRange === 'this-year') {
+        return `Tahun ${now.getFullYear()}`
+      } else if (filters.dateRange === 'custom') {
+        if (filters.customStartDate && filters.customEndDate) {
+          return `${new Date(filters.customStartDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} - ${new Date(filters.customEndDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`
+        } else if (filters.customStartDate) {
+          return `Sejak ${new Date(filters.customStartDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`
+        } else if (filters.customEndDate) {
+          return `Sampai ${new Date(filters.customEndDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`
+        }
+        return 'Rentang Kustom'
+      }
+      return 'Semua Periode'
+    }
+
+    const dateRangeText = getPeriodName()
     doc.text(`Periode: ${dateRangeText}`, 14, 28)
 
     // Add summary
@@ -843,13 +873,11 @@ watch(
   },
 )
 
-onMounted(async () => {
-  // Simple fetch with cache - realtime handled globally
-  try {
-    await Promise.all([fetchTransactions(), fetchCategories()])
-  } catch (err) {
-    console.error('Error loading transaction data:', err)
-  }
+// ✅ OPTIMIZED: Non-blocking mount - instant render with cache
+onMounted(() => {
+  // Fetch in background, no await - instant render with cached data
+  fetchTransactions()
+  fetchCategories()
 })
 
 onBeforeUnmount(() => {

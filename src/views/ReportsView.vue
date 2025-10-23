@@ -185,14 +185,14 @@ const generateReportData = () => {
   }
 }
 
-// Fungsi export PDF
+// Fungsi export PDF - FIT TO ONE PAGE
 const exportReport = async () => {
   try {
     const element = document.getElementById('report-content')
 
-    // Gunakan html2canvas dengan onclone callback
+    // Gunakan html2canvas dengan scale yang lebih rendah untuk 1 halaman
     const canvas = await html2canvas(element, {
-      scale: 3,
+      scale: 2, // Reduced from 3 to 2 for better fit
       logging: false,
       useCORS: true,
       ignoreElements: (el) => el.classList.contains('no-export'),
@@ -216,22 +216,37 @@ const exportReport = async () => {
     })
 
     const pdf = new jsPDF('p', 'mm', 'a4')
-    const imgData = canvas.toDataURL('image/jpeg', 0.7)
-    const imgWidth = 210 // A4 width in mm
-    const pageHeight = 295 // A4 height in mm
-    const imgHeight = (canvas.height * imgWidth) / canvas.width
-    let heightLeft = imgHeight
-    let position = 0
+    const imgData = canvas.toDataURL('image/jpeg', 0.8) // Increased quality
 
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-    heightLeft -= pageHeight
+    // A4 dimensions in mm
+    const pdfWidth = 210
+    const pdfHeight = 297
 
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight
-      pdf.addPage()
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-      heightLeft -= pageHeight
+    // Add margins
+    const margin = 10 // 10mm margin on each side
+    const contentWidth = pdfWidth - margin * 2
+    const contentHeight = pdfHeight - margin * 2
+
+    // Calculate dimensions to fit content in one page
+    const imgWidth = canvas.width
+    const imgHeight = canvas.height
+    const imgRatio = imgWidth / imgHeight
+
+    let finalWidth = contentWidth
+    let finalHeight = contentWidth / imgRatio
+
+    // If height exceeds page, scale based on height instead
+    if (finalHeight > contentHeight) {
+      finalHeight = contentHeight
+      finalWidth = contentHeight * imgRatio
     }
+
+    // Center the image on the page
+    const xOffset = margin + (contentWidth - finalWidth) / 2
+    const yOffset = margin + (contentHeight - finalHeight) / 2
+
+    // Add single page with fitted image
+    pdf.addImage(imgData, 'JPEG', xOffset, yOffset, finalWidth, finalHeight)
 
     pdf.save(`laporan-keuangan-${new Date().toISOString().split('T')[0]}.pdf`)
   } catch (error) {
@@ -251,6 +266,118 @@ const getFormattedPeriod = () => {
     'this-year': 'Tahun Ini',
   }
   return map[reportFilters.period] || reportFilters.period
+}
+
+// Fungsi export monthly data ke PDF
+const exportMonthlyDataPDF = async () => {
+  try {
+    if (monthlyData.value.length === 0) {
+      alert('Tidak ada data bulanan untuk di-export')
+      return
+    }
+
+    const pdf = new jsPDF('p', 'mm', 'a4')
+    const pageWidth = 210
+    const pageHeight = 297
+    const margin = 15
+    const contentWidth = pageWidth - margin * 2
+
+    // Header
+    pdf.setFontSize(18)
+    pdf.setFont(undefined, 'bold')
+    pdf.text('Perbandingan Bulanan', pageWidth / 2, margin + 5, { align: 'center' })
+
+    pdf.setFontSize(10)
+    pdf.setFont(undefined, 'normal')
+    pdf.text(`Periode: ${getFormattedPeriod()}`, pageWidth / 2, margin + 12, { align: 'center' })
+    pdf.text(`Dibuat: ${new Date().toLocaleDateString('id-ID')}`, pageWidth / 2, margin + 17, {
+      align: 'center',
+    })
+
+    // Table setup
+    let yPos = margin + 25
+    const colWidths = [40, 35, 35, 35, 35]
+    const headers = ['Bulan', 'Pemasukan', 'Pengeluaran', 'Jumlah Bersih', 'Tingkat Tabungan']
+
+    // Draw table header
+    pdf.setFillColor(102, 126, 234)
+    pdf.rect(margin, yPos, contentWidth, 8, 'F')
+
+    pdf.setTextColor(255, 255, 255)
+    pdf.setFontSize(9)
+    pdf.setFont(undefined, 'bold')
+
+    let xPos = margin + 2
+    headers.forEach((header, i) => {
+      pdf.text(header, xPos, yPos + 5.5)
+      xPos += colWidths[i]
+    })
+
+    yPos += 8
+
+    // Draw table rows
+    pdf.setTextColor(0, 0, 0)
+    pdf.setFont(undefined, 'normal')
+    pdf.setFontSize(8)
+
+    monthlyData.value.forEach((month, index) => {
+      // Alternate row colors
+      if (index % 2 === 0) {
+        pdf.setFillColor(248, 249, 250)
+        pdf.rect(margin, yPos, contentWidth, 7, 'F')
+      }
+
+      xPos = margin + 2
+
+      // Bulan
+      pdf.text(month.month, xPos, yPos + 4.5)
+      xPos += colWidths[0]
+
+      // Pemasukan
+      pdf.setTextColor(40, 167, 69)
+      pdf.text(formatCurrency(month.income), xPos, yPos + 4.5)
+      xPos += colWidths[1]
+
+      // Pengeluaran
+      pdf.setTextColor(220, 53, 69)
+      pdf.text(formatCurrency(month.expenses), xPos, yPos + 4.5)
+      xPos += colWidths[2]
+
+      // Jumlah Bersih
+      pdf.setTextColor(
+        month.net >= 0 ? 40 : 220,
+        month.net >= 0 ? 167 : 53,
+        month.net >= 0 ? 69 : 69,
+      )
+      pdf.text(formatCurrency(month.net), xPos, yPos + 4.5)
+      xPos += colWidths[3]
+
+      // Tingkat Tabungan
+      pdf.setTextColor(0, 0, 0)
+      pdf.text(`${month.savingsRate}%`, xPos, yPos + 4.5)
+
+      yPos += 7
+
+      // Check if need new page
+      if (yPos > pageHeight - margin - 20) {
+        pdf.addPage()
+        yPos = margin
+      }
+    })
+
+    // Footer
+    pdf.setFontSize(8)
+    pdf.setTextColor(128, 128, 128)
+    pdf.text(`CashflowKu - © ${new Date().getFullYear()}`, pageWidth / 2, pageHeight - margin, {
+      align: 'center',
+    })
+
+    // Save PDF
+    pdf.save(`perbandingan-bulanan-${new Date().toISOString().split('T')[0]}.pdf`)
+  } catch (error) {
+    console.error('Export PDF failed:', error)
+    alert('Gagal mengekspor data ke PDF')
+  }
 }
 
 // Watch for filter changes
@@ -468,15 +595,15 @@ onBeforeUnmount(() => {
         <div class="report-section">
           <div class="row mb-3 g-2">
             <div class="col-12">
-              <div class="card border-0 h-100">
-                <div class="card-header bg-transparent border-0 p-3">
+              <div class="border-0 h-100">
+                <div class="bg-transparent border-0 p-3">
                   <h6 class="card-title mb-0 fw-medium">Rincian Kategori</h6>
                 </div>
                 <div class="card-body p-2">
                   <div class="row g-2">
                     <div class="col-12 col-md-6">
                       <div class="card border-0 h-100">
-                        <div class="card-header bg-transparent border-0 p-2">
+                        <div class="bg-transparent border-0 p-2">
                           <h6 class="text-success mb-0 d-flex align-items-center">
                             <i class="bi bi-arrow-up-circle me-2"></i>
                             Kategori Pemasukan
@@ -524,7 +651,7 @@ onBeforeUnmount(() => {
                     <!-- Expense Categories -->
                     <div class="col-12 col-md-6">
                       <div class="card border-0 h-100">
-                        <div class="card-header bg-transparent border-0 p-2">
+                        <div class="bg-transparent border-0 p-2">
                           <h6 class="text-danger mb-0 d-flex align-items-center">
                             <i class="bi bi-arrow-up-circle me-2"></i>
                             Kategori Pengeluaran
@@ -586,8 +713,14 @@ onBeforeUnmount(() => {
                 >
                   <!-- Consistent padding -->
                   <h6 class="card-title mb-0 fw-medium">Perbandingan Bulanan</h6>
-                  <button class="btn btn-sm btn-outline-secondary d-md-none">
-                    <i class="bi bi-download"></i>
+                  <button
+                    class="btn btn-sm btn-outline-primary"
+                    @click="exportMonthlyDataPDF"
+                    title="Download data bulanan (PDF)"
+                  >
+                    <i class="bi bi-file-earmark-pdf me-1 d-none d-md-inline"></i>
+                    <span class="d-none d-md-inline">PDF</span>
+                    <i class="bi bi-file-earmark-pdf d-md-none"></i>
                   </button>
                 </div>
                 <div class="card-body p-0">
@@ -1235,11 +1368,6 @@ onBeforeUnmount(() => {
 
 .progress-bar {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-/* Better visual hierarchy */
-.card-header {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .card-title {

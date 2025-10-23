@@ -35,6 +35,9 @@
     "globals": "^16.2.0",
     "prettier": "3.5.3",
     "vite": "^7.0.0",
-    "vite-plugin-vue-devtools": "^7.7.7"
+    "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-pwa": "^1.1.0",
+    "vite-plugin-vue-devtools": "^7.7.7",
+    "workbox-window": "^7.3.0"
   }
 }
