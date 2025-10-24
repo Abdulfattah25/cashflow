@@ -19,7 +19,10 @@ const {
   barChartData,
   pieChartData,
   fetchReportData,
+  getReportData, // ✅ NEW: Instant cache access
   resetLoadingState,
+  setupRealtime, // ✅ NEW
+  cleanupRealtime, // ✅ NEW
 } = useReports()
 
 // Report filters
@@ -166,7 +169,12 @@ const formatCurrency = (amount) => {
   }).format(amount)
 }
 
+// ✅ OPTIMIZED: Use cache first, then fetch in background
 const updateChartData = async () => {
+  // Get cached data immediately (no loading state)
+  getReportData(reportFilters.period, reportFilters.startDate, reportFilters.endDate)
+
+  // Fetch fresh data in background
   await fetchReportData(reportFilters.period, reportFilters.startDate, reportFilters.endDate)
 }
 
@@ -397,8 +405,17 @@ watch(
   },
 )
 
+// ✅ OPTIMIZED: Load immediately from cache on mount
 onMounted(async () => {
+  // Get cached data first (instant display)
+  getReportData(reportFilters.period, reportFilters.startDate, reportFilters.endDate)
+
+  // Setup realtime updates
+  setupRealtime()
+
+  // Then fetch fresh data in background
   await updateChartData()
+
   showFilter.value = window.innerWidth >= 768
   window.addEventListener('resize', () => {
     showFilter.value = window.innerWidth >= 768
@@ -406,7 +423,8 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  // Reset loading state saat component akan di-destroy
+  // Cleanup
+  cleanupRealtime()
   resetLoadingState()
 })
 </script>

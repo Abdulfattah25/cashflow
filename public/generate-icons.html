@@ -19,13 +19,13 @@
       .icon-box {
         width: 512px;
         height: 512px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #0f7b0f 0%, #16a085 35%, #27ae60 70%, #2ecc71 100%);
         border-radius: 100px;
         display: flex;
         align-items: center;
         justify-content: center;
         position: relative;
-        box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 20px 60px rgba(39, 174, 96, 0.4);
       }
       .wallet {
         width: 340px;
@@ -50,7 +50,7 @@
         left: 40px;
         right: 40px;
         height: 60px;
-        background: rgba(102, 126, 234, 0.2);
+        background: rgba(39, 174, 96, 0.2);
         border-radius: 10px;
       }
       .dollar {
@@ -58,15 +58,15 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        font-size: 120px;
+        font-size: 100px;
         font-weight: bold;
-        color: #667eea;
+        color: #27ae60;
       }
       .dot {
         position: absolute;
         width: 12px;
         height: 12px;
-        background: rgba(102, 126, 234, 0.5);
+        background: rgba(39, 174, 96, 0.5);
         border-radius: 50%;
       }
       .instructions {
@@ -88,6 +88,11 @@
 
     <div class="instructions">
       <h2>📋 Cara Generate Icons:</h2>
+      <p>
+        <strong
+          >Icon sudah menggunakan gradient hijau (--gradient-green) dan simbol Rupiah (Rp)</strong
+        >
+      </p>
       <ol>
         <li>Buka file <code>public/pwa-icon.svg</code> di browser atau editor SVG</li>
         <li>
@@ -135,7 +140,7 @@
         <div class="wallet">
           <div class="wallet-flap"></div>
           <div class="card-slot"></div>
-          <div class="dollar">$</div>
+          <div class="dollar">Rp</div>
           <div class="dot" style="top: 40px; left: 40px"></div>
           <div class="dot" style="top: 40px; right: 40px"></div>
           <div class="dot" style="bottom: 40px; left: 40px"></div>
@@ -154,7 +159,7 @@
           padding: 10px 20px;
           font-size: 16px;
           cursor: pointer;
-          background: #667eea;
+          background: linear-gradient(135deg, #0f7b0f 0%, #27ae60 50%, #2ecc71 100%);
           color: white;
           border: none;
           border-radius: 5px;
@@ -184,10 +189,12 @@
         canvas.height = size
         const ctx = canvas.getContext('2d')
 
-        // Background gradient
+        // Background gradient (Green)
         const gradient = ctx.createLinearGradient(0, 0, size, size)
-        gradient.addColorStop(0, '#667eea')
-        gradient.addColorStop(1, '#764ba2')
+        gradient.addColorStop(0, '#0f7b0f')
+        gradient.addColorStop(0.35, '#16a085')
+        gradient.addColorStop(0.7, '#27ae60')
+        gradient.addColorStop(1, '#2ecc71')
 
         // Rounded rectangle
         const radius = size * 0.2
@@ -239,12 +246,12 @@
         ctx.quadraticCurveTo(walletX, walletY, walletX + walletRadius, walletY)
         ctx.fill()
 
-        // Dollar sign
-        ctx.fillStyle = '#667eea'
-        ctx.font = `bold ${size * 0.35}px Arial`
+        // Rupiah text
+        ctx.fillStyle = '#27ae60'
+        ctx.font = `bold ${size * 0.28}px Arial`
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
-        ctx.fillText('$', size / 2, size / 2)
+        ctx.fillText('Rp', size / 2, size / 2)
 
         // Download
         canvas.toBlob((blob) => {

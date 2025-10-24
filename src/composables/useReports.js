@@ -2,24 +2,79 @@ import { ref, computed } from 'vue'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/stores/auth'
 
+// ✅ Cache global untuk reports (seperti di useTransactions)
+const transactionsCache = ref([])
+const cacheValid = ref(false)
+const currentFilters = ref({ period: '', startDate: '', endDate: '' })
+let realtimeChannel = null
+let fetchController = null
+let fetchPromise = null
+
 export function useReports() {
-  const transactions = ref([])
   const loading = ref(false)
   const error = ref(null)
   const authStore = useAuthStore()
 
   // Reset loading state
   const resetLoadingState = () => {
+    if (fetchController) {
+      fetchController.abort()
+      fetchController = null
+    }
     loading.value = false
     error.value = null
   }
 
+  // ✅ NEW: Check if filters changed
+  const filtersChanged = (period, startDate, endDate) => {
+    return (
+      currentFilters.value.period !== period ||
+      currentFilters.value.startDate !== startDate ||
+      currentFilters.value.endDate !== endDate
+    )
+  }
+
+  // ✅ NEW: Instant access to cached data
+  const getReportData = (period = 'this-month', startDate = null, endDate = null) => {
+    // If cache valid and filters same, return immediately
+    if (cacheValid.value && !filtersChanged(period, startDate, endDate)) {
+      return transactionsCache.value
+    }
+
+    // Otherwise fetch in background
+    fetchReportData(period, startDate, endDate)
+    return transactionsCache.value
+  }
+
   // Fetch transactions for reports
   const fetchReportData = async (period = 'this-month', startDate = null, endDate = null) => {
-    try {
-      loading.value = true
-      error.value = null
+    // ✅ If cache valid and same filters, skip fetch
+    if (cacheValid.value && !filtersChanged(period, startDate, endDate)) {
+      return transactionsCache.value
+    }
 
+    // ✅ Prevent duplicate requests
+    if (fetchPromise) {
+      return await fetchPromise
+    }
+
+    if (fetchController) {
+      fetchController.abort()
+    }
+    fetchController = new AbortController()
+
+    loading.value = true
+    error.value = null
+
+    fetchPromise = _performFetch(period, startDate, endDate)
+    const result = await fetchPromise
+
+    return result
+  }
+
+  // ✅ NEW: Separate fetch logic
+  const _performFetch = async (period, startDate, endDate) => {
+    try {
       let query = supabase
         .from('transactions')
         .select(
@@ -34,6 +89,7 @@ export function useReports() {
         )
         .eq('user_id', authStore.user.id)
         .order('date', { ascending: false })
+        .abortSignal(fetchController?.signal)
 
       // Apply date filters
       if (period === 'custom' && startDate && endDate) {
@@ -47,17 +103,31 @@ export function useReports() {
 
       if (fetchError) throw fetchError
 
-      transactions.value = data.map((transaction) => ({
+      transactionsCache.value = data.map((transaction) => ({
         ...transaction,
         category: transaction.categories?.name || 'Unknown',
         color: transaction.categories?.color || '#6c757d',
         icon: transaction.categories?.icon || 'bi-circle',
       }))
+
+      // ✅ Update cache state
+      cacheValid.value = true
+      currentFilters.value = { period, startDate, endDate }
+
+      return transactionsCache.value
     } catch (err) {
+      // Ignore abort errors
+      if (err.name === 'AbortError') {
+        return transactionsCache.value
+      }
+
       error.value = err.message
       console.error('Error fetching report data:', err)
+      return transactionsCache.value
     } finally {
       loading.value = false
+      fetchController = null
+      fetchPromise = null
     }
   }
 
@@ -104,13 +174,77 @@ export function useReports() {
     }
   }
 
+  // ✅ NEW: Setup realtime updates (like useTransactions)
+  const setupRealtime = () => {
+    if (!authStore.user?.id) return
+
+    if (realtimeChannel) {
+      cleanupRealtime()
+    }
+
+    realtimeChannel = supabase
+      .channel(`reports:${authStore.user.id}`, {
+        config: {
+          broadcast: { self: false },
+          presence: { key: authStore.user.id },
+        },
+      })
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions',
+          filter: `user_id=eq.${authStore.user.id}`,
+        },
+        async () => {
+          // Invalidate cache when data changes
+          invalidateCache()
+          await fetchReportData(
+            currentFilters.value.period || 'this-month',
+            currentFilters.value.startDate,
+            currentFilters.value.endDate,
+          )
+        },
+      )
+      .subscribe()
+  }
+
+  // ✅ NEW: Cleanup realtime
+  const cleanupRealtime = () => {
+    if (realtimeChannel) {
+      try {
+        supabase.removeChannel(realtimeChannel)
+      } catch (err) {
+        console.warn('Error removing channel:', err)
+      }
+      realtimeChannel = null
+    }
+  }
+
+  // ✅ NEW: Invalidate cache
+  const invalidateCache = () => {
+    cacheValid.value = false
+  }
+
+  // ✅ NEW: Clear cache
+  const clearCache = () => {
+    transactionsCache.value = []
+    cacheValid.value = false
+    currentFilters.value = { period: '', startDate: '', endDate: '' }
+    cleanupRealtime()
+  }
+
+  // ✅ Use cached data instead of reactive ref
+  const transactions = computed(() => transactionsCache.value)
+
   // Computed properties for reports
   const reportSummary = computed(() => {
-    const totalIncome = transactions.value
+    const totalIncome = transactionsCache.value
       .filter((t) => t.type === 'income')
       .reduce((sum, t) => sum + parseFloat(t.amount), 0)
 
-    const totalExpenses = transactions.value
+    const totalExpenses = transactionsCache.value
       .filter((t) => t.type === 'expense')
       .reduce((sum, t) => sum + parseFloat(t.amount), 0)
 
@@ -127,7 +261,7 @@ export function useReports() {
 
   const incomeCategories = computed(() => {
     const categoryTotals = {}
-    const incomeTransactions = transactions.value.filter((t) => t.type === 'income')
+    const incomeTransactions = transactionsCache.value.filter((t) => t.type === 'income')
     const totalIncome = reportSummary.value.totalIncome
 
     incomeTransactions.forEach((transaction) => {
@@ -152,7 +286,7 @@ export function useReports() {
 
   const expenseCategories = computed(() => {
     const categoryTotals = {}
-    const expenseTransactions = transactions.value.filter((t) => t.type === 'expense')
+    const expenseTransactions = transactionsCache.value.filter((t) => t.type === 'expense')
     const totalExpenses = reportSummary.value.totalExpenses
 
     expenseTransactions.forEach((transaction) => {
@@ -178,7 +312,7 @@ export function useReports() {
   const monthlyData = computed(() => {
     const monthlyTotals = {}
 
-    transactions.value.forEach((transaction) => {
+    transactionsCache.value.forEach((transaction) => {
       const date = new Date(transaction.date)
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
       const monthName = date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
@@ -272,6 +406,11 @@ export function useReports() {
     barChartData,
     pieChartData,
     fetchReportData,
+    getReportData, // ✅ NEW: Instant cache access
     resetLoadingState,
+    setupRealtime, // ✅ NEW
+    cleanupRealtime, // ✅ NEW
+    invalidateCache, // ✅ NEW
+    clearCache, // ✅ NEW
   }
 }

@@ -360,6 +360,18 @@ import { ref, onMounted, nextTick } from 'vue'
 import { supabase } from '@/lib/supabase'
 import AppLayout from '@/components/common/AppLayout.vue'
 
+// Cache system for admin data
+const usersCache = ref([])
+const statsCache = ref({
+  totalUsers: 0,
+  activeUsers: 0,
+  usedLicenses: 0,
+  totalLicenses: 0,
+})
+const licensesCache = ref([])
+let cacheTimestamp = null
+const CACHE_DURATION = 30000 // 30 seconds for admin data
+
 const users = ref([])
 const adminStats = ref({
   totalUsers: 0,
@@ -387,9 +399,42 @@ let editModal = null
 let deleteModal = null
 let deleteLicenseModal = null
 
+// Check if cache is valid
+const isCacheValid = () => {
+  if (!cacheTimestamp) return false
+  return Date.now() - cacheTimestamp < CACHE_DURATION
+}
+
+// Load from cache instantly
+const loadFromCache = () => {
+  if (isCacheValid() && usersCache.value.length > 0) {
+    users.value = usersCache.value
+    adminStats.value = { ...statsCache.value }
+    recentLicenses.value = licensesCache.value
+    return true
+  }
+  return false
+}
+
+// Invalidate cache
+const invalidateCache = () => {
+  cacheTimestamp = null
+}
+
 onMounted(async () => {
-  await loadAdminData()
+  // Load from cache first for instant display
+  const hasCache = loadFromCache()
+
+  // Setup modals
   setupModals()
+
+  // Fetch fresh data in background
+  if (!hasCache) {
+    await loadAdminData()
+  } else {
+    // Refresh in background without loading spinner
+    loadAdminData(false)
+  }
 })
 
 const setupModals = () => {
@@ -406,13 +451,13 @@ const setupModals = () => {
   })
 }
 
-const loadAdminData = async () => {
-  await Promise.all([loadUsers(), loadAdminStats(), loadRecentLicenses()])
+const loadAdminData = async (showLoader = true) => {
+  await Promise.all([loadUsers(showLoader), loadAdminStats(), loadRecentLicenses()])
 }
 
-const loadUsers = async () => {
+const loadUsers = async (showLoader = true) => {
   try {
-    loading.value = true
+    if (showLoader) loading.value = true
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -420,11 +465,13 @@ const loadUsers = async () => {
 
     if (error) throw error
     users.value = data || []
+    usersCache.value = data || []
+    cacheTimestamp = Date.now()
   } catch (error) {
     console.error('Error loading users:', error)
     showToast('Gagal memuat daftar user: ' + error.message, 'danger')
   } finally {
-    loading.value = false
+    if (showLoader) loading.value = false
   }
 }
 
@@ -433,12 +480,16 @@ const loadAdminStats = async () => {
     const { data: usersData } = await supabase.from('profiles').select('id, created_at, is_active')
     const { data: licensesData } = await supabase.from('licenses').select('id, status')
 
-    adminStats.value = {
+    const stats = {
       totalUsers: (usersData || []).length,
       activeUsers: (usersData || []).filter((u) => u.is_active).length,
       usedLicenses: (licensesData || []).filter((l) => l.status === 'used').length,
       totalLicenses: (licensesData || []).length,
     }
+
+    adminStats.value = stats
+    statsCache.value = { ...stats }
+    cacheTimestamp = Date.now()
   } catch (error) {
     console.error('Error loading admin stats:', error)
   }
@@ -454,6 +505,8 @@ const loadRecentLicenses = async () => {
 
     if (error) throw error
     recentLicenses.value = data || []
+    licensesCache.value = data || []
+    cacheTimestamp = Date.now()
   } catch (error) {
     console.error('Error loading recent licenses:', error)
   }
@@ -475,6 +528,8 @@ const generateLicenses = async () => {
       throw errors[0].error
     }
 
+    // Invalidate cache and reload
+    invalidateCache()
     await loadRecentLicenses()
     await loadAdminStats()
     showToast(`Berhasil generate ${licenseCount.value} lisensi`, 'success')
@@ -507,6 +562,8 @@ const updateUserRole = async () => {
 
     if (error) throw error
 
+    // Invalidate cache and reload
+    invalidateCache()
     await loadUsers()
     await loadAdminStats()
     showEditModal.value = false
@@ -540,7 +597,12 @@ const deleteUser = async () => {
 
     if (error) throw error
 
+    // Update cache immediately (optimistic)
     users.value = users.value.filter((u) => u.id !== targetId)
+    usersCache.value = usersCache.value.filter((u) => u.id !== targetId)
+
+    // Invalidate and reload stats
+    invalidateCache()
     await loadAdminStats()
     showDeleteModal.value = false
     if (deleteModal) deleteModal.hide()
@@ -576,6 +638,8 @@ const revokeLicense = async (license) => {
 
     if (error) throw error
 
+    // Invalidate cache and reload
+    invalidateCache()
     await loadRecentLicenses()
     showToast('Lisensi berhasil direvoke', 'success')
   } catch (error) {
@@ -598,7 +662,12 @@ const deleteLicense = async () => {
 
     if (error) throw error
 
-    await loadRecentLicenses()
+    // Update cache immediately (optimistic)
+    recentLicenses.value = recentLicenses.value.filter((l) => l.id !== deletingLicense.value.id)
+    licensesCache.value = licensesCache.value.filter((l) => l.id !== deletingLicense.value.id)
+
+    // Invalidate and reload stats
+    invalidateCache()
     await loadAdminStats()
     showDeleteLicenseModal.value = false
     if (deleteLicenseModal) deleteLicenseModal.hide()

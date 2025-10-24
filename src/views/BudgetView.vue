@@ -59,6 +59,47 @@ const statusSlug = (label) => {
 const filteredBudgets = computed(() => {
   let filtered = [...budgets.value]
 
+  // ✅ Filter by period (date range)
+  if (budgetFilters.period) {
+    const now = new Date()
+    const currentYear = now.getFullYear()
+    const currentMonth = now.getMonth()
+
+    filtered = filtered.filter((b) => {
+      const startDate = new Date(b.start_date)
+      const endDate = new Date(b.end_date)
+
+      switch (budgetFilters.period) {
+        case 'current': {
+          // Bulan Ini: budget yang aktif di bulan sekarang
+          const monthStart = new Date(currentYear, currentMonth, 1)
+          const monthEnd = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59)
+          return startDate <= monthEnd && endDate >= monthStart
+        }
+        case 'previous': {
+          // Bulan Sebelumnya: budget yang aktif di bulan lalu
+          const prevMonthStart = new Date(currentYear, currentMonth - 1, 1)
+          const prevMonthEnd = new Date(currentYear, currentMonth, 0, 23, 59, 59)
+          return startDate <= prevMonthEnd && endDate >= prevMonthStart
+        }
+        case 'next': {
+          // Bulan Depan: budget yang akan aktif di bulan depan
+          const nextMonthStart = new Date(currentYear, currentMonth + 1, 1)
+          const nextMonthEnd = new Date(currentYear, currentMonth + 2, 0, 23, 59, 59)
+          return startDate <= nextMonthEnd && endDate >= nextMonthStart
+        }
+        case 'year': {
+          // Tahun Ini: budget yang aktif di tahun sekarang
+          const yearStart = new Date(currentYear, 0, 1)
+          const yearEnd = new Date(currentYear, 11, 31, 23, 59, 59)
+          return startDate <= yearEnd && endDate >= yearStart
+        }
+        default:
+          return true
+      }
+    })
+  }
+
   if (budgetFilters.category) {
     filtered = filtered.filter((b) =>
       b.category.toLowerCase().includes(budgetFilters.category.toLowerCase()),
@@ -122,7 +163,6 @@ const resetBudgetForm = () => {
   editingBudget.value = null
 }
 
-
 const saveBudget = async () => {
   try {
     if (editingBudget.value) {
@@ -141,7 +181,6 @@ const saveBudget = async () => {
   }
 }
 
-
 const editBudget = (budget) => {
   editingBudget.value = budget
   Object.assign(budgetForm, {
@@ -156,7 +195,6 @@ const editBudget = (budget) => {
   const modal = new bootstrap.Modal(document.getElementById('budgetModal'))
   modal.show()
 }
-
 
 const confirmDeleteBudget = async (id) => {
   if (confirm('Apakah Anda yakin ingin menghapus anggaran ini?')) {
@@ -274,18 +312,18 @@ onBeforeUnmount(() => {
               <div class="card-body pt-0">
                 <div class="row g-2">
                   <div class="col-6 col-md-3">
-                    <label class="form-label small fw-medium">Budget Period</label>
+                    <label class="form-label small fw-medium">Periode Anggaran</label>
                     <select v-model="budgetFilters.period" class="form-select form-select-sm">
-                      <option value="current">Current Month</option>
-                      <option value="next">Next Month</option>
-                      <option value="quarter">This Quarter</option>
-                      <option value="year">This Year</option>
+                      <option value="current">Bulan Ini</option>
+                      <option value="previous">Bulan Sebelumnya</option>
+                      <option value="next">Bulan Depan</option>
+                      <option value="year">Tahun Ini</option>
                     </select>
                   </div>
                   <div class="col-6 col-md-3">
-                    <label class="form-label small fw-medium">Category</label>
+                    <label class="form-label small fw-medium">Kategori</label>
                     <select v-model="budgetFilters.category" class="form-select form-select-sm">
-                      <option value="">All Categories</option>
+                      <option value="">Semua Kategori</option>
                       <option
                         v-for="category in expenseCategories"
                         :key="category.id"
@@ -298,14 +336,14 @@ onBeforeUnmount(() => {
                   <div class="col-6 col-md-3">
                     <label class="form-label small fw-medium">Status</label>
                     <select v-model="budgetFilters.status" class="form-select form-select-sm">
-                      <option value="">All Status</option>
+                      <option value="">Semua Status</option>
                       <option value="on-track">On Track</option>
-                      <option value="warning">Warning</option>
-                      <option value="exceeded">Exceeded</option>
+                      <option value="warning">Peringatan</option>
+                      <option value="exceeded">Melebihi</option>
                     </select>
                   </div>
                   <div class="col-6 col-md-3">
-                    <label class="form-label small fw-medium">Search</label>
+                    <label class="form-label small fw-medium">Cari</label>
                     <div class="input-group input-group-sm">
                       <span class="input-group-text">
                         <i class="bi bi-search"></i>
@@ -314,7 +352,7 @@ onBeforeUnmount(() => {
                         v-model="budgetFilters.search"
                         type="text"
                         class="form-control"
-                        placeholder="Search..."
+                        placeholder="Cari..."
                       />
                     </div>
                   </div>
@@ -516,7 +554,6 @@ onBeforeUnmount(() => {
           </div>
         </div>
       </div>
-
     </div>
   </AppLayout>
 </template>
@@ -571,7 +608,6 @@ onBeforeUnmount(() => {
 .budget-icon {
   font-size: 1.2rem;
 }
-
 
 .progress {
   border-radius: 4px;
@@ -829,7 +865,6 @@ onBeforeUnmount(() => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border: none;
 }
-
 
 .dropdown-item {
   border-radius: 4px;

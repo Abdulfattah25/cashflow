@@ -60,7 +60,7 @@
                   <small class="d-block mb-2">
                     Segera tinjau pengeluaran Anda dan sesuaikan anggaran jika diperlukan.
                   </small>
-                  <small class="d-block text-muted">
+                  <small class="d-none text-muted">
                     <i class="bi bi-clock me-1"></i>
                     Peringatan ini akan muncul lagi dalam <strong>{{ hoursUntilNext }} jam</strong>
                   </small>
