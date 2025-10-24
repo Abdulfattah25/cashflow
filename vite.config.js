@@ -94,6 +94,9 @@ export default defineConfig({
         enabled: false, // ✅ Disable PWA in development to eliminate console logs
         type: 'module',
       },
+      // ✅ Ensure service worker is generated for production
+      strategies: 'generateSW',
+      filename: 'sw.js',
     }),
     // ✅ Gzip compression for production
     viteCompression({

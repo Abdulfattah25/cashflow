@@ -1,4 +1,4 @@
-# Netlify Configuration for Optimal Performance
+# Netlify Configuration for Optimal Performance with PWA Support
 
 [build]
   publish = "dist"
@@ -7,13 +7,29 @@
 [build.environment]
   NODE_VERSION = "20"
 
-# ✅ Compression & Caching Headers
+# ✅ PWA Service Worker Headers - CRITICAL for PWA
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Service-Worker-Allowed = "/"
+
+[[headers]]
+  for = "/workbox-*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Service-Worker-Allowed = "/"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# ✅ General Headers
 [[headers]]
   for = "/*"
   [headers.values]
-    # Enable Brotli and Gzip compression
-    Content-Encoding = "br, gzip"
-    
     # Security headers
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
@@ -47,6 +63,12 @@
   for = "/*.html"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+
+# ✅ SPA Redirect - CRITICAL for Vue Router
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
 # ✅ SPA redirect (client-side routing)
 [[redirects]]
